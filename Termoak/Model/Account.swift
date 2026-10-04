@@ -18,6 +18,11 @@ final class Account: ObservableObject {
     @Published private(set) var pendingApprovals = 0
     /// Receiving live events from the server.
     @Published private(set) var live = false
+    /// Email of the signed-in account while the server still waits for the
+    /// six-digit code from the verification email. Until it is entered the
+    /// account can only manage itself, so it counts as logged out
+    /// (`loggedIn == false`) and the login screen asks for the code.
+    @Published private(set) var pendingVerification: String?
 
     /// Something changed on the server (`ai`, `session`, `lagged`): reload.
     let changes = PassthroughSubject<String, Never>()
@@ -34,10 +39,18 @@ final class Account: ObservableObject {
     }
 
     func refresh() async {
-        let isLoggedIn = (try? await core.isLoggedIn()) ?? false
-        loggedIn = isLoggedIn
+        var isLoggedIn = (try? await core.isLoggedIn()) ?? false
         server = try? await core.serverUrl()
         user = try? await core.serverUser()
+        // Offline: keep what was known.
+        if isLoggedIn,
+           (try? await core.verificationRequired()) ?? (pendingVerification != nil) {
+            pendingVerification = user ?? pendingVerification ?? ""
+            isLoggedIn = false
+        } else {
+            pendingVerification = nil
+        }
+        loggedIn = isLoggedIn
         if isLoggedIn {
             await refreshApprovals()
             startEvents()
@@ -47,10 +60,35 @@ final class Account: ObservableObject {
         }
     }
 
-    func logIn(server: String, email: String, password: String, code: String?) async throws {
+    /// Returns `false` when the account still has to verify its email
+    /// (see `pendingVerification`).
+    @discardableResult
+    func logIn(server: String, email: String, password: String, code: String?) async throws -> Bool {
         try await core.login(url: server, email: email, password: password, totpCode: code)
         await refresh()
         sync()
+        return pendingVerification == nil
+    }
+
+    // ----- Email verification -----
+
+    /// Verifies the email with the code from the verification email and
+    /// signs in (spaces and dashes in the code are ignored).
+    func verifyEmail(server: String, email: String, code: String, totpCode: String?) async throws {
+        try await core.verifyCode(url: server, email: email, code: code, totpCode: totpCode)
+        await refresh()
+        sync()
+    }
+
+    /// Emails a new verification code (at most once a minute).
+    func resendCode(server: String, email: String) async throws {
+        try await core.resendCode(url: server, email: email)
+    }
+
+    /// Drops the unverified sign-in to start again with another account.
+    func cancelVerification() async {
+        try? await core.logout()
+        await refresh()
     }
 
     func logOut() {
@@ -76,6 +114,11 @@ final class Account: ObservableObject {
                 // No server: nothing to sync.
             } catch TermoakError.SessionExpired {
                 syncError = String(localized: "account.session_expired")
+                await refresh()
+            } catch TermoakError.EmailNotVerified {
+                // The server now wants the code from the email: the refresh
+                // marks the account as pending and the login screen asks
+                // for it.
                 await refresh()
             } catch {
                 syncError = errorMessage(error)

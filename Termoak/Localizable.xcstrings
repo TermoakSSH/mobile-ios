@@ -4432,6 +4432,150 @@
         }
       }
     },
+    "login.verify_email.code": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6-digit code"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Código de 6 cifras"
+          }
+        }
+      }
+    },
+    "login.verify_email.different_email": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use a different email"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar otro email"
+          }
+        }
+      }
+    },
+    "login.verify_email.invalid_code": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The code is wrong or has expired. Check it or ask for a new one."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El código no es correcto o ha caducado. Revísalo o pide uno nuevo."
+          }
+        }
+      }
+    },
+    "login.verify_email.resend": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resend code"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reenviar el código"
+          }
+        }
+      }
+    },
+    "login.verify_email.resend_in %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resend code (%lld s)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reenviar el código (%lld s)"
+          }
+        }
+      }
+    },
+    "login.verify_email.resent": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We sent you a new code."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Te hemos enviado un código nuevo."
+          }
+        }
+      }
+    },
+    "login.verify_email.sent %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We sent a 6-digit code to %@. Enter it to finish signing in."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hemos enviado un código de 6 cifras a %@. Escríbelo para terminar de iniciar sesión."
+          }
+        }
+      }
+    },
+    "login.verify_email.spam_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The code lasts 15 minutes. If the email does not arrive, check your spam folder."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El código dura 15 minutos. Si no te llega el email, mira en la carpeta de spam."
+          }
+        }
+      }
+    },
+    "login.verify_email.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check your email"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisa tu email"
+          }
+        }
+      }
+    },
     "nav.account.sync_hint": {
       "localizations": {
         "en": {
