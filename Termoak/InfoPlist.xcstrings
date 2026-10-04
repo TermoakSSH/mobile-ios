@@ -1,0 +1,24 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "NSLocalNetworkUsageDescription": {
+      "comment": "Local network permission prompt (project.yml: INFOPLIST_KEY_NSLocalNetworkUsageDescription).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To connect over SSH to computers on your local network."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para conectar por SSH con equipos de tu red local."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

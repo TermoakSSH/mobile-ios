@@ -1,0 +1,88 @@
+# Xcode project of the iOS app, generated with XcodeGen:
+#   xcodegen generate
+# The .xcodeproj is not versioned. scripts/build-ipa.sh generates and builds it.
+name: Termoak
+options:
+  bundleIdPrefix: com.termoak
+  # English is the source language; the translations live in
+  # Termoak/Localizable.xcstrings (see core/docs/I18N.md).
+  developmentLanguage: en
+  # 2.39 reads the languages of the String Catalogs into knownRegions.
+  minimumXcodeGenVersion: 2.39.0
+  deploymentTarget:
+    iOS: "15.0"
+  createIntermediateGroups: true
+
+packages:
+  TermoakKit:
+    # Swift package of TermoakSSH/core, a git submodule in core/.
+    path: core/bindings/swift
+  SwiftTerm:
+    url: https://github.com/migueldeicaza/SwiftTerm
+    from: 1.9.0
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.3.4"
+    CURRENT_PROJECT_VERSION: "7"
+
+targets:
+  Termoak:
+    type: application
+    platform: iOS
+    sources:
+      - path: Termoak
+    # Languages the app offers (also in the per-app language of the system
+    # settings). Keep in sync with the languages of Localizable.xcstrings.
+    info:
+      path: Termoak/Info.plist
+      properties:
+        CFBundleDevelopmentRegion: en
+        CFBundleLocalizations: [en, es]
+        # XcodeGen would write 1.0 / 1 here otherwise.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+    dependencies:
+      - package: TermoakKit
+      - package: SwiftTerm
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.termoak
+        PRODUCT_NAME: Termoak
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Termoak
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        # Translated in Termoak/InfoPlist.xcstrings.
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: "To connect over SSH to computers on your local network."
+        # The Rust library is static and carries no bitcode or Swift debug symbols.
+        DEBUG_INFORMATION_FORMAT: dwarf
+
+  # UI tests (only `xcodebuild test`; not in the .ipa). They need a test
+  # sshd: see UITests/KeyboardUITests.swift.
+  TermoakUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: Termoak
+    settings:
+      base:
+        TEST_TARGET_NAME: Termoak
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.termoak.uitests
+
+schemes:
+  Termoak:
+    build:
+      targets:
+        Termoak: all
+    test:
+      targets:
+        - TermoakUITests

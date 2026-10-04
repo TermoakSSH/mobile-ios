@@ -1,0 +1,42 @@
+name: CI
+
+# Builds the app for the simulator, unsigned. Public repository: GitHub
+# Actions minutes are free (macOS runners included).
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["docs/**", "**/*.md", "LICENSE"]
+  pull_request:
+    paths-ignore: ["docs/**", "**/*.md", "LICENSE"]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Simulator build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios, aarch64-apple-ios-sim, x86_64-apple-ios
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core
+      - name: Tools
+        run: |
+          brew install xcodegen
+          xcodebuild -downloadComponent MetalToolchain || true
+      - name: Engine (xcframework)
+        run: core/scripts/build-ios.sh debug
+      - name: App
+        run: |
+          xcodegen generate
+          xcodebuild build -project Termoak.xcodeproj -scheme Termoak -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' -skipPackagePluginValidation -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO
