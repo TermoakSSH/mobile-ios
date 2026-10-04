@@ -1,7 +1,7 @@
 name: CI
 
-# Builds the app for the simulator, unsigned. Public repository: GitHub
-# Actions minutes are free (macOS runners included).
+# Basic checks only (no macOS runner): the app itself is built on a Mac with
+# scripts/build-ipa.sh.
 on:
   push:
     branches: [main]
@@ -15,28 +15,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Simulator build
-    runs-on: macos-latest
+  check:
+    name: Project files
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-ios, aarch64-apple-ios-sim, x86_64-apple-ios
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: core
-      - name: Tools
+      - name: String catalogs are valid JSON and project.yml is valid YAML
         run: |
-          brew install xcodegen
-          xcodebuild -downloadComponent MetalToolchain || true
-      - name: Engine (xcframework)
-        run: core/scripts/build-ios.sh debug
-      - name: App
-        run: |
-          xcodegen generate
-          xcodebuild build -project Termoak.xcodeproj -scheme Termoak -configuration Debug \
-            -destination 'generic/platform=iOS Simulator' -skipPackagePluginValidation -skipMacroValidation \
-            CODE_SIGNING_ALLOWED=NO
+          for f in Termoak/*.xcstrings; do python3 -m json.tool "$f" >/dev/null && echo "ok $f"; done
+          python3 -c "import yaml; yaml.safe_load(open('project.yml'))" && echo "ok project.yml"
