@@ -24,8 +24,8 @@ packages:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "0.3.6"
-    CURRENT_PROJECT_VERSION: "9"
+    MARKETING_VERSION: "0.4.0"
+    CURRENT_PROJECT_VERSION: "10"
 
 targets:
   Termoak:
@@ -43,6 +43,14 @@ targets:
         # XcodeGen would write 1.0 / 1 here otherwise.
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # Invitation links open the app: termoak://join?server=…&token=…
+        # (https://<server>/join/<token> would need Associated Domains,
+        # `applinks:<server>`, and the server's apple-app-site-association;
+        # JoinLink already parses them).
+        CFBundleURLTypes:
+          - CFBundleURLName: com.termoak.links
+            CFBundleTypeRole: Viewer
+            CFBundleURLSchemes: [termoak]
     dependencies:
       - package: TermoakKit
       - package: SwiftTerm

@@ -25,8 +25,13 @@ private struct TerminalContent: View {
     @EnvironmentObject private var sessions: Sessions
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var account: Account
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var terminating = false
+    /// People in the shared session.
+    @State private var showingPeople = false
+    /// Invitations (share sheet).
+    @State private var sharing = false
     @State private var customizing = false
     @State private var filling: SnippetChoice?
     @State private var showingFiles = false
@@ -51,6 +56,7 @@ private struct TerminalContent: View {
                 ZStack(alignment: .topLeading) {
                     SwiftTermView(view: session.view)
                     CursorSuggestions(session: session)
+                    ShareBanners(session: session, background: theme.barColor) { showingPeople = true }
                     notice.frame(maxWidth: .infinity, maxHeight: .infinity)
                     if let p = session.cursorPad {
                         CursorPadView(pad: p, accent: SwiftUI.Color(hex: theme.accent)).padding(16)
@@ -98,6 +104,7 @@ private struct TerminalContent: View {
             }
         }
         .overlay(alignment: .trailing) { phoneCopilot }
+        .overlay(alignment: .top) { ShareToasts(notices: sessions.notices) }
         .preferredColorScheme(theme.isLight ? .light : .dark)
         .animation(.easeOut(duration: 0.2), value: sessions.quickPanelOpen)
         .animation(.easeOut(duration: 0.2), value: settings.sidePanel)
@@ -106,6 +113,18 @@ private struct TerminalContent: View {
             AuthPromptView(prompt: p) { session.prompt = nil }.interactiveDismissDisabled()
         }
         .sheet(isPresented: $customizing) { KeyboardEditor().environmentObject(settings) }
+        .sheet(isPresented: $showingPeople) {
+            ParticipantsSheet(session: session, canShare: canShare) {
+                // One sheet after the other.
+                showingPeople = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { sharing = true }
+            }
+        }
+        .sheet(isPresented: $sharing) {
+            if let source = shareSource {
+                ShareSessionView(core: model.core, source: source, title: session.title ?? session.label)
+            }
+        }
         .fullScreenCover(isPresented: $showingFiles) {
             if let f = filesSource {
                 FilesScreen(core: model.core, title: session.label, source: f)
@@ -256,6 +275,12 @@ private struct TerminalContent: View {
                 .accessibilityLabel("common.move_cursor")
                 .accessibilityValue(session.cursorByButton ? Text("common.on") : Text("common.off"))
             }
+            if showsPeopleButton {
+                Button { showingPeople = true } label: {
+                    peopleIcon.frame(width: 40, height: 40)
+                }
+                .accessibilityLabel("share.participants.title")
+            }
             Button { toggleCopilot() } label: {
                 Image(systemName: "sparkles")
                     .frame(width: 36, height: 40)
@@ -275,6 +300,12 @@ private struct TerminalContent: View {
                 }
                 Button { settings.changeFontSize(1) } label: { Label("common.font_larger", systemImage: "textformat.size.larger") }
                 Button { settings.changeFontSize(-1) } label: { Label("common.font_smaller", systemImage: "textformat.size.smaller") }
+                if canShare {
+                    Button { sharing = true } label: { Label("share.menu.share", systemImage: "person.badge.plus") }
+                }
+                if showsPeopleButton {
+                    Button { showingPeople = true } label: { Label("share.participants.title", systemImage: "person.2") }
+                }
                 Divider()
                 if filesSource != nil {
                     Button { showingFiles = true } label: { Label("common.files_sftp", systemImage: "folder") }
@@ -284,7 +315,7 @@ private struct TerminalContent: View {
                 }
                 Divider()
                 Button { session.reconnect() } label: { Label("common.reconnect", systemImage: "arrow.clockwise") }
-                if session is ServerTerminal {
+                if session is ServerTerminal && session.isOwner {
                     Button(role: .destructive) { terminating = true } label: {
                         Label("terminal.menu.terminate_server", systemImage: "power")
                     }
@@ -306,8 +337,11 @@ private struct TerminalContent: View {
         switch session.state {
         case .connecting(let m): return m
         case .connected:
+            if !session.isOwner {
+                return session.canWrite ? String(localized: "share.bar.you_have_control") : session.access.shareLabel
+            }
             return session.persistent ? String(localized: "terminal.subtitle.server") : String(localized: "terminal.subtitle.local")
-        case .closed: return String(localized: "terminal.disconnected")
+        case .closed: return session.ended?.title ?? String(localized: "terminal.disconnected")
         }
     }
 
@@ -331,9 +365,54 @@ private struct TerminalContent: View {
     @ViewBuilder private var notice: some View {
         if session.asleep {
             asleepCard
+        } else if let room = session.waiting {
+            WaitingRoomCard(session: session, room: room, background: theme.barColor) { sessions.close(session.id) }
+        } else if let end = session.ended {
+            SessionEndedCard(end: end, background: theme.barColor) { sessions.close(session.id) }
         } else {
             connectionNotice
         }
+    }
+
+    // ----- Live sharing -----
+
+    /// The participants button: server sessions (yours or shared with you)
+    /// and terminals of this device that are shared.
+    private var showsPeopleButton: Bool {
+        guard !session.asleep, session.ended == nil else { return false }
+        return session is ServerTerminal || session.shareAttached
+    }
+
+    /// People icon with how many others are inside (and a dot for requests).
+    private var peopleIcon: some View {
+        let others = session.others.count
+        return ZStack(alignment: .topTrailing) {
+            Image(systemName: others > 0 ? "person.2.fill" : "person.2")
+                .foregroundColor(others > 0 ? SwiftUI.Color(hex: theme.accent) : .accentColor)
+            if !session.requests.isEmpty {
+                Circle().fill(Brand.red).frame(width: 8, height: 8).offset(x: 4, y: -2)
+            } else if others > 0 {
+                Text(verbatim: "\(others)")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 4).padding(.vertical, 1)
+                    .background(SwiftUI.Color(hex: theme.accent), in: Capsule())
+                    .offset(x: 8, y: -6)
+            }
+        }
+    }
+
+    /// Yours, connected and signed in: it can be shared from here.
+    private var canShare: Bool {
+        guard account.loggedIn == true, session.isOwner, session.state == .connected else { return false }
+        if let server = session as? ServerTerminal { return server.sessionId != nil && server.link == nil }
+        return session is LocalTerminal
+    }
+
+    private var shareSource: ShareSource? {
+        if let server = session as? ServerTerminal, let id = server.sessionId { return .server(sessionId: id) }
+        if let local = session as? LocalTerminal { return .local(local) }
+        return nil
     }
 
     /// Tab of a server session that has not been attached yet.
@@ -399,7 +478,7 @@ private struct TerminalContent: View {
     /// session lives there.
     private var filesSource: FileBrowser.Source? {
         if let local = session as? LocalTerminal, let c = local.connection { return .session(c) }
-        if session is ServerTerminal, let h = session.hostId { return .server(hostId: h) }
+        if session is ServerTerminal, session.isOwner, let h = session.hostId { return .server(hostId: h) }
         return nil
     }
 
@@ -469,6 +548,7 @@ private struct TabChip: View {
     var body: some View {
         HStack(spacing: 6) {
             if session.persistent { Image(systemName: "icloud").font(.caption2).foregroundColor(.secondary) }
+            if !session.others.isEmpty { Image(systemName: "person.2.fill").font(.caption2).foregroundColor(.secondary) }
             Circle().fill(session.asleep ? SwiftUI.Color.secondary : color).frame(width: 7, height: 7)
             Text(session.title ?? session.label).font(.footnote).lineLimit(1).frame(maxWidth: 140)
             Button(action: onClose) { Image(systemName: "xmark").font(.caption2).foregroundColor(.secondary) }

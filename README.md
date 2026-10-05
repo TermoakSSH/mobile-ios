@@ -8,8 +8,10 @@ The app is SwiftUI, iOS 15+, with
 [SwiftTerm](https://github.com/migueldeicaza/SwiftTerm) as the terminal
 emulator). It has the same features as the Android app: sign-in and sync,
 hosts (search, groups, favorites, full editor), a tabbed terminal (local SSH
-and persistent server sessions, snippets, copy/paste), server sessions, AI
-with approvals, keychain, snippets and settings. iOS cuts local connections
+and persistent server sessions, snippets, copy/paste), server sessions, live
+session sharing (invite by email, team or link; one person types at a time,
+with a waiting room; join with `termoak://join` links), AI with approvals,
+keychain, snippets and settings. iOS cuts local connections
 shortly after you leave the app (a few minutes of grace time are requested);
 for long jobs, use server sessions. The Xcode project is generated with
 [XcodeGen](https://github.com/yonaskolb/XcodeGen) from `project.yml`

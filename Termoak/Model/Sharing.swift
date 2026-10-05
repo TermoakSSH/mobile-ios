@@ -1,0 +1,351 @@
+import TermoakKit
+import Foundation
+import SwiftUI
+
+// Live session sharing (like Termius Multiplayer): invitations, the people
+// in a session, the keyboard (one driver at a time), the waiting room and
+// joining with a link. Protocol: server docs/WEBSOCKET-PROTOCOL.md.
+
+/// Why the server sent you away from a shared session for good (it does not
+/// reconnect after these).
+struct ShareEnd: Equatable {
+    /// `revoked`, `kicked`, `expired`, `session_ended`, `join_denied` or `forbidden`.
+    let code: String
+    let message: String
+
+    var title: String {
+        switch code {
+        case "revoked": return String(localized: "share.end.revoked.title")
+        case "kicked": return String(localized: "share.end.kicked.title")
+        case "expired": return String(localized: "share.end.expired.title")
+        case "session_ended": return String(localized: "share.end.session_ended.title")
+        case "join_denied": return String(localized: "share.end.join_denied.title")
+        default: return String(localized: "share.end.forbidden.title")
+        }
+    }
+
+    var text: String {
+        switch code {
+        case "revoked": return String(localized: "share.end.revoked.text")
+        case "kicked": return String(localized: "share.end.kicked.text")
+        case "expired": return String(localized: "share.end.expired.text")
+        case "session_ended": return String(localized: "share.end.session_ended.text")
+        case "join_denied": return String(localized: "share.end.join_denied.text")
+        default: return String(localized: "share.end.forbidden.text")
+        }
+    }
+
+    var icon: String {
+        switch code {
+        case "revoked": return "xmark.circle"
+        case "kicked": return "person.fill.xmark"
+        case "expired": return "clock"
+        case "session_ended": return "power"
+        case "join_denied": return "hand.raised.fill"
+        default: return "lock.fill"
+        }
+    }
+}
+
+/// You are in the waiting room of a shared session.
+struct WaitingRoom: Equatable {
+    let title: String
+    /// Name of who shares it.
+    let owner: String
+}
+
+/// Owner: someone waits to be let in or asks for the keyboard.
+struct ShareRequest: Identifiable, Equatable {
+    enum Kind: Equatable {
+        case join, control
+    }
+
+    let kind: Kind
+    let participant: SessionParticipant
+
+    var id: String { (kind == .join ? "join-" : "control-") + participant.id }
+}
+
+/// What the owner can do with the people in a shared session.
+enum OwnerAction {
+    case allowJoin(String)
+    case denyJoin(String)
+    case grantControl(String)
+    case denyControl(String)
+    case takeControl
+    /// `block`: also revokes the invitation they used.
+    case kick(String, block: Bool)
+    case stopSharing
+
+    /// The participant it is about.
+    var participantId: String? {
+        switch self {
+        case .allowJoin(let p), .denyJoin(let p), .grantControl(let p), .denyControl(let p): return p
+        case .kick(let p, _): return p
+        case .takeControl, .stopSharing: return nil
+        }
+    }
+}
+
+// MARK: - Invitations
+
+/// Where the invitations of a session are managed: a session that lives on
+/// the server or a terminal of this device shared through it (relay).
+enum ShareBackend {
+    case server(TermoakCore, sessionId: String)
+    case relay(SharedTerminal)
+
+    func invite(_ target: ShareTarget, _ options: ShareOptions) async throws -> ShareInvite {
+        switch self {
+        case let .server(core, id): return try await core.shareServerSessionWith(sessionId: id, target: target, options: options)
+        case let .relay(shared): return try await shared.invite(target: target, options: options)
+        }
+    }
+
+    func list() async throws -> [SessionShareInfo] {
+        switch self {
+        case let .server(core, id): return try await core.listServerSessionShares(sessionId: id)
+        case let .relay(shared): return try await shared.listInvites()
+        }
+    }
+
+    func update(_ shareId: String, _ changes: ShareChanges) async throws -> SessionShareInfo {
+        switch self {
+        case let .server(core, id): return try await core.updateServerSessionShare(sessionId: id, shareId: shareId, changes: changes)
+        case let .relay(shared): return try await shared.updateInvite(shareId: shareId, changes: changes)
+        }
+    }
+
+    func revoke(_ shareId: String) async throws {
+        switch self {
+        case let .server(core, id): try await core.revokeServerSessionShare(sessionId: id, shareId: shareId)
+        case let .relay(shared): try await shared.revokeInvite(shareId: shareId)
+        }
+    }
+
+    /// Revokes every invitation: everyone but you leaves.
+    func revokeAll() async throws {
+        switch self {
+        case let .server(core, id): _ = try await core.stopSharingServerSession(sessionId: id)
+        case let .relay(shared): try await shared.revokeAllInvites()
+        }
+    }
+}
+
+/// How long an invitation lasts.
+enum ShareExpiry: Int64, CaseIterable, Identifiable {
+    case never = 0
+    case halfHour = 30
+    case hour = 60
+    case day = 1440
+    case week = 10080
+
+    var id: Int64 { rawValue }
+    var minutes: Int64? { self == .never ? nil : rawValue }
+
+    var title: String {
+        switch self {
+        case .never: return String(localized: "share.expiry.never")
+        case .halfHour: return String(localized: "share.expiry.half_hour")
+        case .hour: return String(localized: "share.expiry.hour")
+        case .day: return String(localized: "share.expiry.day")
+        case .week: return String(localized: "share.expiry.week")
+        }
+    }
+}
+
+extension SessionAccess {
+    /// "View only", "Can request control" or "Owner".
+    var shareLabel: String {
+        switch self {
+        case .owner: return String(localized: "share.access.owner")
+        case .control: return String(localized: "share.permission.control")
+        case .view: return String(localized: "share.permission.view")
+        }
+    }
+}
+
+extension SessionShareInfo {
+    /// Who it is for: a person, a team or anyone with the link.
+    var targetName: String {
+        switch kind {
+        case .user: return userName.flatMap { $0.isEmpty ? nil : $0 } ?? userEmail ?? String(localized: "share.kind.user")
+        case .team: return teamName ?? String(localized: "share.kind.team")
+        case .link: return String(localized: "share.kind.link")
+        }
+    }
+
+    var icon: String {
+        switch kind {
+        case .user: return "person.fill"
+        case .team: return "person.3.fill"
+        case .link: return "link"
+        }
+    }
+}
+
+// MARK: - Joining with a link
+
+/// An invitation link: `termoak://join?server=…&token=…` (the app link) or
+/// the web one, `https://server/join/<token>` (also `/api/v1/join/<token>`),
+/// which is what a universal link would bring.
+struct JoinLink: Equatable {
+    /// Base URL of the server (no trailing slash).
+    let server: String
+    let token: String
+
+    static func parse(_ text: String) -> JoinLink? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let url = URL(string: trimmed) else { return nil }
+        return parse(url)
+    }
+
+    static func parse(_ url: URL) -> JoinLink? {
+        guard let c = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let scheme = c.scheme?.lowercased() else { return nil }
+        let parts = c.path.split(separator: "/").map(String.init)
+        if scheme == "termoak" {
+            guard c.host?.lowercased() == "join" else { return nil }
+            let items = c.queryItems ?? []
+            guard let server = items.first(where: { $0.name == "server" })?.value,
+                  let serverURL = URL(string: server), let s = serverURL.scheme?.lowercased(), s == "https" || s == "http",
+                  let token = items.first(where: { $0.name == "token" })?.value ?? parts.last,
+                  valid(token) else { return nil }
+            return JoinLink(server: normalize(server), token: token)
+        }
+        guard scheme == "https" || scheme == "http", let host = c.host,
+              let i = parts.lastIndex(of: "join"), i + 1 < parts.count, valid(parts[i + 1]) else { return nil }
+        // What comes before `/join` is the server's own path (if it lives under
+        // one), without `/api/v1` nor the language of the website (`/es`).
+        var prefix = Array(parts[..<i])
+        if prefix.suffix(2) == ["api", "v1"] { prefix.removeLast(2) }
+        if prefix.count == 1, prefix[0].count == 2 { prefix = [] }
+        var base = URLComponents()
+        base.scheme = scheme
+        base.host = host
+        base.port = c.port
+        base.path = prefix.isEmpty ? "" : "/" + prefix.joined(separator: "/")
+        guard let server = base.string else { return nil }
+        return JoinLink(server: normalize(server), token: parts[i + 1])
+    }
+
+    /// Server URLs compared without case or trailing slash.
+    static func normalize(_ server: String) -> String {
+        var s = server.trimmingCharacters(in: .whitespacesAndNewlines)
+        while s.hasSuffix("/") { s.removeLast() }
+        return s
+    }
+
+    static func sameServer(_ a: String?, _ b: String) -> Bool {
+        guard let a else { return false }
+        return normalize(a).lowercased() == normalize(b).lowercased()
+    }
+
+    private static func valid(_ token: String) -> Bool {
+        !token.isEmpty && token.unicodeScalars.allSatisfy { $0.isASCII && (CharacterSet.alphanumerics.contains($0) || $0 == "-" || $0 == "_") }
+    }
+}
+
+/// The "Join with link" sheet: with the link already known (opened from a
+/// link) or to paste one.
+struct JoinSheetItem: Identifiable {
+    let id = UUID()
+    let link: JoinLink?
+}
+
+// MARK: - Notices of the whole app
+
+/// A session notice of the events WebSocket (`{"type":"session","notice":…}`).
+struct ShareNotice {
+    /// `session_shared`, `join_request`, `control_request`, `control_granted`...
+    let type: String
+    let sessionId: String?
+    let title: String
+    let participantId: String?
+    let participantName: String?
+    /// Who shared it with you (`session_shared`).
+    let by: String?
+
+    init?(_ notice: [String: Any]) {
+        guard let type = notice["type"] as? String else { return nil }
+        self.type = type
+        let session = notice["session"] as? [String: Any]
+        sessionId = (notice["session_id"] as? String) ?? (session?["id"] as? String)
+        title = (notice["title"] as? String) ?? (session?["title"] as? String) ?? ""
+        let participant = notice["participant"] as? [String: Any]
+        participantId = participant?["id"] as? String
+        participantName = participant?["name"] as? String
+        by = notice["by"] as? String
+    }
+}
+
+/// A toast over any screen: someone wants to join or asks for the keyboard
+/// of one of your sessions, or shared a session with you.
+struct ShareToast: Identifiable, Equatable {
+    enum Kind: Equatable {
+        case join, control, shared
+    }
+
+    let id = UUID()
+    let kind: Kind
+    let sessionId: String
+    /// Title of the session.
+    let title: String
+    /// Who asks (or who shared it).
+    let name: String
+    let participantId: String?
+}
+
+@MainActor
+final class ShareNotices: ObservableObject {
+    @Published private(set) var toasts: [ShareToast] = []
+
+    func post(_ toast: ShareToast) {
+        toasts.removeAll {
+            $0.kind == toast.kind && $0.sessionId == toast.sessionId && $0.participantId == toast.participantId
+        }
+        toasts.append(toast)
+        if toasts.count > 3 { toasts.removeFirst(toasts.count - 3) }
+        let id = toast.id
+        let seconds: UInt64 = toast.kind == .shared ? 8 : 60
+        Task { [weak self] in
+            try? await Task.sleep(nanoseconds: seconds * 1_000_000_000)
+            self?.dismiss(id)
+        }
+    }
+
+    func dismiss(_ id: UUID) {
+        toasts.removeAll { $0.id == id }
+    }
+
+    /// The request of that participant was answered (here or in the terminal).
+    func resolve(participantId: String) {
+        toasts.removeAll { $0.participantId == participantId }
+    }
+}
+
+/// Names of who shared each session with you (from the `session_shared`
+/// notices), since the session list only has the owner's id.
+enum SharedOwners {
+    private static let key = "shared_session_owners"
+
+    static func name(for sessionId: String) -> String? {
+        (UserDefaults.standard.dictionary(forKey: key) as? [String: String])?[sessionId]
+    }
+
+    static func remember(_ name: String, for sessionId: String) {
+        guard !name.isEmpty else { return }
+        var names = (UserDefaults.standard.dictionary(forKey: key) as? [String: String]) ?? [:]
+        if names.count > 300 { names = [:] }
+        names[sessionId] = name
+        UserDefaults.standard.set(names, forKey: key)
+    }
+}
+
+extension ServerSession {
+    /// Who shares it (if known): the owner among the people inside, or the
+    /// name that came with the "shared with you" notice.
+    var ownerName: String? {
+        participants.first(where: { $0.kind == .owner })?.name ?? SharedOwners.name(for: id)
+    }
+}

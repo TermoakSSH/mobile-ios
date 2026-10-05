@@ -15,6 +15,8 @@ struct ConnectionsView: View {
     @State private var closingAll = false
     @State private var error: String?
     @State private var hosts: [String: SshHost] = [:]
+    /// One of your server sessions being shared (invitations sheet).
+    @State private var sharing: SharingItem?
 
     private var serverEmpty: Bool {
         list.map { $0.active.isEmpty && $0.shared.isEmpty && $0.recent.isEmpty } ?? true
@@ -23,10 +25,12 @@ struct ConnectionsView: View {
     var body: some View {
         NavigationView {
             List {
-                if account.loggedIn == true {
-                    Section {
+                Section {
+                    if account.loggedIn == true {
                         NavigationLink { AiView() } label: { AiTasksRow(pending: account.pendingApprovals) }
                     }
+                    Button { model.joining = JoinSheetItem(link: nil) } label: { JoinLinkRow() }
+                        .buttonStyle(.plain)
                 }
                 if sessions.open.isEmpty && serverEmpty {
                     Section {
@@ -66,6 +70,13 @@ struct ConnectionsView: View {
                                 ServerSessionRow(session: s, host: s.hostId.flatMap { hosts[$0] }) { attach(s) }
                                     .swipeActions {
                                         Button("common.terminate", role: .destructive) { terminating = s }
+                                        Button { share(s) } label: { Label("share.menu.share", systemImage: "person.badge.plus") }
+                                            .tint(Brand.blue)
+                                    }
+                                    .contextMenu {
+                                        Button { attach(s) } label: { Label("common.open", systemImage: "terminal") }
+                                        Button { share(s) } label: { Label("share.menu.share", systemImage: "person.badge.plus") }
+                                        Button(role: .destructive) { terminating = s } label: { Label("common.terminate", systemImage: "power") }
                                     }
                             }
                         }
@@ -73,7 +84,7 @@ struct ConnectionsView: View {
                     if let shared = list?.shared, !shared.isEmpty {
                         Section("sessions.section.shared") {
                             ForEach(shared, id: \.id) { s in
-                                ServerSessionRow(session: s, host: s.hostId.flatMap { hosts[$0] }) { attach(s) }
+                                ServerSessionRow(session: s, host: nil, shared: true) { attach(s, owner: false) }
                             }
                         }
                     }
@@ -120,6 +131,9 @@ struct ConnectionsView: View {
                     }
                 }
             } message: { Text("common.terminate_session.message") }
+            .sheet(item: $sharing) { item in
+                ShareSessionView(core: model.core, source: .server(sessionId: item.id), title: item.title)
+            }
             .confirmationDialog("connections.disconnect_all.title", isPresented: $closingAll, titleVisibility: .visible) {
                 Button("connections.disconnect_all", role: .destructive) { sessions.closeAll() }
             } message: { Text("connections.disconnect_all.message") }
@@ -134,9 +148,15 @@ struct ConnectionsView: View {
         }
     }
 
-    private func attach(_ s: ServerSession) {
+    private func attach(_ s: ServerSession, owner: Bool = true) {
         let label = s.title.isEmpty ? (hosts[s.hostId ?? ""]?.label ?? String(localized: "common.session")) : s.title
-        sessions.attach(sessionId: s.id, label: label, hostId: s.hostId)
+        // The host of a session shared with you is the owner's, not yours.
+        sessions.attach(sessionId: s.id, label: label, hostId: owner ? s.hostId : nil, owner: owner)
+    }
+
+    private func share(_ s: ServerSession) {
+        let label = s.title.isEmpty ? (hosts[s.hostId ?? ""]?.label ?? String(localized: "common.session")) : s.title
+        sharing = SharingItem(id: s.id, title: label)
     }
 
     private func load() async {
@@ -150,6 +170,32 @@ struct ConnectionsView: View {
         } catch {
             self.error = errorMessage(error)
         }
+    }
+}
+
+/// One of your server sessions in the invitations sheet.
+private struct SharingItem: Identifiable {
+    let id: String
+    let title: String
+}
+
+/// "Join with link": open a session someone shared with an invitation link.
+private struct JoinLinkRow: View {
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "link")
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(width: 40, height: 40)
+                .background(Brand.blue, in: RoundedRectangle(cornerRadius: 10.4, style: .continuous))
+            VStack(alignment: .leading, spacing: 2) {
+                Text("connections.join_link").font(.headline)
+                Text("connections.join_link.subtitle").font(.subheadline).foregroundColor(.secondary).lineLimit(1)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, 2)
+        .contentShape(Rectangle())
     }
 }
 
@@ -263,6 +309,8 @@ private struct OpenSessionRow: View {
 private struct ServerSessionRow: View {
     let session: ServerSession
     let host: SshHost?
+    /// Shared with you: who shares it and what you can do.
+    var shared = false
     let onTap: () -> Void
 
     var body: some View {
@@ -280,17 +328,33 @@ private struct ServerSessionRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(session.title.isEmpty ? (host?.label ?? String(localized: "common.session")) : session.title)
                         .font(.headline).foregroundColor(.primary).lineLimit(1)
+                    if shared {
+                        Text(verbatim: sharedText)
+                            .font(.subheadline).foregroundColor(.secondary).lineLimit(1)
+                    }
                     Text(text + " · " + relativeTime(session.createdAt)
-                         + (session.viewers.count > 1 ? " · " + String(localized: "sessions.viewers \(session.viewers.count)") : ""))
+                         + (people > 1 ? " · " + String(localized: "sessions.viewers \(people)") : ""))
                         .font(.caption).foregroundColor(.secondary).lineLimit(1)
                 }
                 Spacer(minLength: 0)
-                Image(systemName: "icloud").foregroundColor(.secondary)
+                Image(systemName: shared ? "person.2" : "icloud").foregroundColor(.secondary)
             }
             .padding(.vertical, 2)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    /// People inside (servers before 0.3 only report sockets).
+    private var people: Int {
+        session.participants.isEmpty ? session.viewers.count : session.participants.filter { !$0.waiting }.count
+    }
+
+    /// "Ana · Can request control".
+    private var sharedText: String {
+        let access = session.access.shareLabel
+        guard let owner = session.ownerName, !owner.isEmpty else { return access }
+        return String(localized: "sessions.shared_by \(owner)") + " · " + access
     }
 
     private var text: String {

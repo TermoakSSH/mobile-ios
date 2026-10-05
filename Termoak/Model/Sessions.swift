@@ -56,6 +56,36 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     /// In button mode: one finger moves the cursor (instead of scrolling).
     @Published private(set) var cursorByButton = false
 
+    // ----- Live sharing -----
+
+    /// Your input and resizes reach the terminal: always in a terminal of
+    /// this device; in a shared server session only for the owner and for
+    /// whoever has the keyboard (the driver). Nothing is sent otherwise.
+    @Published var canWrite = true
+    /// You own the session (you can share it, let people in, hand over the keyboard...).
+    @Published var isOwner = true
+    /// Your permission: guests with `control` can ask for the keyboard.
+    @Published var access: SessionAccess = .owner
+    /// People in the session (empty while it is not shared).
+    @Published var participants: [SessionParticipant] = []
+    /// Participant with the keyboard (`nil`: the owner).
+    @Published var driverId: String?
+    @Published var driverName: String?
+    /// Owner: people waiting to be let in or asking for the keyboard.
+    @Published var requests: [ShareRequest] = []
+    /// Guest: you asked for the keyboard (until the server says otherwise).
+    @Published var askedForControl = false
+    /// Guest: in the waiting room until the owner lets you in.
+    @Published var waiting: WaitingRoom?
+    /// The server sent you away for good: there is no reconnecting.
+    @Published var ended: ShareEnd?
+    /// Short message over the terminal ("You have control"...).
+    @Published private(set) var flash: String?
+    private var flashCount = 0
+    private var lastReadOnlyHint: Date?
+    /// Toasts of the whole app (the requests answered here are removed there).
+    weak var notices: ShareNotices?
+
     /// What is typed, to save the sent commands in the history.
     private let line = LineTracker()
     private(set) var keyBar: KeyBar!
@@ -121,6 +151,85 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     fileprivate func send(_ data: Data) {}
     fileprivate func resize(cols: UInt32, rows: UInt32) {}
 
+    // ----- Live sharing -----
+
+    /// Id of the session on the server: yours, shared with you or the relay
+    /// of a shared terminal of this device.
+    var shareSessionId: String? { nil }
+    /// Connected to the server right now (the owner's actions can be sent).
+    var shareAttached: Bool { false }
+    /// You.
+    var me: SessionParticipant? { participants.first(where: { $0.you }) }
+    /// Guest: waiting for the owner to give you the keyboard.
+    var requestedControl: Bool { askedForControl || (me?.requestedControl ?? false) }
+    /// The others in the session (not in the waiting room).
+    var others: [SessionParticipant] { participants.filter { !$0.you && !$0.waiting } }
+
+    /// Owner: lets someone in, hands over the keyboard, kicks someone out...
+    func act(_ action: OwnerAction) {
+        if let p = action.participantId {
+            requests.removeAll { $0.participant.id == p }
+            notices?.resolve(participantId: p)
+        }
+        ownerAction(action)
+    }
+
+    fileprivate func ownerAction(_ action: OwnerAction) {}
+    /// Guest: asks the owner for the keyboard.
+    func requestControl() {}
+    /// Guest: gives the keyboard back (or withdraws the request).
+    func releaseControl() {}
+    /// Guest who joined with a link: changes the name the others see.
+    func setGuestName(_ name: String) {}
+
+    /// Shows a short message over the terminal for a few seconds.
+    func showFlash(_ text: String) {
+        flash = text
+        flashCount += 1
+        let n = flashCount
+        Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 3_500_000_000)
+            guard let self, self.flashCount == n else { return }
+            self.flash = nil
+        }
+    }
+
+    /// Typing in a session where you cannot write: say why (not on every key).
+    private func readOnlyHint() {
+        if let last = lastReadOnlyHint, Date().timeIntervalSince(last) < 4 { return }
+        lastReadOnlyHint = Date()
+        showFlash(access == .control ? String(localized: "share.flash.read_only_request")
+                                     : String(localized: "share.flash.read_only"))
+    }
+
+    fileprivate func addRequest(_ kind: ShareRequest.Kind, _ p: SessionParticipant) {
+        guard !requests.contains(where: { $0.kind == kind && $0.participant.id == p.id }) else { return }
+        requests.append(ShareRequest(kind: kind, participant: p))
+    }
+
+    /// Owner: the pending requests are those of the people list (the waiting
+    /// room and who asked for the keyboard).
+    fileprivate func rebuildRequests() {
+        requests = participants.filter { $0.waiting }.map { ShareRequest(kind: .join, participant: $0) }
+            + participants.filter { $0.requestedControl && !$0.waiting }.map { ShareRequest(kind: .control, participant: $0) }
+    }
+
+    fileprivate func setPeople(_ people: [SessionParticipant], driver: String?) {
+        participants = people
+        driverId = driver
+        driverName = driver.flatMap { d in people.first(where: { $0.id == d })?.name }
+        askedForControl = false
+        if isOwner { rebuildRequests() }
+    }
+
+    fileprivate func clearSharing() {
+        participants = []
+        driverId = nil
+        driverName = nil
+        requests = []
+        askedForControl = false
+    }
+
     func applyAppearance(_ settings: AppSettings) {
         view.font = settings.terminalFont.ui(settings.fontSize)
         settings.terminalTheme.apply(to: view)
@@ -136,6 +245,11 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     /// is tracked (for the history) and sent.
     func input(_ data: Data) {
         guard state == .connected else { return }
+        // Read-only in a shared session: nothing is sent.
+        guard canWrite else {
+            readOnlyHint()
+            return
+        }
         trackLine(data)
         send(data)
         // Suggestions come when the shell shows what was typed (if it does not,
@@ -182,6 +296,10 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     /// directly (we know what it is) and the line starts over.
     func run(_ command: String) {
         guard state == .connected else { return }
+        guard canWrite else {
+            readOnlyHint()
+            return
+        }
         let normalized = command.replacingOccurrences(of: "\r\n", with: "\r").replacingOccurrences(of: "\n", with: "\r")
         send(Data((normalized + "\r").utf8))
         line.reset()
@@ -429,10 +547,13 @@ final class LocalTerminal: TerminalSession {
         start()
     }
 
-    /// Shares the terminal with the server for the copilot (if it is not
-    /// already) and returns the id of the relay session.
-    func share(title: String) async throws -> String {
-        if let c = shared { return c.sessionId() }
+    override var shareSessionId: String? { shared?.sessionId() }
+    override var shareAttached: Bool { shared != nil }
+
+    /// Shares the terminal with the server (relay) if it is not already.
+    /// `created`: this call started sharing it.
+    private func startRelay(title: String) async throws -> (shared: SharedTerminal, created: Bool) {
+        if let c = shared { return (c, false) }
         guard let h = handle else { throw ShareError.notConnected }
         let c = try await core.shareTerminal(terminal: h, title: title)
         // It was closed or reconnected meanwhile: that relay is no longer useful.
@@ -442,20 +563,102 @@ final class LocalTerminal: TerminalSession {
         }
         if let existing = shared {
             Task.detached { try? await c.stop() }
-            return existing.sessionId()
+            return (existing, false)
         }
         shared = c
-        sharedByCopilot = true
+        clearSharing()
         let (cols, rows) = size
-        Task.detached { try? await c.resize(cols: cols, rows: rows) }
-        return c.sessionId()
+        // Participants, requests and the keyboard of this relay.
+        let listener = RelayListener(session: self, sessionId: c.sessionId())
+        Task.detached {
+            try? await c.resize(cols: cols, rows: rows)
+            try? await c.setListener(listener: listener)
+        }
+        return (c, true)
     }
 
+    /// Shares the terminal with the server for the copilot (if it is not
+    /// already) and returns the id of the relay session.
+    func share(title: String) async throws -> String {
+        let r = try await startRelay(title: title)
+        if r.created { sharedByCopilot = true }
+        return r.shared.sessionId()
+    }
+
+    /// Shares the terminal so people can be invited (relay through the
+    /// server). It stays shared when the copilot stops.
+    func shareWithPeople() async throws -> SharedTerminal {
+        let r = try await startRelay(title: title ?? label)
+        sharedByCopilot = false
+        return r.shared
+    }
+
+    /// Stops sharing: the guests leave (the terminal stays open here). The
+    /// copilot shares it again by itself if it needs it.
     private func stopSharing() {
         guard let c = shared else { return }
         shared = nil
         sharedByCopilot = false
+        clearSharing()
         Task.detached { try? await c.stop() }
+    }
+
+    override fileprivate func ownerAction(_ action: OwnerAction) {
+        guard let c = shared else { return }
+        if case .stopSharing = action {
+            stopSharing()
+            return
+        }
+        Task { [weak self] in
+            do {
+                switch action {
+                case .allowJoin(let p): try await c.allowJoin(participantId: p)
+                case .denyJoin(let p): try await c.denyJoin(participantId: p)
+                case .grantControl(let p): try await c.grantControl(participantId: p)
+                case .denyControl(let p): try await c.denyControl(participantId: p)
+                case .takeControl: try await c.takeControl()
+                case .kick(let p, let block): try await c.kick(participantId: p, revokeShare: block)
+                case .stopSharing: break
+                }
+            } catch {
+                self?.showFlash(errorMessage(error))
+            }
+        }
+    }
+
+    /// What the server says about the shared terminal (`sessionId`: of which
+    /// relay, in case it was shared again since).
+    fileprivate func relayEvent(_ event: SharedTerminalEvent, sessionId: String) {
+        guard let c = shared, c.sessionId() == sessionId else { return }
+        switch event {
+        case .participants(let people, let driver):
+            setPeople(people, driver: driver)
+        case .control(let driver, let name):
+            let before = driverId
+            driverId = driver
+            driverName = name
+            if driver != nil, let name, !name.isEmpty {
+                showFlash(String(localized: "share.flash.has_control \(name)"))
+            } else if before != nil {
+                showFlash(String(localized: "share.flash.control_back_owner"))
+            }
+        case .resizeRequest:
+            // The terminal is here: it keeps the size of this screen.
+            break
+        case .joinRequest(let p):
+            addRequest(.join, p)
+        case .controlRequest(let p):
+            addRequest(.control, p)
+        case .reconnecting:
+            showFlash(String(localized: "share.flash.reconnecting"))
+        case .reconnected:
+            break
+        case .ended(let code):
+            shared = nil
+            sharedByCopilot = false
+            clearSharing()
+            if code != nil { showFlash(String(localized: "share.flash.sharing_ended")) }
+        }
     }
 
     /// Stopping or closing the copilot: the AI loses access to the terminal if
@@ -517,45 +720,113 @@ private final class LocalListener: TerminalListener, @unchecked Sendable {
     }
 }
 
+/// Receives what happens in a shared local terminal (background thread).
+private final class RelayListener: SharedTerminalListener, @unchecked Sendable {
+    private weak var session: LocalTerminal?
+    private let sessionId: String
+
+    init(session: LocalTerminal, sessionId: String) {
+        self.session = session
+        self.sessionId = sessionId
+    }
+
+    func onEvent(event: SharedTerminalEvent) {
+        let id = sessionId
+        DispatchQueue.main.async { [weak session] in session?.relayEvent(event, sessionId: id) }
+    }
+}
+
 // MARK: - Session that lives on the server
 
 /// Stays open even if the phone sleeps or loses coverage. On return, the
 /// server sends the whole scrollback.
 final class ServerTerminal: TerminalSession {
+    /// How a session is joined with an invitation link.
+    enum JoinMode {
+        /// Signed in to that server: you appear with your account.
+        case account
+        /// Without an account, with a display name (`nil`: "Guest N").
+        case guest(name: String?)
+    }
+
     private(set) var sessionId: String?
     private var handle: ServerTerminalHandle?
     private var task: Task<Void, Never>?
+    /// Joined with an invitation link (instead of attached by id).
+    private(set) var link: JoinLink?
+    private(set) var joinMode: JoinMode = .account
+    /// The first `hello` arrived (who you are is known).
+    private var greeted = false
+    /// Last size of the view: sent only while you can write.
+    private var lastSize: (cols: UInt32, rows: UInt32)?
 
     override var persistent: Bool { true }
+    override var shareSessionId: String? { sessionId }
+    override var shareAttached: Bool { handle != nil && greeted }
 
     /// With `sessionId` it attaches to an existing one; without it, it opens a new one on `hostId`.
-    init(core: TermoakCore, label: String, hostId: String?, sessionId: String?, settings: AppSettings) {
+    /// `owner`: it is yours (`false` for sessions shared with you); the
+    /// server confirms it on connecting.
+    init(core: TermoakCore, label: String, hostId: String?, sessionId: String?, owner: Bool = true, settings: AppSettings) {
         self.sessionId = sessionId
         super.init(core: core, label: label, hostId: hostId, settings: settings)
+        // Until the server says who you are, nothing is sent.
+        canWrite = false
+        isOwner = owner
+        access = owner ? .owner : .view
+    }
+
+    /// Joins a shared session with an invitation link.
+    convenience init(core: TermoakCore, link: JoinLink, mode: JoinMode, label: String, settings: AppSettings) {
+        self.init(core: core, label: label, hostId: nil, sessionId: nil, owner: false, settings: settings)
+        self.link = link
+        joinMode = mode
+    }
+
+    /// Joined as a guest without an account (can change the name).
+    var isLinkGuest: Bool {
+        if case .guest = joinMode, link != nil { return true }
+        return false
     }
 
     override func start() {
-        guard handle == nil, task == nil else { return }
-        state = .connecting(String(localized: "terminal.state.connecting_server"))
+        guard handle == nil, task == nil, ended == nil else { return }
+        if link != nil {
+            state = .connecting(String(localized: "share.state.joining"))
+        } else {
+            state = .connecting(String(localized: "terminal.state.connecting_server"))
+        }
+        greeted = false
         let listener = ServerListener(session: self)
         let (cols, rows) = size
         task = Task {
             defer { task = nil }
             do {
-                let id: String
-                if let sessionId {
-                    id = sessionId
-                } else if let hostId {
-                    id = try await core.openServerSession(hostId: hostId, cols: cols, rows: rows, title: label, record: nil).id
-                    sessionId = id
+                let h: ServerTerminalHandle
+                if let link {
+                    switch joinMode {
+                    case .account:
+                        h = try await core.joinLink(token: link.token, listener: listener)
+                    case .guest(let name):
+                        h = try await joinSharedSessionAs(serverUrl: link.server, token: link.token, name: name, listener: listener)
+                    }
+                    sessionId = h.sessionId()
                 } else {
-                    return
+                    let id: String
+                    if let sessionId {
+                        id = sessionId
+                    } else if let hostId {
+                        id = try await core.openServerSession(hostId: hostId, cols: cols, rows: rows, title: label, record: nil).id
+                        sessionId = id
+                    } else {
+                        return
+                    }
+                    h = try await core.attachServerSession(sessionId: id, listener: listener)
                 }
-                let h = try await core.attachServerSession(sessionId: id, listener: listener)
                 handle = h
-                let (c, r) = size
-                h.resize(cols: c, rows: r)
-                _ = view.becomeFirstResponder()
+                syncSeat()
+                sendSize()
+                if canWrite { _ = view.becomeFirstResponder() }
             } catch {
                 state = .closed(errorMessage(error))
             }
@@ -563,9 +834,12 @@ final class ServerTerminal: TerminalSession {
     }
 
     override func reconnect() {
+        // Sent away for good: there is nothing to reconnect to.
+        guard ended == nil else { return }
         disconnect()
         view.feed(text: "\u{1b}c")
         forgetLine()
+        waiting = nil
         start()
     }
 
@@ -579,6 +853,7 @@ final class ServerTerminal: TerminalSession {
 
     /// Terminates the session on the server (for everyone).
     func terminate() {
+        guard isOwner else { return }
         if let handle {
             handle.closeSession()
         } else if let sessionId {
@@ -587,20 +862,87 @@ final class ServerTerminal: TerminalSession {
     }
 
     override fileprivate func send(_ data: Data) {
+        guard canWrite else { return }
         handle?.write(data: data)
     }
 
     override fileprivate func resize(cols: UInt32, rows: UInt32) {
+        lastSize = (cols, rows)
+        // Read-only: the owner or the driver decide the size.
+        guard canWrite else { return }
         handle?.resize(cols: cols, rows: rows)
+    }
+
+    /// Sends the size of this screen (when you can write).
+    private func sendSize() {
+        guard canWrite, let h = handle else { return }
+        let (c, r) = lastSize ?? size
+        h.resize(cols: c, rows: r)
+    }
+
+    /// After the hello, the library knows best whether you can write.
+    private func syncSeat() {
+        guard greeted, let h = handle else { return }
+        canWrite = h.canWrite()
+        isOwner = h.isOwner()
+    }
+
+    // ----- Live sharing -----
+
+    override fileprivate func ownerAction(_ action: OwnerAction) {
+        guard isOwner, let h = handle else { return }
+        do {
+            switch action {
+            case .allowJoin(let p): try h.allowJoin(participantId: p)
+            case .denyJoin(let p): try h.denyJoin(participantId: p)
+            case .grantControl(let p): try h.grantControl(participantId: p)
+            case .denyControl(let p): try h.denyControl(participantId: p)
+            case .takeControl: h.takeControl()
+            case .kick(let p, let block): try h.kick(participantId: p, revokeShare: block)
+            case .stopSharing: h.stopSharing()
+            }
+        } catch {
+            showFlash(errorMessage(error))
+        }
+    }
+
+    override func requestControl() {
+        guard !isOwner, access == .control, let h = handle else { return }
+        h.requestControl()
+        askedForControl = true
+        showFlash(String(localized: "share.flash.control_requested"))
+    }
+
+    override func releaseControl() {
+        guard !isOwner, let h = handle else { return }
+        h.releaseControl()
+        askedForControl = false
+    }
+
+    override func setGuestName(_ name: String) {
+        let n = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard isLinkGuest, !n.isEmpty, let h = handle else { return }
+        h.setName(name: String(n.prefix(40)))
     }
 
     fileprivate func event(_ event: ServerTerminalEvent) {
         switch event {
         case .hello(let session):
+            greeted = true
+            waiting = nil
             title = session.title.isEmpty ? nil : session.title
+            access = session.access
+            isOwner = session.access == .owner
+            setPeople(session.participants, driver: session.driver)
+            // Servers before protocol 2 have no people list: `control` could type.
+            let me = session.participants.first(where: { $0.you })
+            canWrite = isOwner || (me?.isDriver ?? (session.participants.isEmpty && session.access == .control))
+            syncSeat()
+            if !canWrite { _ = view.resignFirstResponder() }
             apply(session.state)
+            sendSize()
         case .output(let data):
-            if state != .connected { state = .connected }
+            if state != .connected && waiting == nil { state = .connected }
             receive(data)
         case .resync:
             // The full scrollback comes next.
@@ -609,6 +951,38 @@ final class ServerTerminal: TerminalSession {
             apply(st)
         case .title(let t):
             title = t.isEmpty ? nil : t
+        case .participants(let people, let driver):
+            setPeople(people, driver: driver)
+        case .control(let driver, let name, let write):
+            let could = canWrite
+            let before = driverId
+            driverId = driver
+            driverName = name
+            canWrite = isOwner || write
+            if isOwner {
+                if driver != nil, let name, !name.isEmpty {
+                    showFlash(String(localized: "share.flash.has_control \(name)"))
+                } else if before != nil {
+                    showFlash(String(localized: "share.flash.control_back_owner"))
+                }
+            } else if canWrite && !could {
+                askedForControl = false
+                showFlash(String(localized: "share.flash.you_have_control"))
+                sendSize()
+            } else if !canWrite && could {
+                showFlash(String(localized: "share.flash.control_lost"))
+            }
+        case .waiting(_, let t, let owner):
+            waiting = WaitingRoom(title: t, owner: owner)
+            if !t.isEmpty { title = t }
+            state = .connecting(String(localized: "share.waiting.status"))
+        case .joinRequest(let p):
+            if isOwner { addRequest(.join, p) }
+        case .controlRequest(let p):
+            if isOwner { addRequest(.control, p) }
+        case .controlDenied:
+            askedForControl = false
+            showFlash(String(localized: "share.flash.control_denied"))
         case .prompt(let p):
             let h = handle
             if let fingerprint = p.fingerprint {
@@ -626,7 +1000,15 @@ final class ServerTerminal: TerminalSession {
         case .promptDone:
             prompt = nil
         case .error(let message):
-            state = .closed(message)
+            // Not fatal (an action that was not allowed): the connection stays.
+            showFlash(message)
+        case .ended(let code, let message):
+            let end = ShareEnd(code: code, message: message)
+            ended = end
+            waiting = nil
+            canWrite = false
+            requests = []
+            state = .closed(end.title)
         case .closed:
             if case .closed = state {} else { state = .closed(String(localized: "terminal.state.server_session_closed")) }
         default:
@@ -675,6 +1057,8 @@ final class Sessions: ObservableObject {
     }
     /// Your running server sessions (the notice on the home screen).
     @Published private(set) var onServer: [ServerSession] = []
+    /// Toasts about shared sessions over any screen.
+    let notices: ShareNotices
 
     /// One conversation with the AI per tab.
     private var copilots: [UUID: Copilot] = [:]
@@ -688,6 +1072,7 @@ final class Sessions: ObservableObject {
         self.core = core
         self.settings = settings
         self.tunnels = tunnels
+        notices = ShareNotices()
         // Tunnels reuse the connection of a terminal open to the host.
         tunnels.terminalConnection = { [weak self] hostId in
             self?.open.lazy.compactMap { ($0 as? LocalTerminal)?.connection(for: hostId) }.first
@@ -737,12 +1122,39 @@ final class Sessions: ObservableObject {
                               hostId: host.id, sessionId: nil, settings: settings))
     }
 
-    func attach(sessionId: String, label: String, hostId: String?) {
+    /// `owner`: one of yours (`false` for the ones shared with you).
+    func attach(sessionId: String, label: String, hostId: String?, owner: Bool = true) {
         if let existing = open.first(where: { ($0 as? ServerTerminal)?.sessionId == sessionId }) {
             show(existing.id)
             return
         }
-        add(ServerTerminal(core: core, label: label, hostId: hostId, sessionId: sessionId, settings: settings))
+        add(ServerTerminal(core: core, label: label, hostId: hostId, sessionId: sessionId, owner: owner, settings: settings))
+    }
+
+    /// Joins a shared session with an invitation link, in a new tab.
+    func join(_ link: JoinLink, mode: ServerTerminal.JoinMode, title: String) {
+        if let existing = open.first(where: { ($0 as? ServerTerminal)?.link == link && $0.ended == nil }) {
+            show(existing.id)
+            return
+        }
+        let label = title.isEmpty ? String(localized: "common.session") : title
+        add(ServerTerminal(core: core, link: link, mode: mode, label: label, settings: settings))
+    }
+
+    /// The tab of a session on the server (yours, shared with you or a
+    /// terminal of this device shared through it).
+    func tab(forSession id: String) -> TerminalSession? {
+        open.first(where: { $0.shareSessionId == id })
+    }
+
+    /// Opens (or goes to) the tab of one of your sessions or of one shared
+    /// with you, e.g. from a notice.
+    func openSession(_ id: String, title: String, owner: Bool) {
+        if let s = tab(forSession: id) {
+            show(s.id)
+        } else {
+            attach(sessionId: id, label: title.isEmpty ? String(localized: "common.session") : title, hostId: nil, owner: owner)
+        }
     }
 
     private func add(_ s: TerminalSession) {
@@ -755,6 +1167,7 @@ final class Sessions: ObservableObject {
 
     private func prepare(_ s: TerminalSession) {
         s.onOpenPanel = { [weak self] in self?.quickPanelOpen = true }
+        s.notices = notices
         if let local = s as? LocalTerminal {
             // When it connects, the host's automatic tunnels start.
             local.onConnected = { [weak self] hostId, connection in

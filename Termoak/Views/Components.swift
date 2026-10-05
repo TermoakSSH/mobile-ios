@@ -1,5 +1,6 @@
 import TermoakKit
 import SwiftUI
+import UIKit
 
 enum Brand {
     static let blue = Color(red: 0x4F / 255, green: 0x7C / 255, blue: 0xFF / 255)
@@ -237,4 +238,34 @@ func relativeTime(_ date: Date) -> String {
     let f = RelativeDateTimeFormatter()
     f.unitsStyle = .short
     return f.localizedString(for: date, relativeTo: Date())
+}
+
+/// Round avatar of a person in a shared session: their initials on a color
+/// that is always the same for the same name.
+struct ParticipantAvatar: View {
+    let name: String
+    var size: CGFloat = 36
+
+    var body: some View {
+        let initials = name.split(whereSeparator: { $0 == " " }).prefix(2)
+            .compactMap { $0.first.map { String($0).uppercased() } }.joined()
+        Circle()
+            .fill(paletteColor(name))
+            .frame(width: size, height: size)
+            .overlay(Text(verbatim: initials.isEmpty ? "?" : initials)
+                .font(.system(size: size * 0.38, weight: .semibold, design: .rounded))
+                .foregroundColor(.white))
+            .accessibilityHidden(true)
+    }
+}
+
+/// System share sheet for links and text.
+struct ActivityView: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ vc: UIActivityViewController, context: Context) {}
 }

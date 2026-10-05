@@ -30,6 +30,9 @@ final class Account: ObservableObject {
     let vaultChanged = PassthroughSubject<Void, Never>()
     /// Every event of an AI task (to follow it live in the copilot).
     let aiEvents = PassthroughSubject<AiEvent, Never>()
+    /// Notices about sessions: shared with you, someone wants to join or asks
+    /// for the keyboard of one of yours... (toasts over any screen).
+    let sessionNotices = PassthroughSubject<ShareNotice, Never>()
 
     private var subscription: EventSubscription?
     private var eventsTask: Task<Void, Never>?
@@ -154,6 +157,15 @@ final class Account: ObservableObject {
 
     // ----- Live events -----
 
+    // TODO(push): the iOS app has no APNs plumbing yet (no `aps-environment`
+    // entitlement, no app delegate asking for a device token), so join and
+    // control requests only reach the owner through this WebSocket while the
+    // app is open. When it is added: register the token with
+    // `core.registerPushToken(platform: .apns, token: hex, sandbox: …)` after
+    // logging in, and open the session of a `join_request` /
+    // `control_request` / `session_shared` push (`session_id`) with
+    // `Sessions.openSession(_:title:owner:)`.
+
     private func startEvents() {
         guard eventsTask == nil else { return }
         eventsTask = Task { [weak self] in
@@ -206,6 +218,9 @@ final class Account: ObservableObject {
             Task { await refreshApprovals() }
             changes.send(type)
         case "session":
+            if let notice = event["notice"] as? [String: Any], let n = ShareNotice(notice) {
+                sessionNotices.send(n)
+            }
             changes.send(type)
         default:
             break
