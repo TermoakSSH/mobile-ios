@@ -6768,6 +6768,126 @@
         }
       }
     },
+    "share.change_time": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change the time"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar el tiempo"
+          }
+        }
+      }
+    },
+    "share.control.how_long": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For how long?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Durante cuánto tiempo?"
+          }
+        }
+      }
+    },
+    "share.control.minutes %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld min"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld min"
+          }
+        }
+      }
+    },
+    "share.control.until_taken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Until I take it back"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hasta que lo recupere"
+          }
+        }
+      }
+    },
+    "share.control_limit %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Limit automatic control to %lld minute"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Limit automatic control to %lld minutes"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Limitar el control automático a %lld minuto"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Limitar el control automático a %lld minutos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "share.control_limit.time": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time limit"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Límite de tiempo"
+          }
+        }
+      }
+    },
     "share.create_link": {
       "localizations": {
         "en": {
@@ -7256,6 +7376,54 @@
         }
       }
     },
+    "share.flash.control_expired_owner %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@'s time with control is up: you have control again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se acabó el tiempo de %@ con el control: vuelves a tenerlo"
+          }
+        }
+      }
+    },
+    "share.flash.control_expired_owner_anonymous": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The time with control is up: you have control again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se acabó el tiempo con el control: vuelves a tenerlo"
+          }
+        }
+      }
+    },
+    "share.flash.control_expired_you": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your time with control is up: the owner has it again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se acabó tu tiempo con el control: lo vuelve a tener el dueño"
+          }
+        }
+      }
+    },
     "share.flash.control_lost": {
       "localizations": {
         "en": {
@@ -7396,6 +7564,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dar el control"
+          }
+        }
+      }
+    },
+    "share.give_control.title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Give control to %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dar el control a %@"
           }
         }
       }
@@ -8168,6 +8352,22 @@
         }
       }
     },
+    "share.row.auto_grant_limited %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic control for %lld min"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Control automático durante %lld min"
+          }
+        }
+      }
+    },
     "share.someone": {
       "localizations": {
         "en": {
@@ -8324,6 +8524,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Equipo"
+          }
+        }
+      }
+    },
+    "share.time_left %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ left"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "quedan %@"
           }
         }
       }

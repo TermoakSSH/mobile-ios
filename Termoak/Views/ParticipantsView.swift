@@ -4,6 +4,48 @@ import SwiftUI
 // What a shared session shows in the terminal: the keyboard bar, the
 // owner's requests, the waiting room, the end screens and the people.
 
+/// "4:59 left" for a timed grant of the keyboard (counts down by itself).
+struct TimeLeftText: View {
+    let until: Date
+
+    var body: some View {
+        TimelineView(.periodic(from: Date(), by: 1)) { context in
+            Text(String(localized: "share.time_left \(formatTimeLeft(until.timeIntervalSince(context.date)))"))
+                .monospacedDigit()
+        }
+    }
+}
+
+/// "4:59", "1:02:03".
+func formatTimeLeft(_ seconds: TimeInterval) -> String {
+    let total = max(0, Int(seconds.rounded(.up)))
+    let h = total / 3600, m = total % 3600 / 60, s = total % 60
+    return h > 0 ? String(format: "%d:%02d:%02d", h, m, s) : String(format: "%d:%02d", m, s)
+}
+
+/// The choices of "Give control" (how long), as buttons of a menu or dialog.
+struct ControlDurationButtons: View {
+    let onPick: (UInt32?) -> Void
+
+    var body: some View {
+        ForEach(controlDurations, id: \.self) { m in
+            Button(controlDurationTitle(m)) { onPick(m) }
+        }
+    }
+}
+
+extension View {
+    /// "Give control" to `name`: asks for how long first.
+    func giveControlDialog(_ name: String, isPresented: Binding<Bool>, onPick: @escaping (UInt32?) -> Void) -> some View {
+        confirmationDialog(Text(String(localized: "share.give_control.title \(name)")), isPresented: isPresented,
+                           titleVisibility: .visible) {
+            ControlDurationButtons(onPick: onPick)
+        } message: {
+            Text("share.control.how_long")
+        }
+    }
+}
+
 /// Over the terminal: who has the keyboard (with Request / Release / Take
 /// back), the requests waiting for the owner and short messages.
 struct ShareBanners: View {
@@ -58,6 +100,9 @@ struct ShareBanners: View {
                 if session.canWrite {
                     Image(systemName: "keyboard.fill").foregroundColor(Brand.green)
                     Text("share.bar.you_have_control").font(.caption.weight(.semibold))
+                    if let until = session.driverUntil {
+                        TimeLeftText(until: until).font(.caption2).foregroundColor(.secondary)
+                    }
                     Button("share.release_control") { session.releaseControl() }
                         .font(.caption.weight(.semibold))
                 } else {
@@ -65,8 +110,14 @@ struct ShareBanners: View {
                     VStack(alignment: .leading, spacing: 0) {
                         Text("share.bar.view_only").font(.caption.weight(.semibold))
                         if let d = session.driverName, !d.isEmpty {
-                            Text(String(localized: "share.driver.someone \(d)"))
-                                .font(.caption2).foregroundColor(.secondary).lineLimit(1)
+                            HStack(spacing: 4) {
+                                Text(String(localized: "share.driver.someone \(d)")).lineLimit(1)
+                                if let until = session.driverUntil {
+                                    Text(verbatim: "·")
+                                    TimeLeftText(until: until)
+                                }
+                            }
+                            .font(.caption2).foregroundColor(.secondary)
                         }
                     }
                     if session.access == .control {
@@ -86,6 +137,9 @@ struct ShareBanners: View {
                 Image(systemName: "keyboard").foregroundColor(Brand.amber)
                 Text(String(localized: "share.driver.someone \(session.driverName ?? String(localized: "share.someone"))"))
                     .font(.caption.weight(.semibold)).lineLimit(1)
+                if let until = session.driverUntil {
+                    TimeLeftText(until: until).font(.caption2).foregroundColor(.secondary)
+                }
                 Button("share.take_back") { session.act(.takeControl) }
                     .font(.caption.weight(.semibold))
             }
@@ -105,6 +159,7 @@ private struct RequestBanner: View {
     let request: ShareRequest
     let session: TerminalSession
     let background: Color
+    @State private var choosingTime = false
 
     var body: some View {
         HStack(spacing: 10) {
@@ -120,7 +175,11 @@ private struct RequestBanner: View {
             .lineLimit(2)
             Spacer(minLength: 4)
             Button {
-                session.act(request.kind == .join ? OwnerAction.allowJoin(request.participant.id) : .grantControl(request.participant.id))
+                if request.kind == .join {
+                    session.act(.allowJoin(request.participant.id))
+                } else {
+                    choosingTime = true
+                }
             } label: {
                 if request.kind == .join { Text("share.allow") } else { Text("share.give_control") }
             }
@@ -135,6 +194,9 @@ private struct RequestBanner: View {
         .padding(.horizontal, 10).padding(.vertical, 8)
         .background(background.opacity(0.97), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Brand.amber.opacity(0.5)))
+        .giveControlDialog(request.participant.name, isPresented: $choosingTime) { minutes in
+            session.act(.grantControl(request.participant.id, minutes: minutes))
+        }
     }
 }
 
@@ -270,7 +332,13 @@ struct ParticipantsSheet: View {
                     Text("share.participants.inside")
                 } footer: {
                     if let d = session.driverName, session.driverId != nil {
-                        Text(String(localized: "share.driver.someone \(d)"))
+                        HStack(spacing: 4) {
+                            Text(String(localized: "share.driver.someone \(d)"))
+                            if let until = session.driverUntil {
+                                Text(verbatim: "·")
+                                TimeLeftText(until: until)
+                            }
+                        }
                     } else if !session.participants.isEmpty {
                         Text("share.driver.owner")
                     }
@@ -351,6 +419,9 @@ struct ParticipantsSheet: View {
                 Chip(String(localized: "share.participants.requested"), Brand.amber)
             }
             if p.isDriver {
+                if let until = session.driverUntil, session.driverId == p.id {
+                    TimeLeftText(until: until).font(.caption).foregroundColor(Brand.green)
+                }
                 Image(systemName: "keyboard.fill")
                     .foregroundColor(Brand.green)
                     .accessibilityLabel(Text("share.participants.driver"))
@@ -365,13 +436,15 @@ struct ParticipantsSheet: View {
     private func ownerMenu(_ p: SessionParticipant) -> some View {
         Menu {
             if p.requestedControl {
-                Button { session.act(.grantControl(p.id)) } label: { Label("share.give_control", systemImage: "keyboard") }
+                giveControlMenu(p, title: "share.give_control", icon: "keyboard")
                 Button { session.act(.denyControl(p.id)) } label: { Label("share.deny_request", systemImage: "hand.raised.slash") }
             } else if p.access == .control && !p.isDriver {
-                Button { session.act(.grantControl(p.id)) } label: { Label("share.give_control", systemImage: "keyboard") }
+                giveControlMenu(p, title: "share.give_control", icon: "keyboard")
             }
             if p.isDriver {
                 Button { session.act(.takeControl) } label: { Label("share.take_back", systemImage: "arrow.uturn.backward") }
+                // Granting it again changes the time.
+                giveControlMenu(p, title: "share.change_time", icon: "timer")
             }
             Divider()
             Button(role: .destructive) { session.act(.kick(p.id, block: false)) } label: {
@@ -384,6 +457,15 @@ struct ParticipantsSheet: View {
             Image(systemName: "ellipsis.circle").font(.title3)
         }
         .accessibilityLabel(Text("share.participants.actions"))
+    }
+
+    /// "Give control" (or "Change the time"): a submenu with how long.
+    private func giveControlMenu(_ p: SessionParticipant, title: LocalizedStringKey, icon: String) -> some View {
+        Menu {
+            ControlDurationButtons { minutes in session.act(.grantControl(p.id, minutes: minutes)) }
+        } label: {
+            Label(title, systemImage: icon)
+        }
     }
 
     /// "Can request control · Guest · 2 devices · 5 min ago".
@@ -422,6 +504,7 @@ private struct ShareToastRow: View {
     let toast: ShareToast
     let dismiss: () -> Void
     @EnvironmentObject private var sessions: Sessions
+    @State private var choosingTime = false
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -458,12 +541,21 @@ private struct ShareToastRow: View {
         if toast.kind != .shared, let p = toast.participantId,
            let tab = sessions.tab(forSession: toast.sessionId), tab.shareAttached, tab.isOwner {
             Button {
-                tab.act(toast.kind == .join ? OwnerAction.allowJoin(p) : .grantControl(p))
-                dismiss()
+                if toast.kind == .join {
+                    tab.act(.allowJoin(p))
+                    dismiss()
+                } else {
+                    choosingTime = true
+                }
             } label: {
                 if toast.kind == .join { Text("share.allow") } else { Text("share.give_control") }
             }
             .buttonStyle(.borderedProminent)
+            .giveControlDialog(toast.name.isEmpty ? String(localized: "share.someone") : toast.name,
+                               isPresented: $choosingTime) { minutes in
+                tab.act(.grantControl(p, minutes: minutes))
+                dismiss()
+            }
             Button("share.deny") {
                 tab.act(toast.kind == .join ? OwnerAction.denyJoin(p) : .denyControl(p))
                 dismiss()

@@ -29,6 +29,9 @@ struct ShareSessionView: View {
     @State private var teamId: String?
     @State private var control = false
     @State private var autoGrant = false
+    /// "Limit automatic control to N minutes".
+    @State private var limitControl = false
+    @State private var controlLimit: UInt32 = 15
     @State private var expiry: ShareExpiry = .day
     /// "Ask me before letting people in": on for links unless changed by hand.
     @State private var askFirst = true
@@ -181,6 +184,9 @@ struct ShareSessionView: View {
             }
             if control {
                 Toggle("share.auto_grant", isOn: $autoGrant)
+                if autoGrant {
+                    ControlLimitRows(on: $limitControl, minutes: $controlLimit)
+                }
             }
             Toggle("share.ask_first", isOn: Binding(get: { askFirst }, set: { askFirst = $0; askFirstTouched = true }))
             Picker("share.expiry", selection: $expiry) {
@@ -284,7 +290,8 @@ struct ShareSessionView: View {
             t = .team(teamId: teamId)
         }
         let options = ShareOptions(control: control, expiresInMinutes: expiry.minutes,
-                                   requireApproval: askFirst, autoGrant: control && autoGrant)
+                                   requireApproval: askFirst, autoGrant: control && autoGrant,
+                                   controlMinutes: control && autoGrant && limitControl ? controlLimit : nil)
         let kind = target
         let who = kind == .team ? teams.first(where: { $0.id == teamId })?.name ?? "" : email.trimmingCharacters(in: .whitespaces)
         working = true
@@ -393,8 +400,31 @@ private struct ShareRow: View {
             parts.append(String(localized: "share.expires \(relativeTime(e))"))
         }
         if share.requireApproval { parts.append(String(localized: "share.row.asks_first")) }
-        if share.control && share.autoGrant { parts.append(String(localized: "share.row.auto_grant")) }
+        if share.control && share.autoGrant {
+            if let m = share.controlMinutes {
+                parts.append(String(localized: "share.row.auto_grant_limited \(Int(m))"))
+            } else {
+                parts.append(String(localized: "share.row.auto_grant"))
+            }
+        }
         return parts.joined(separator: " · ")
+    }
+}
+
+/// "Limit automatic control to N minutes" and, when on, how many.
+private struct ControlLimitRows: View {
+    @Binding var on: Bool
+    @Binding var minutes: UInt32
+
+    var body: some View {
+        Toggle(String(localized: "share.control_limit \(Int(minutes))"), isOn: $on)
+        if on {
+            Picker("share.control_limit.time", selection: $minutes) {
+                ForEach(controlLimits, id: \.self) { m in
+                    Text(controlDurationTitle(m)).tag(m)
+                }
+            }
+        }
     }
 }
 
@@ -407,6 +437,8 @@ private struct ShareEditView: View {
     @State private var control = false
     @State private var askFirst = false
     @State private var autoGrant = false
+    @State private var limitControl = false
+    @State private var controlLimit: UInt32 = 15
     /// `nil`: keep the current expiry.
     @State private var expiry: ShareExpiry?
     @State private var working = false
@@ -431,6 +463,9 @@ private struct ShareEditView: View {
                     }
                     if control {
                         Toggle("share.auto_grant", isOn: $autoGrant)
+                        if autoGrant {
+                            ControlLimitRows(on: $limitControl, minutes: $controlLimit)
+                        }
                     }
                     Toggle("share.ask_first", isOn: $askFirst)
                     Picker("share.expiry", selection: $expiry) {
@@ -469,17 +504,23 @@ private struct ShareEditView: View {
                 control = share.control
                 askFirst = share.requireApproval
                 autoGrant = share.autoGrant
+                limitControl = share.controlMinutes != nil
+                controlLimit = share.controlMinutes ?? 15
             }
         }
     }
 
     private func apply() {
+        // Without automatic grants the limit goes too.
+        let limit: UInt32? = control && autoGrant && limitControl ? controlLimit : nil
         let changes = ShareChanges(
             control: control != share.control ? control : nil,
             expiresInMinutes: expiry?.minutes,
             noExpiry: expiry == .never,
             requireApproval: askFirst != share.requireApproval ? askFirst : nil,
-            autoGrant: (control && autoGrant) != share.autoGrant ? (control && autoGrant) : nil
+            autoGrant: (control && autoGrant) != share.autoGrant ? (control && autoGrant) : nil,
+            controlMinutes: limit != share.controlMinutes ? limit : nil,
+            noControlLimit: limit == nil && share.controlMinutes != nil
         )
         working = true
         error = nil

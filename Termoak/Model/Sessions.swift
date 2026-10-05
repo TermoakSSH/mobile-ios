@@ -71,6 +71,8 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     /// Participant with the keyboard (`nil`: the owner).
     @Published var driverId: String?
     @Published var driverName: String?
+    /// When the driver's timed grant ends (`nil`: until it is given back or taken).
+    @Published var driverUntil: Date?
     /// Owner: people waiting to be let in or asking for the keyboard.
     @Published var requests: [ShareRequest] = []
     /// Guest: you asked for the keyboard (until the server says otherwise).
@@ -216,6 +218,8 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
 
     fileprivate func setPeople(_ people: [SessionParticipant], driver: String?) {
         participants = people
+        // Another driver: the right time arrives with its `control`.
+        if driver != driverId { driverUntil = nil }
         driverId = driver
         driverName = driver.flatMap { d in people.first(where: { $0.id == d })?.name }
         askedForControl = false
@@ -226,8 +230,25 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         participants = []
         driverId = nil
         driverName = nil
+        driverUntil = nil
         requests = []
         askedForControl = false
+    }
+
+    /// A timed grant that has (just about) run out: `controlExpired` tells it.
+    fileprivate var grantTimeUp: Bool {
+        guard let until = driverUntil else { return false }
+        return Date() >= until.addingTimeInterval(-2)
+    }
+
+    /// Owner: the timed grant of `participantId` ended and you have the keyboard again.
+    fileprivate func controlExpiredForOwner(_ participantId: String?) {
+        let name = participantId.flatMap { p in participants.first(where: { $0.id == p })?.name }
+        if let name, !name.isEmpty {
+            showFlash(String(localized: "share.flash.control_expired_owner \(name)"))
+        } else {
+            showFlash(String(localized: "share.flash.control_expired_owner_anonymous"))
+        }
     }
 
     func applyAppearance(_ settings: AppSettings) {
@@ -614,7 +635,7 @@ final class LocalTerminal: TerminalSession {
                 switch action {
                 case .allowJoin(let p): try await c.allowJoin(participantId: p)
                 case .denyJoin(let p): try await c.denyJoin(participantId: p)
-                case .grantControl(let p): try await c.grantControl(participantId: p)
+                case .grantControl(let p, let minutes): try await c.grantControl(participantId: p, minutes: minutes)
                 case .denyControl(let p): try await c.denyControl(participantId: p)
                 case .takeControl: try await c.takeControl()
                 case .kick(let p, let block): try await c.kick(participantId: p, revokeShare: block)
@@ -633,15 +654,19 @@ final class LocalTerminal: TerminalSession {
         switch event {
         case .participants(let people, let driver):
             setPeople(people, driver: driver)
-        case .control(let driver, let name):
+        case .control(let driver, let name, let until):
             let before = driverId
+            let timeUp = grantTimeUp
             driverId = driver
             driverName = name
+            driverUntil = until.map(dateFromMillis)
             if driver != nil, let name, !name.isEmpty {
                 showFlash(String(localized: "share.flash.has_control \(name)"))
-            } else if before != nil {
+            } else if before != nil && !timeUp {
                 showFlash(String(localized: "share.flash.control_back_owner"))
             }
+        case .controlExpired(let p):
+            controlExpiredForOwner(p)
         case .resizeRequest:
             // The terminal is here: it keeps the size of this screen.
             break
@@ -895,7 +920,7 @@ final class ServerTerminal: TerminalSession {
             switch action {
             case .allowJoin(let p): try h.allowJoin(participantId: p)
             case .denyJoin(let p): try h.denyJoin(participantId: p)
-            case .grantControl(let p): try h.grantControl(participantId: p)
+            case .grantControl(let p, let minutes): try h.grantControl(participantId: p, minutes: minutes)
             case .denyControl(let p): try h.denyControl(participantId: p)
             case .takeControl: h.takeControl()
             case .kick(let p, let block): try h.kick(participantId: p, revokeShare: block)
@@ -934,6 +959,7 @@ final class ServerTerminal: TerminalSession {
             access = session.access
             isOwner = session.access == .owner
             setPeople(session.participants, driver: session.driver)
+            driverUntil = session.driverUntil.map(dateFromMillis)
             // Servers before protocol 2 have no people list: `control` could type.
             let me = session.participants.first(where: { $0.you })
             canWrite = isOwner || (me?.isDriver ?? (session.participants.isEmpty && session.access == .control))
@@ -953,24 +979,33 @@ final class ServerTerminal: TerminalSession {
             title = t.isEmpty ? nil : t
         case .participants(let people, let driver):
             setPeople(people, driver: driver)
-        case .control(let driver, let name, let write):
+        case .control(let driver, let name, let write, let until):
             let could = canWrite
             let before = driverId
+            // A timed grant that ran out says so itself (`controlExpired`).
+            let timeUp = grantTimeUp
             driverId = driver
             driverName = name
+            driverUntil = until.map(dateFromMillis)
             canWrite = isOwner || write
             if isOwner {
                 if driver != nil, let name, !name.isEmpty {
                     showFlash(String(localized: "share.flash.has_control \(name)"))
-                } else if before != nil {
+                } else if before != nil && !timeUp {
                     showFlash(String(localized: "share.flash.control_back_owner"))
                 }
             } else if canWrite && !could {
                 askedForControl = false
                 showFlash(String(localized: "share.flash.you_have_control"))
                 sendSize()
-            } else if !canWrite && could {
+            } else if !canWrite && could && !timeUp {
                 showFlash(String(localized: "share.flash.control_lost"))
+            }
+        case .controlExpired(let p):
+            if isOwner {
+                controlExpiredForOwner(p)
+            } else {
+                showFlash(String(localized: "share.flash.control_expired_you"))
             }
         case .waiting(_, let t, let owner):
             waiting = WaitingRoom(title: t, owner: owner)

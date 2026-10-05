@@ -70,7 +70,8 @@ struct ShareRequest: Identifiable, Equatable {
 enum OwnerAction {
     case allowJoin(String)
     case denyJoin(String)
-    case grantControl(String)
+    /// For `minutes` (1-240), or until it is given back or taken (`nil`).
+    case grantControl(String, minutes: UInt32? = nil)
     case denyControl(String)
     case takeControl
     /// `block`: also revokes the invitation they used.
@@ -80,11 +81,29 @@ enum OwnerAction {
     /// The participant it is about.
     var participantId: String? {
         switch self {
-        case .allowJoin(let p), .denyJoin(let p), .grantControl(let p), .denyControl(let p): return p
+        case .allowJoin(let p), .denyJoin(let p), .grantControl(let p, _), .denyControl(let p): return p
         case .kick(let p, _): return p
         case .takeControl, .stopSharing: return nil
         }
     }
+}
+
+/// How long "Give control" hands the keyboard over, in minutes (`nil`:
+/// until you take it back).
+let controlDurations: [UInt32?] = [nil, 5, 15, 30, 60]
+
+/// Time limits of automatic grants of the keyboard (share option), in minutes.
+let controlLimits: [UInt32] = [5, 15, 30, 60, 120, 240]
+
+/// "Until I take it back", "15 min".
+func controlDurationTitle(_ minutes: UInt32?) -> String {
+    guard let minutes else { return String(localized: "share.control.until_taken") }
+    return String(localized: "share.control.minutes \(Int(minutes))")
+}
+
+/// Milliseconds since the epoch (as the library gives them) to a date.
+func dateFromMillis(_ ms: Int64) -> Date {
+    Date(timeIntervalSince1970: TimeInterval(ms) / 1000)
 }
 
 // MARK: - Invitations
