@@ -92,7 +92,7 @@ struct KeychainView: View {
     }
 }
 
-private struct GenerateKeyView: View {
+struct GenerateKeyView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Account
     @Environment(\.dismiss) private var dismiss
@@ -146,7 +146,7 @@ private struct GenerateKeyView: View {
     }
 }
 
-private struct ImportKeyView: View {
+struct ImportKeyView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Account
     @Environment(\.dismiss) private var dismiss
@@ -207,8 +207,9 @@ struct SnippetsView: View {
                 EmptyState(
                     icon: "chevron.left.forwardslash.chevron.right",
                     title: String(localized: "snippets.empty.title"),
-                    text: String(localized: "snippets.empty.text")
-                )
+                    text: String(localized: "snippets.empty.text"),
+                    action: String(localized: "snippets.editor.new")
+                ) { editing = SnippetEdit(snippet: Snippet(name: "", script: "")) }
                 .listRowBackground(Color.clear)
             }
             ForEach(list, id: \.id) { sn in

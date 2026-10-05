@@ -1,25 +1,61 @@
 import TermoakKit
 import SwiftUI
 
-struct SessionsView: View {
+/// Connections tab: the terminals open on this device (tap to go back to
+/// one, swipe to disconnect it) and, with an account, the AI tasks and the
+/// sessions that live on the server.
+struct ConnectionsView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Account
     @EnvironmentObject private var sessions: Sessions
+    @EnvironmentObject private var router: HomeRouter
 
     @State private var list: ServerSessionList?
-    @State private var loading = false
     @State private var terminating: ServerSession?
+    @State private var closingAll = false
     @State private var error: String?
     @State private var hosts: [String: SshHost] = [:]
+
+    private var serverEmpty: Bool {
+        list.map { $0.active.isEmpty && $0.shared.isEmpty && $0.recent.isEmpty } ?? true
+    }
 
     var body: some View {
         NavigationView {
             List {
+                if account.loggedIn == true {
+                    Section {
+                        NavigationLink { AiView() } label: { AiTasksRow(pending: account.pendingApprovals) }
+                    }
+                }
+                if sessions.open.isEmpty && serverEmpty {
+                    Section {
+                        EmptyState(
+                            icon: "terminal",
+                            title: String(localized: "sessions.empty.title"),
+                            text: account.loggedIn == true
+                                ? String(localized: "sessions.empty.text_account")
+                                : String(localized: "sessions.empty.text_local"),
+                            action: String(localized: "connections.empty.action")
+                        ) { router.tab = .vault }
+                        .listRowBackground(Color.clear)
+                    }
+                }
                 if !sessions.open.isEmpty {
                     Section("sessions.section.open_here") {
                         ForEach(sessions.open) { s in
-                            OpenSessionRow(session: s) { sessions.show(s.id) }
-                            .swipeActions { Button("common.close", role: .destructive) { sessions.close(s.id) } }
+                            OpenSessionRow(session: s, host: s.hostId.flatMap { hosts[$0] }) { sessions.show(s.id) }
+                                .swipeActions {
+                                    Button(role: .destructive) { sessions.close(s.id) } label: {
+                                        Label("connections.disconnect", systemImage: "xmark.circle")
+                                    }
+                                }
+                                .contextMenu {
+                                    Button { sessions.show(s.id) } label: { Label("common.open", systemImage: "terminal") }
+                                    Button(role: .destructive) { sessions.close(s.id) } label: {
+                                        Label("connections.disconnect", systemImage: "xmark.circle")
+                                    }
+                                }
                         }
                     }
                 }
@@ -27,7 +63,7 @@ struct SessionsView: View {
                     if let active = list?.active, !active.isEmpty {
                         Section("sessions.section.on_server") {
                             ForEach(active, id: \.id) { s in
-                                ServerSessionRow(session: s, host: hosts[s.hostId ?? ""]?.label) { attach(s) }
+                                ServerSessionRow(session: s, host: s.hostId.flatMap { hosts[$0] }) { attach(s) }
                                     .swipeActions {
                                         Button("common.terminate", role: .destructive) { terminating = s }
                                     }
@@ -37,7 +73,7 @@ struct SessionsView: View {
                     if let shared = list?.shared, !shared.isEmpty {
                         Section("sessions.section.shared") {
                             ForEach(shared, id: \.id) { s in
-                                ServerSessionRow(session: s, host: hosts[s.hostId ?? ""]?.label) { attach(s) }
+                                ServerSessionRow(session: s, host: s.hostId.flatMap { hosts[$0] }) { attach(s) }
                             }
                         }
                     }
@@ -56,20 +92,21 @@ struct SessionsView: View {
                 }
             }
             .listStyle(.insetGrouped)
-            .overlay {
-                if sessions.open.isEmpty && (list.map { $0.active.isEmpty && $0.shared.isEmpty && $0.recent.isEmpty } ?? true) {
-                    EmptyState(
-                        icon: "terminal",
-                        title: String(localized: "sessions.empty.title"),
-                        text: account.loggedIn == true
-                            ? String(localized: "sessions.empty.text_account")
-                            : String(localized: "sessions.empty.text_local")
-                    )
+            .refreshable { await load() }
+            .navigationTitle("nav.connections")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    if !sessions.open.isEmpty {
+                        Menu {
+                            Button(role: .destructive) { closingAll = true } label: {
+                                Label("connections.disconnect_all", systemImage: "xmark.circle")
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
+                        }
+                    }
                 }
             }
-            .refreshable { await load() }
-            .navigationTitle("nav.sessions")
-            .toolbar { MenuButton() }
             .alert("common.error", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
                 Button("common.ok", role: .cancel) {}
             } message: { Text(error ?? "") }
@@ -83,11 +120,17 @@ struct SessionsView: View {
                     }
                 }
             } message: { Text("common.terminate_session.message") }
+            .confirmationDialog("connections.disconnect_all.title", isPresented: $closingAll, titleVisibility: .visible) {
+                Button("connections.disconnect_all", role: .destructive) { sessions.closeAll() }
+            } message: { Text("connections.disconnect_all.message") }
         }
         .navigationViewStyle(.stack)
         .task { await load() }
         .onReceive(account.changes) { kind in
             if kind == "session" || kind == "lagged" { Task { await load() } }
+        }
+        .onChange(of: sessions.open.count) { _ in
+            Task { await load() }
         }
     }
 
@@ -98,9 +141,10 @@ struct SessionsView: View {
 
     private func load() async {
         hosts = Dictionary(((try? model.core.listHosts()) ?? []).map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
-        guard account.loggedIn == true else { return }
-        loading = true
-        defer { loading = false }
+        guard account.loggedIn == true else {
+            list = nil
+            return
+        }
         do {
             list = try await model.core.listServerSessions()
         } catch {
@@ -109,23 +153,94 @@ struct SessionsView: View {
     }
 }
 
+/// Entry to the AI tasks, with the approvals that are waiting.
+private struct AiTasksRow: View {
+    let pending: Int
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "sparkles")
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(width: 40, height: 40)
+                .background(Color.purple, in: RoundedRectangle(cornerRadius: 10.4, style: .continuous))
+            VStack(alignment: .leading, spacing: 2) {
+                Text("connections.ai_tasks").font(.headline)
+                Text("connections.ai_tasks.subtitle").font(.subheadline).foregroundColor(.secondary).lineLimit(1)
+            }
+            Spacer(minLength: 0)
+            if pending > 0 {
+                Text(verbatim: "\(pending)").font(.caption.bold()).foregroundColor(.white)
+                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .background(Brand.red, in: Capsule())
+            }
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+/// A terminal open on this device: host, status and how long it has been
+/// connected.
 private struct OpenSessionRow: View {
     @ObservedObject var session: TerminalSession
+    let host: SshHost?
     let onTap: () -> Void
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 12) {
-                Image(systemName: session.persistent ? "icloud" : "iphone").foregroundColor(color).frame(width: 24)
+            HStack(spacing: 14) {
+                HostIcon(label: session.label, os: host?.os, color: host?.color, size: 42)
+                    .overlay(alignment: .bottomTrailing) { statusBadge.offset(x: 4, y: 4) }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(session.title ?? session.label).foregroundColor(.primary)
-                    Text(text).font(.caption).foregroundColor(.secondary).lineLimit(1)
+                    Text(session.title ?? session.label).font(.headline).foregroundColor(.primary).lineLimit(1)
+                    Text(verbatim: address).font(.subheadline).foregroundColor(.secondary).lineLimit(1)
+                    Label {
+                        Text(verbatim: statusText)
+                    } icon: {
+                        Image(systemName: session.persistent ? "icloud" : "iphone")
+                    }
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+                }
+                Spacer(minLength: 0)
+                if let since = session.connectedAt, !session.asleep {
+                    Text(since, style: .timer)
+                        .font(.caption.monospacedDigit())
+                        .foregroundColor(.secondary)
                 }
             }
+            .padding(.vertical, 2)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// `user@address` of the host, or "server session".
+    private var address: String {
+        if let host {
+            return (host.settings.username.map { "\($0)@" } ?? "") + host.address
+        }
+        return session.persistent ? String(localized: "terminal.server_session_lower") : ""
+    }
+
+    @ViewBuilder private var statusBadge: some View {
+        if session.asleep {
+            Image(systemName: "icloud.fill")
+                .font(.system(size: 9, weight: .bold))
+                .foregroundColor(.white)
+                .frame(width: 16, height: 16)
+                .background(Color.gray, in: Circle())
+                .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 2))
+        } else {
+            Circle()
+                .fill(color)
+                .frame(width: 13, height: 13)
+                .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 2))
         }
     }
 
-    private var text: String {
+    private var statusText: String {
         if session.asleep { return String(localized: "sessions.row.asleep") }
         switch session.state {
         case .connected:
@@ -144,23 +259,38 @@ private struct OpenSessionRow: View {
     }
 }
 
+/// A session that lives on the server (yours or shared with you).
 private struct ServerSessionRow: View {
     let session: ServerSession
-    let host: String?
+    let host: SshHost?
     let onTap: () -> Void
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 12) {
-                Image(systemName: "icloud").foregroundColor(color).frame(width: 24)
+            HStack(spacing: 14) {
+                HostIcon(label: host.map { $0.label.isEmpty ? $0.address : $0.label } ?? session.title,
+                         os: host?.os, color: host?.color, size: 42)
+                    .overlay(alignment: .bottomTrailing) {
+                        Circle()
+                            .fill(color)
+                            .frame(width: 13, height: 13)
+                            .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 2))
+                            .offset(x: 4, y: 4)
+                    }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(session.title.isEmpty ? (host ?? String(localized: "common.session")) : session.title).foregroundColor(.primary)
+                    Text(session.title.isEmpty ? (host?.label ?? String(localized: "common.session")) : session.title)
+                        .font(.headline).foregroundColor(.primary).lineLimit(1)
                     Text(text + " · " + relativeTime(session.createdAt)
                          + (session.viewers.count > 1 ? " · " + String(localized: "sessions.viewers \(session.viewers.count)") : ""))
                         .font(.caption).foregroundColor(.secondary).lineLimit(1)
                 }
+                Spacer(minLength: 0)
+                Image(systemName: "icloud").foregroundColor(.secondary)
             }
+            .padding(.vertical, 2)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
     }
 
     private var text: String {

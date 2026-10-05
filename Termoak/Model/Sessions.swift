@@ -24,7 +24,16 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     let hostId: String?
     let view: TerminalView
 
-    @Published var state: TerminalState = .connecting(TerminalState.connectingMessage)
+    @Published var state: TerminalState = .connecting(TerminalState.connectingMessage) {
+        didSet {
+            switch state {
+            case .connected: if connectedAt == nil { connectedAt = Date() }
+            case .connecting, .closed: connectedAt = nil
+            }
+        }
+    }
+    /// When the current connection was made (the time shown in Connections).
+    private(set) var connectedAt: Date?
     /// Tab of a server session that was open at launch: it is not attached
     /// until tapped.
     @Published var asleep = false

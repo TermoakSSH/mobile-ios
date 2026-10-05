@@ -74,6 +74,105 @@ struct HostTile: View {
     }
 }
 
+/// Colors a host can be given (the same as the desktop's host editor).
+private let hostPalette: [UInt32] = [0x4F7CFF, 0x30A46C, 0xF5A524, 0xE5484D, 0x8E4EC6, 0x0EA5E9, 0xD6409F, 0x12A594]
+
+/// `#rrggbb` (or `rrggbb`) as a color; `nil` if it is not one.
+func hexColor(_ hex: String?) -> Color? {
+    guard var s = hex?.trimmingCharacters(in: .whitespaces), !s.isEmpty else { return nil }
+    if s.hasPrefix("#") { s.removeFirst() }
+    guard s.count == 6, let value = UInt32(s, radix: 16) else { return nil }
+    return rgb(value)
+}
+
+/// A color of the palette that is always the same for the same name.
+private func paletteColor(_ name: String) -> Color {
+    let seed = name.unicodeScalars.reduce(0) { ($0 &* 31 &+ Int($1.value)) & 0xFFFF }
+    return rgb(hostPalette[seed % hostPalette.count])
+}
+
+/// SF Symbol of the systems that have a fitting one; the rest show the
+/// initials of their name.
+private func osSymbol(_ os: String?) -> String? {
+    guard let os = os?.trimmingCharacters(in: .whitespaces).lowercased() else { return nil }
+    switch os {
+    case "macos", "darwin", "ios": return "applelogo"
+    case "windows": return "squareshape.split.2x2"
+    case "linux": return "terminal.fill"
+    default: return nil
+    }
+}
+
+/// Avatar of a host on the home screens, like Termius's: a rounded square in
+/// the host's color (or its system's), with the system's symbol or initials,
+/// or else the first letter of its name.
+struct HostIcon: View {
+    let label: String
+    let os: String?
+    let color: String?
+    let size: CGFloat
+
+    init(host: SshHost, size: CGFloat = 42) {
+        label = host.label.isEmpty ? host.address : host.label
+        os = host.os
+        color = host.color
+        self.size = size
+    }
+
+    init(label: String, os: String?, color: String? = nil, size: CGFloat = 42) {
+        self.label = label
+        self.os = os
+        self.color = color
+        self.size = size
+    }
+
+    var body: some View {
+        let badge = osBadge(os)
+        let shape = RoundedRectangle(cornerRadius: size * 0.26, style: .continuous)
+        shape
+            .fill(hexColor(color) ?? badge?.1 ?? paletteColor(label))
+            .overlay(shape.fill(LinearGradient(gradient: Gradient(colors: [Color.white.opacity(0.22), Color.white.opacity(0)]),
+                                               startPoint: .top, endPoint: .bottom)))
+            .frame(width: size, height: size)
+            .overlay(glyph(badge))
+            .accessibilityHidden(true)
+    }
+
+    @ViewBuilder private func glyph(_ badge: (String, Color)?) -> some View {
+        if let symbol = osSymbol(os) {
+            Image(systemName: symbol)
+                .font(.system(size: size * 0.42, weight: .semibold))
+                .foregroundColor(.white)
+        } else if let badge {
+            Text(verbatim: String(badge.0.prefix(2)).uppercased())
+                .font(.system(size: size * 0.34, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+        } else {
+            Text(verbatim: initial)
+                .font(.system(size: size * 0.46, weight: .semibold, design: .rounded))
+                .foregroundColor(.white)
+        }
+    }
+
+    private var initial: String {
+        label.trimmingCharacters(in: .whitespaces).first.map { String($0).uppercased() } ?? "?"
+    }
+}
+
+/// Small gray capsule with a host tag.
+struct TagChip: View {
+    let text: String
+
+    var body: some View {
+        Text(verbatim: text)
+            .font(.caption2.weight(.medium))
+            .lineLimit(1)
+            .padding(.horizontal, 7).padding(.vertical, 2)
+            .foregroundColor(.secondary)
+            .background(Color(.tertiarySystemFill), in: Capsule())
+    }
+}
+
 /// "ssh, user" like Termius (with the port if it is not 22).
 func hostSubtitle(_ host: SshHost) -> String {
     var parts = ["ssh"]

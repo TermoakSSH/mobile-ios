@@ -1409,6 +1409,118 @@
         }
       }
     },
+    "connections.ai_tasks": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI tasks"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tareas de IA"
+          }
+        }
+      }
+    },
+    "connections.ai_tasks.subtitle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks and approvals on your server"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tareas y aprobaciones en tu servidor"
+          }
+        }
+      }
+    },
+    "connections.disconnect": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disconnect"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desconectar"
+          }
+        }
+      }
+    },
+    "connections.disconnect_all": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disconnect all"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desconectar todas"
+          }
+        }
+      }
+    },
+    "connections.disconnect_all.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Persistent sessions keep running on the server."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las sesiones persistentes siguen vivas en el servidor."
+          }
+        }
+      }
+    },
+    "connections.disconnect_all.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disconnect every session open on this device?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Desconectar todas las sesiones abiertas en este dispositivo?"
+          }
+        }
+      }
+    },
+    "connections.empty.action": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go to the vault"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ir a la bóveda"
+          }
+        }
+      }
+    },
     "copilot.approval_title": {
       "localizations": {
         "en": {
@@ -2801,6 +2913,22 @@
         }
       }
     },
+    "hosts.empty.import": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import from an ssh_config file"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar de un archivo ssh_config"
+          }
+        }
+      }
+    },
     "hosts.empty.text_local": {
       "localizations": {
         "en": {
@@ -2997,6 +3125,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Grupos"
+          }
+        }
+      }
+    },
+    "hosts.menu.copy_address": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy address"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar dirección"
           }
         }
       }
@@ -4576,22 +4720,6 @@
         }
       }
     },
-    "nav.account.sync_hint": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sync with your server"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sincroniza con tu servidor"
-          }
-        }
-      }
-    },
     "nav.account.synced": {
       "localizations": {
         "en": {
@@ -4624,82 +4752,18 @@
         }
       }
     },
-    "nav.ai": {
+    "nav.connections": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "AI"
+            "value": "Connections"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "IA"
-          }
-        }
-      }
-    },
-    "nav.device_only": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Only on this device"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Solo en este dispositivo"
-          }
-        }
-      }
-    },
-    "nav.header.server": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Server"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Servidor"
-          }
-        }
-      }
-    },
-    "nav.header.terminals": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Terminals"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Terminales"
-          }
-        }
-      }
-    },
-    "nav.header.vault": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vault"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vault"
+            "value": "Conexiones"
           }
         }
       }
@@ -4752,50 +4816,34 @@
         }
       }
     },
-    "nav.menu": {
+    "nav.port_forwarding": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Menu"
+            "value": "Port forwarding"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Menú"
+            "value": "Reenvío de puertos"
           }
         }
       }
     },
-    "nav.sessions": {
+    "nav.profile": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sessions"
+            "value": "Profile"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sesiones"
-          }
-        }
-      }
-    },
-    "nav.settings": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Settings"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ajustes"
+            "value": "Perfil"
           }
         }
       }
@@ -4816,42 +4864,50 @@
         }
       }
     },
-    "nav.terminals.open %lld": {
+    "nav.vault": {
       "localizations": {
         "en": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld open"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld open"
-                }
-              }
-            }
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault"
           }
         },
         "es": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld abierto"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld abiertos"
-                }
-              }
-            }
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bóveda"
+          }
+        }
+      }
+    },
+    "port_forwarding.choose_host": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige un host"
+          }
+        }
+      }
+    },
+    "profile.local.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local vault"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bóveda local"
           }
         }
       }
@@ -5069,13 +5125,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open a host from the Hosts tab. Persistent sessions keep running on the server even if you close the app."
+            "value": "Open a host from the vault. Persistent sessions keep running on the server even if you close the app."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abre un host desde la pestaña Hosts. Las sesiones persistentes siguen vivas en el servidor aunque cierres la app."
+            "value": "Abre un host desde la bóveda. Las sesiones persistentes siguen vivas en el servidor aunque cierres la app."
           }
         }
       }
@@ -5085,13 +5141,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open a host from the Hosts tab. With an account, sessions also keep running even if you close the app."
+            "value": "Open a host from the vault. With an account, sessions also keep running even if you close the app."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abre un host desde la pestaña Hosts. Con una cuenta, además, las sesiones siguen vivas aunque cierres la app."
+            "value": "Abre un host desde la bóveda. Con una cuenta, además, las sesiones siguen vivas aunque cierres la app."
           }
         }
       }
@@ -5516,6 +5572,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Clave guardada"
+          }
+        }
+      }
+    },
+    "settings.ai.keys": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API keys and credit"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claves de API y crédito"
           }
         }
       }
@@ -6172,22 +6244,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Activa"
-          }
-        }
-      }
-    },
-    "settings.vault": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vault"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bóveda"
           }
         }
       }
@@ -7192,6 +7248,102 @@
           "stringUnit": {
             "state": "translated",
             "value": "Túneles · %@"
+          }
+        }
+      }
+    },
+    "vault.add": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir"
+          }
+        }
+      }
+    },
+    "vault.import": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar"
+          }
+        }
+      }
+    },
+    "vault.import.done": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import finished"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importación terminada"
+          }
+        }
+      }
+    },
+    "vault.import.result %lld %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hosts imported: %1$lld · skipped: %2$lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hosts importados: %1$lld · omitidos: %2$lld"
+          }
+        }
+      }
+    },
+    "vault.import.ssh_config": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hosts from an ssh_config file"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hosts de un archivo ssh_config"
+          }
+        }
+      }
+    },
+    "vault.new_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nueva clave"
           }
         }
       }

@@ -111,7 +111,7 @@ private struct RootContent: View {
         } else if account.loggedIn == false && !settings.noServer && !welcomeDone {
             LoginView(welcome: true) { welcomeDone = true }
         } else {
-            Vault()
+            Home()
                 .fullScreenCover(isPresented: $sessions.showing) {
                     TerminalScreenView()
                         .environmentObject(model)

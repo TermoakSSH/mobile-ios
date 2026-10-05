@@ -17,6 +17,8 @@ private extension AiTask {
     var isActive: Bool { status == .queued || status == .running || status == .waitingApproval }
 }
 
+/// AI tasks on the server and the approvals they wait for (pushed from the
+/// Connections tab).
 struct AiView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Account
@@ -27,38 +29,34 @@ struct AiView: View {
     @State private var error: String?
 
     var body: some View {
-        NavigationView {
-            Group {
-                if account.loggedIn != true {
-                    EmptyState(
-                        icon: "sparkles",
-                        title: String(localized: "ai.empty.title"),
-                        text: String(localized: "ai.empty.text"),
-                        action: String(localized: "common.log_in")
-                    ) { loggingIn = true }
-                } else {
-                    list
-                }
+        Group {
+            if account.loggedIn != true {
+                EmptyState(
+                    icon: "sparkles",
+                    title: String(localized: "ai.empty.title"),
+                    text: String(localized: "ai.empty.text"),
+                    action: String(localized: "common.log_in")
+                ) { loggingIn = true }
+            } else {
+                list
             }
-            .navigationTitle("nav.ai")
-            .toolbar { MenuButton() }
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    if account.loggedIn == true {
-                        Button { creating = true } label: { Image(systemName: "plus") }
-                            .accessibilityLabel("ai.new.title")
-                    }
-                }
-            }
-            .sheet(isPresented: $creating) { NewTaskView().environmentObject(model) }
-            .sheet(isPresented: $loggingIn) {
-                LoginView(welcome: false) {}.environmentObject(account).environmentObject(model.settings)
-            }
-            .alert("common.error", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
-                Button("common.ok", role: .cancel) {}
-            } message: { Text(error ?? "") }
         }
-        .navigationViewStyle(.stack)
+        .navigationTitle("connections.ai_tasks")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                if account.loggedIn == true {
+                    Button { creating = true } label: { Image(systemName: "plus") }
+                        .accessibilityLabel("ai.new.title")
+                }
+            }
+        }
+        .sheet(isPresented: $creating) { NewTaskView().environmentObject(model) }
+        .sheet(isPresented: $loggingIn) {
+            LoginView(welcome: false) {}.environmentObject(account).environmentObject(model.settings)
+        }
+        .alert("common.error", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
+            Button("common.ok", role: .cancel) {}
+        } message: { Text(error ?? "") }
         .task { await load() }
         .onReceive(account.changes) { kind in
             if kind == "ai" || kind == "lagged" { Task { await load() } }

@@ -1,6 +1,8 @@
 import TermoakKit
 import SwiftUI
 
+/// Profile tab: the account (or signing in), the AI keys and every setting
+/// of the app and the terminal.
 struct SettingsView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Account
@@ -19,18 +21,9 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("settings.account") {
-                    if account.loggedIn == true {
-                        HStack(spacing: 12) {
-                            HostAvatar(name: account.user ?? "?", os: nil, size: 44)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(account.user ?? String(localized: "common.connected")).font(.headline)
-                                Text((account.server ?? "").replacingOccurrences(of: "https://", with: ""))
-                                    .font(.caption).foregroundColor(.secondary)
-                            }
-                            Spacer()
-                            Circle().fill(account.live ? Brand.green : Brand.amber).frame(width: 8, height: 8)
-                        }
+                if account.loggedIn == true {
+                    Section {
+                        accountCard
                         HStack {
                             Text(syncStatus)
                                 .foregroundColor(.secondary)
@@ -48,20 +41,19 @@ struct SettingsView: View {
                                      tf.enabled ? Brand.green : Brand.amber)
                             }
                         }
-                        NavigationLink { AiSettingsView() } label: {
-                            Label("settings.ai", systemImage: "sparkles")
-                        }
-                    } else {
-                        Text("settings.account.local_hint")
-                            .font(.callout).foregroundColor(.secondary)
-                        Button { loggingIn = true } label: { Label("common.log_in", systemImage: "person.crop.circle") }
                     }
-                }
 
-                Section("settings.vault") {
-                    NavigationLink { KeychainView() } label: { Label("nav.keychain", systemImage: "key") }
-                    NavigationLink { SnippetsView() } label: {
-                        Label("nav.snippets", systemImage: "chevron.left.forwardslash.chevron.right")
+                    Section("settings.ai") {
+                        NavigationLink { AiSettingsView() } label: {
+                            Label("settings.ai.keys", systemImage: "sparkles")
+                        }
+                    }
+                } else {
+                    Section {
+                        localCard
+                        Button { loggingIn = true } label: {
+                            Label("common.log_in", systemImage: "person.crop.circle.badge.plus")
+                        }
                     }
                 }
 
@@ -131,8 +123,7 @@ struct SettingsView: View {
                     } footer: { Text("settings.log_out.footer") }
                 }
             }
-            .navigationTitle("nav.settings")
-            .toolbar { MenuButton() }
+            .navigationTitle("nav.profile")
             .sheet(isPresented: $loggingIn) {
                 LoginView(welcome: false) {}.environmentObject(account).environmentObject(settings)
             }
@@ -160,9 +151,64 @@ struct SettingsView: View {
         .sheet(isPresented: $customizing) { KeyboardEditor().environmentObject(settings) }
     }
 
+    /// Who you are and where your vault syncs.
+    private var accountCard: some View {
+        HStack(spacing: 14) {
+            ProfileAvatar(name: account.user ?? "?")
+            VStack(alignment: .leading, spacing: 3) {
+                Text(account.user ?? String(localized: "common.connected"))
+                    .font(.title3.weight(.semibold))
+                    .lineLimit(1)
+                Text(verbatim: (account.server ?? "").replacingOccurrences(of: "https://", with: ""))
+                    .font(.subheadline).foregroundColor(.secondary).lineLimit(1)
+                HStack(spacing: 6) {
+                    Circle().fill(account.live ? Brand.green : Brand.amber).frame(width: 7, height: 7)
+                    Text(account.live ? String(localized: "nav.account.synced_live") : String(localized: "nav.account.synced"))
+                        .font(.caption).foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding(.vertical, 6)
+    }
+
+    /// Without an account: the vault is only on this device.
+    private var localCard: some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image("Logo")
+                .resizable()
+                .frame(width: 56, height: 56)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            VStack(alignment: .leading, spacing: 3) {
+                Text("profile.local.title").font(.title3.weight(.semibold))
+                Text("settings.account.local_hint")
+                    .font(.footnote).foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.vertical, 6)
+    }
+
     private var syncStatus: String {
         if account.syncing { return String(localized: "common.syncing") }
         if let last = account.lastSync { return String(localized: "settings.synced \(relativeTime(last))") }
         return String(localized: "settings.never_synced")
+    }
+}
+
+/// Round avatar with the first letter of the account.
+private struct ProfileAvatar: View {
+    let name: String
+
+    var body: some View {
+        Circle()
+            .fill(LinearGradient(gradient: Gradient(colors: [Brand.blue, Brand.blue.opacity(0.7)]),
+                                 startPoint: .topLeading, endPoint: .bottomTrailing))
+            .frame(width: 56, height: 56)
+            .overlay(
+                Text(verbatim: name.trimmingCharacters(in: .whitespaces).first.map { String($0).uppercased() } ?? "?")
+                    .font(.system(size: 24, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white)
+            )
+            .accessibilityHidden(true)
     }
 }
