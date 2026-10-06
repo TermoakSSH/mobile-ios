@@ -45,67 +45,37 @@ private struct TerminalContent: View {
     @State private var didConnect = false
     /// Rightward drag of the copilot (to close it).
     @State private var copilotDrag: CGFloat = 0
+    /// The keyboard on screen came up with the phone copilot open (its box
+    /// or a sheet opened from it), not for the terminal.
+    @State private var copilotKeyboard = false
 
     /// On a tablet (or a big phone in landscape) the panel goes on the side.
     private var side: Bool { sizeClass == .regular }
     private var theme: TerminalTheme { settings.terminalTheme }
+    /// The keyboard goes over the terminal instead of shrinking it: on a
+    /// phone, while the copilot covers it (and until the copilot's keyboard
+    /// has gone, so closing it does not resize the terminal twice).
+    private var keyboardOverTerminal: Bool { !side && (sessions.copilotOpen || copilotKeyboard) }
 
     var body: some View {
-        HStack(spacing: 0) {
-            VStack(spacing: 0) {
-                topBar
-                tabs
-                ZStack(alignment: .topLeading) {
-                    SwiftTermView(viewport: session.viewport)
-                    CursorSuggestions(session: session)
-                    ShareBanners(session: session, background: theme.barColor) { showingPeople = true }
-                    notice.frame(maxWidth: .infinity, maxHeight: .infinity)
-                    if let p = session.cursorPad {
-                        CursorPadView(pad: p, accent: SwiftUI.Color(hex: theme.accent)).padding(16)
-                    }
-                    if session.gestureMode == .button && session.cursorByButton {
-                        // So you know what mode one finger is in.
-                        Label("terminal.cursor_mode_badge", systemImage: "hand.draw.fill")
-                            .font(.caption2.weight(.medium))
-                            .padding(.horizontal, 10).padding(.vertical, 5)
-                            .background(.ultraThinMaterial, in: Capsule())
-                            .foregroundColor(SwiftUI.Color(hex: theme.accent))
-                            .padding(8)
-                            .frame(maxWidth: .infinity, alignment: .topTrailing)
-                            .allowsHitTesting(false)
-                    }
-                }
-                if sessions.quickPanelOpen && !side {
-                    GeometryReader { geo in
-                        panel.frame(height: max(220, keyboardHeight - geo.safeAreaInsets.bottom))
-                    }
-                    .frame(height: max(220, keyboardHeight - bottomInset))
-                    .transition(.move(edge: .bottom))
-                }
-            }
-            if side && settings.sidePanel && !sessions.copilotOpen {
-                Divider().overlay(theme.foregroundColor.opacity(0.15))
-                panel.frame(width: 340)
-                    .transition(.move(edge: .trailing))
-            }
-            if side && sessions.copilotOpen {
-                // On a tablet the copilot goes on the side (instead of the quick panel).
-                Divider().overlay(theme.foregroundColor.opacity(0.15))
-                copilotPanel.frame(width: 380)
-                    .transition(.move(edge: .trailing))
-            }
-        }
-        .background(theme.backgroundColor.ignoresSafeArea())
-        .background((sessions.quickPanelOpen && !side ? theme.barColor : theme.backgroundColor).ignoresSafeArea())
-        .overlay {
+        ZStack {
+            terminalArea
+                // The terminal makes room for its own keyboard (it gets fewer
+                // rows); the phone copilot's keyboard goes over it instead:
+                // the terminal keeps its size (no resize sent to the server,
+                // nothing reflowed) and only the copilot moves up.
+                .ignoresSafeArea(.keyboard, edges: keyboardOverTerminal ? .bottom : [])
             if sessions.copilotOpen && !side {
                 Color.black.opacity(0.4)
                     .ignoresSafeArea()
                     .onTapGesture { sessions.copilotOpen = false }
                     .transition(.opacity)
             }
+            // Laid out above the keyboard, so its box to write in is never under it.
+            phoneCopilot
         }
-        .overlay(alignment: .trailing) { phoneCopilot }
+        .background(theme.backgroundColor.ignoresSafeArea())
+        .background((sessions.quickPanelOpen && !side ? theme.barColor : theme.backgroundColor).ignoresSafeArea())
         .overlay(alignment: .top) { ShareToasts(notices: sessions.notices) }
         .preferredColorScheme(theme.isLight ? .light : .dark)
         .animation(.easeOut(duration: 0.2), value: sessions.quickPanelOpen)
@@ -174,6 +144,7 @@ private struct TerminalContent: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { n in
+            copilotKeyboard = sessions.copilotOpen && !side && !session.view.isFirstResponder
             guard session.view.isFirstResponder else { return }
             if let frame = n.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect, frame.height > 150 {
                 keyboardHeight = frame.height
@@ -181,8 +152,60 @@ private struct TerminalContent: View {
             // Touching the terminal with the panel open goes back to the keyboard.
             sessions.quickPanelOpen = false
         }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            copilotKeyboard = false
+        }
         .onAppear { record(session.state) }
         .onChange(of: session.state) { record($0) }
+    }
+
+    /// The terminal with its bars, and the quick panel or the copilot on the
+    /// side (tablet).
+    private var terminalArea: some View {
+        HStack(spacing: 0) {
+            VStack(spacing: 0) {
+                topBar
+                tabs
+                ZStack(alignment: .topLeading) {
+                    SwiftTermView(viewport: session.viewport)
+                    CursorSuggestions(session: session)
+                    ShareBanners(session: session, background: theme.barColor) { showingPeople = true }
+                    notice.frame(maxWidth: .infinity, maxHeight: .infinity)
+                    if let p = session.cursorPad {
+                        CursorPadView(pad: p, accent: SwiftUI.Color(hex: theme.accent)).padding(16)
+                    }
+                    if session.gestureMode == .button && session.cursorByButton {
+                        // So you know what mode one finger is in.
+                        Label("terminal.cursor_mode_badge", systemImage: "hand.draw.fill")
+                            .font(.caption2.weight(.medium))
+                            .padding(.horizontal, 10).padding(.vertical, 5)
+                            .background(.ultraThinMaterial, in: Capsule())
+                            .foregroundColor(SwiftUI.Color(hex: theme.accent))
+                            .padding(8)
+                            .frame(maxWidth: .infinity, alignment: .topTrailing)
+                            .allowsHitTesting(false)
+                    }
+                }
+                if sessions.quickPanelOpen && !side {
+                    GeometryReader { geo in
+                        panel.frame(height: max(220, keyboardHeight - geo.safeAreaInsets.bottom))
+                    }
+                    .frame(height: max(220, keyboardHeight - bottomInset))
+                    .transition(.move(edge: .bottom))
+                }
+            }
+            if side && settings.sidePanel && !sessions.copilotOpen {
+                Divider().overlay(theme.foregroundColor.opacity(0.15))
+                panel.frame(width: 340)
+                    .transition(.move(edge: .trailing))
+            }
+            if side && sessions.copilotOpen {
+                // On a tablet the copilot goes on the side (instead of the quick panel).
+                Divider().overlay(theme.foregroundColor.opacity(0.15))
+                copilotPanel.frame(width: 380)
+                    .transition(.move(edge: .trailing))
+            }
+        }
     }
 
     private var copilotPanel: some View {

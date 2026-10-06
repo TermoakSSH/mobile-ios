@@ -1,5 +1,6 @@
 import TermoakKit
 import SwiftUI
+import UIKit
 
 /// A piece of the conversation with the AI (in the AI section and in the copilot).
 enum Turn: Identifiable {
@@ -160,5 +161,51 @@ struct TurnView: View {
             .padding(.horizontal)
             .onTapGesture { expanded.toggle() }
         }
+    }
+}
+
+// ----- Keyboard -----
+
+/// Hides the keyboard, whoever has it.
+func hideKeyboard() {
+    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+}
+
+/// Brings the end of a conversation (the view with the id `"end"`) into
+/// view: after a new message, or once the keyboard took its space. On the
+/// next turn of the run loop, so the space the keyboard leaves is already
+/// laid out.
+func scrollToEnd(_ reader: ScrollViewProxy, animated: Bool = true) {
+    DispatchQueue.main.async {
+        if animated {
+            withAnimation(.easeOut(duration: 0.25)) { reader.scrollTo("end", anchor: .bottom) }
+        } else {
+            reader.scrollTo("end", anchor: .bottom)
+        }
+    }
+}
+
+extension View {
+    /// Dragging the content down hides the keyboard while one of this
+    /// screen's fields is being typed in (`active`), like in Messages. Only
+    /// then: next to the terminal (iPad) its keyboard is left alone.
+    /// iOS 15 has no `scrollDismissesKeyboard`: a drag down does the same.
+    @ViewBuilder
+    func dismissesKeyboardOnScroll(active: Bool = true, _ dismiss: @escaping () -> Void = hideKeyboard) -> some View {
+        if #available(iOS 16.0, *) {
+            scrollDismissesKeyboard(active ? .interactively : .never)
+        } else {
+            simultaneousGesture(DragGesture(minimumDistance: 16).onChanged { v in
+                if active && v.translation.height > 40 && abs(v.translation.height) > abs(v.translation.width) {
+                    dismiss()
+                }
+            })
+        }
+    }
+
+    /// The keyboard finished showing or changed its height (another
+    /// keyboard, the predictive bar...).
+    func onKeyboardShown(perform action: @escaping () -> Void) -> some View {
+        onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in action() }
     }
 }

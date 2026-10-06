@@ -39,27 +39,10 @@ struct CopilotPanel: View {
                     action: String(localized: "common.log_in")
                 ) { loggingIn = true }
             } else {
+                // The box to write in stays under the conversation, above the
+                // keyboard when it is open (the conversation shrinks).
                 conversation
-                if let e = copilot.error {
-                    HStack(alignment: .top, spacing: 8) {
-                        Image(systemName: "exclamationmark.circle")
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(e)
-                            if copilot.accessProblem != nil {
-                                OpenAiSettingsButton { showingAiSettings = true }
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundColor(.accentColor)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        Button { copilot.error = nil } label: { Image(systemName: "xmark").font(.caption) }
-                    }
-                    .font(.caption)
-                    .foregroundColor(Brand.red)
-                    .padding(.horizontal, 12).padding(.vertical, 6)
-                }
-                Divider()
-                footer
+                    .safeAreaInset(edge: .bottom, spacing: 0) { bottom }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -205,8 +188,12 @@ struct CopilotPanel: View {
                 }
                 .padding(.vertical, 10)
             }
+            .dismissesKeyboardOnScroll(active: typing) { typing = false }
             .onChange(of: copilot.changes) { _ in reader.scrollTo("end", anchor: .bottom) }
             .onAppear { reader.scrollTo("end", anchor: .bottom) }
+            // The keyboard takes the bottom: the last message stays in view.
+            .onChange(of: typing) { if $0 { scrollToEnd(reader) } }
+            .onKeyboardShown { if typing { scrollToEnd(reader) } }
         }
     }
 
@@ -291,6 +278,33 @@ struct CopilotPanel: View {
     }
 
     // ----- Footer -----
+
+    /// The error (if any) and the box to write in.
+    private var bottom: some View {
+        VStack(spacing: 0) {
+            if let e = copilot.error {
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "exclamationmark.circle")
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(e)
+                        if copilot.accessProblem != nil {
+                            OpenAiSettingsButton { showingAiSettings = true }
+                                .font(.caption.weight(.semibold))
+                                .foregroundColor(.accentColor)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Button { copilot.error = nil } label: { Image(systemName: "xmark").font(.caption) }
+                }
+                .font(.caption)
+                .foregroundColor(Brand.red)
+                .padding(.horizontal, 12).padding(.vertical, 6)
+            }
+            Divider()
+            footer
+        }
+        .background(theme.barColor)
+    }
 
     private var footer: some View {
         VStack(spacing: 8) {

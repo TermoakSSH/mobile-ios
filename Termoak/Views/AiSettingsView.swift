@@ -8,6 +8,8 @@ struct AiSettingsView: View {
     @State private var access: AiAccessInfo?
     @State private var keys: [AiKeyInfo] = []
     @State private var error: String?
+    /// The key or model field being typed in.
+    @FocusState private var field: AiKeyField?
 
     var body: some View {
         Form {
@@ -21,7 +23,7 @@ struct AiSettingsView: View {
                     Section { Text("settings.ai.no_providers").foregroundColor(.secondary) }
                 }
                 ForEach(providers, id: \.provider) { p in
-                    AiKeySection(provider: p, saved: keys.first { $0.provider == p.provider }) { await load() }
+                    AiKeySection(provider: p, saved: keys.first { $0.provider == p.provider }, focus: $field) { await load() }
                 }
 
                 Section {
@@ -42,6 +44,9 @@ struct AiSettingsView: View {
                 }
             }
         }
+        // The form scrolls the field being typed in above the keyboard;
+        // dragging it down hides the keyboard.
+        .dismissesKeyboardOnScroll(active: field != nil) { field = nil }
         .navigationTitle("settings.ai")
         .task { await load() }
     }
@@ -102,11 +107,18 @@ struct AiSettingsView: View {
     }
 }
 
+/// A field of Settings → AI: a provider's key or model.
+enum AiKeyField: Hashable {
+    case key(String)
+    case model(String)
+}
+
 /// One provider: the saved key, a field for a new one, the model and the
 /// Test / Save / Delete actions with their result.
 private struct AiKeySection: View {
     let provider: AiKeyProvider
     let saved: AiKeyInfo?
+    let focus: FocusState<AiKeyField?>.Binding
     /// Something was saved or deleted: reload the screen.
     let changed: () async -> Void
 
@@ -122,9 +134,11 @@ private struct AiKeySection: View {
         case failure(String)
     }
 
-    init(provider: AiKeyProvider, saved: AiKeyInfo?, changed: @escaping () async -> Void) {
+    init(provider: AiKeyProvider, saved: AiKeyInfo?, focus: FocusState<AiKeyField?>.Binding,
+         changed: @escaping () async -> Void) {
         self.provider = provider
         self.saved = saved
+        self.focus = focus
         self.changed = changed
         _modelName = State(initialValue: saved?.model ?? "")
     }
@@ -170,12 +184,14 @@ private struct AiKeySection: View {
                         text: $key)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
+                .focused(focus, equals: .key(provider.provider))
 
             HStack {
                 Text("settings.ai.model")
                 TextField(defaultModelName, text: $modelName)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
+                    .focused(focus, equals: .model(provider.provider))
                     .multilineTextAlignment(.trailing)
                     .foregroundColor(.secondary)
                 if !provider.models.isEmpty {

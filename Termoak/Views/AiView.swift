@@ -221,12 +221,18 @@ struct NewTaskView: View {
     @State private var problem: AiAccessProblem?
     @State private var showingAiSettings = false
     @State private var hosts: [SshHost] = []
+    @FocusState private var typing: Bool
 
     var body: some View {
         NavigationView {
             Form {
                 Section("ai.new.prompt") {
-                    TextEditor(text: $prompt).frame(minHeight: 110)
+                    // Grows with the text up to a limit and then scrolls
+                    // inside, so the line being typed never ends up under
+                    // the keyboard.
+                    TextEditor(text: $prompt)
+                        .frame(minHeight: 110, maxHeight: 220)
+                        .focused($typing)
                 }
                 Section {
                     Picker("common.permissions", selection: $mode) {
@@ -259,6 +265,7 @@ struct NewTaskView: View {
                     }
                 }
             }
+            .dismissesKeyboardOnScroll(active: typing) { typing = false }
             .navigationTitle("ai.new.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -305,9 +312,10 @@ struct TaskView: View {
     /// Sending failed for a reason fixed in Settings → AI.
     @State private var problem: AiAccessProblem?
     @State private var showingAiSettings = false
+    @FocusState private var typing: Bool
 
     var body: some View {
-        VStack(spacing: 0) {
+        Group {
             if let t = task {
                 ScrollViewReader { reader in
                     ScrollView {
@@ -333,34 +341,18 @@ struct TaskView: View {
                         }
                         .padding(.vertical, 8)
                     }
-                    .onChange(of: t.rawJson) { _ in withAnimation { reader.scrollTo("end") } }
+                    .dismissesKeyboardOnScroll(active: typing) { typing = false }
+                    // The reply box stays under the conversation, above the
+                    // keyboard when it is open (the conversation shrinks).
+                    .safeAreaInset(edge: .bottom, spacing: 0) { composer }
+                    .onAppear { scrollToEnd(reader, animated: false) }
+                    .onChange(of: t.rawJson) { _ in scrollToEnd(reader) }
+                    // The keyboard takes the bottom: the last message stays in view.
+                    .onChange(of: typing) { if $0 { scrollToEnd(reader) } }
+                    .onKeyboardShown { if typing { scrollToEnd(reader) } }
                 }
-                if let problem {
-                    HStack(alignment: .top, spacing: 8) {
-                        Image(systemName: "exclamationmark.circle").foregroundColor(Brand.red)
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(problem.message).foregroundColor(Brand.red)
-                            OpenAiSettingsButton { showingAiSettings = true }
-                                .font(.footnote.weight(.semibold))
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        Button { self.problem = nil } label: { Image(systemName: "xmark").font(.caption) }
-                            .foregroundColor(.secondary)
-                    }
-                    .font(.footnote)
-                    .padding(.horizontal, 12).padding(.vertical, 6)
-                }
-                HStack(spacing: 8) {
-                    TextField("common.reply_placeholder", text: $message)
-                        .textFieldStyle(.roundedBorder)
-                    Button(action: send) { Image(systemName: "paperplane.fill") }
-                        .disabled(message.trimmingCharacters(in: .whitespaces).isEmpty)
-                        .accessibilityLabel("copilot.send")
-                }
-                .padding(8)
-                .background(.bar)
             } else {
-                ProgressView().frame(maxHeight: .infinity)
+                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .navigationTitle(task.map { $0.title.isEmpty ? String(localized: "ai.task.title") : $0.title } ?? String(localized: "ai.task.title"))
@@ -386,6 +378,40 @@ struct TaskView: View {
         } message: { Text(error ?? "") }
     }
 
+    /// The reply box (with the error that is fixed in Settings → AI).
+    private var composer: some View {
+        VStack(spacing: 0) {
+            Divider()
+            if let problem {
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "exclamationmark.circle").foregroundColor(Brand.red)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(problem.message).foregroundColor(Brand.red)
+                        OpenAiSettingsButton { showingAiSettings = true }
+                            .font(.footnote.weight(.semibold))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Button { self.problem = nil } label: { Image(systemName: "xmark").font(.caption) }
+                        .foregroundColor(.secondary)
+                }
+                .font(.footnote)
+                .padding(.horizontal, 12).padding(.vertical, 6)
+            }
+            HStack(spacing: 8) {
+                TextField("common.reply_placeholder", text: $message)
+                    .textFieldStyle(.roundedBorder)
+                    .focused($typing)
+                    .submitLabel(.send)
+                    .onSubmit(send)
+                Button(action: send) { Image(systemName: "paperplane.fill") }
+                    .disabled(message.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .accessibilityLabel("copilot.send")
+            }
+            .padding(8)
+        }
+        .background(.bar)
+    }
+
     private func load() async {
         do {
             task = try await model.core.getAiTask(taskId: taskId)
@@ -396,6 +422,7 @@ struct TaskView: View {
 
     private func send() {
         let text = message.trimmingCharacters(in: .whitespaces)
+        guard !text.isEmpty else { return }
         message = ""
         problem = nil
         Task {
