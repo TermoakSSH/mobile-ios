@@ -23,7 +23,7 @@ final class LocalVault: ObservableObject {
             #endif
             self.core = core
         } catch {
-            self.error = errorMessage(error)
+            self.error = userMessage(error)
         }
     }
 

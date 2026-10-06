@@ -102,7 +102,7 @@ struct AiSettingsView: View {
             error = nil
         } catch {
             // Already loaded: keep what is shown.
-            if access == nil { self.error = errorMessage(error) }
+            if access == nil { self.error = userMessage(error) }
         }
     }
 }
@@ -296,7 +296,7 @@ private struct AiKeySection: View {
             do {
                 feedback = try await action()
             } catch {
-                feedback = .failure(AiAccessProblem(error)?.message ?? errorMessage(error))
+                feedback = .failure(AiAccessProblem(error)?.message ?? userMessage(error))
             }
             busy = false
             if reload { await changed() }

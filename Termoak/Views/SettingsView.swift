@@ -5,13 +5,12 @@ import SwiftUI
 /// of the app and the terminal.
 struct SettingsView: View {
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var sessions: Sessions
     @Environment(\.openURL) private var openURL
     @State private var twoFactor: TwoFactorStatus?
     @State private var loggingIn = false
-    @State private var loggingOut = false
     @State private var customizing = false
 
     private var version: String {
@@ -21,16 +20,28 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             Form {
-                if account.loggedIn == true {
+                if let current = account.current {
                     Section {
-                        accountCard
+                        accountCard(current)
                         HStack {
                             Text(syncStatus)
                                 .foregroundColor(.secondary)
                             Spacer()
                             Button("settings.sync") { account.sync() }.disabled(account.syncing)
                         }
-                        if let s = account.server, let url = URL(string: "\(s)/app/account") {
+                        NavigationLink { AccountsView() } label: {
+                            HStack {
+                                Label("accounts.title", systemImage: "person.2")
+                                Spacer()
+                                Text(verbatim: "\(account.list.count)").foregroundColor(.secondary)
+                            }
+                        }
+                        if account.list.contains(where: \.vaultsSupported) {
+                            NavigationLink { VaultsView() } label: {
+                                Label("vaults.title", systemImage: "lock.shield")
+                            }
+                        }
+                        if account.loggedIn == true, let url = URL(string: "\(current.serverUrl)/app/account") {
                             Button { openURL(url) } label: { Label("settings.web_account", systemImage: "arrow.up.right.square") }
                         }
                         if let tf = twoFactor {
@@ -43,16 +54,18 @@ struct SettingsView: View {
                         }
                     }
 
-                    Section("settings.ai") {
-                        NavigationLink { AiSettingsView() } label: {
-                            Label("settings.ai.keys", systemImage: "sparkles")
+                    if account.loggedIn == true {
+                        Section("settings.ai") {
+                            NavigationLink { AiSettingsView() } label: {
+                                Label("settings.ai.keys", systemImage: "sparkles")
+                            }
                         }
                     }
                 } else {
                     Section {
                         localCard
                         Button { loggingIn = true } label: {
-                            Label("common.log_in", systemImage: "person.crop.circle.badge.plus")
+                            Label("accounts.add", systemImage: "person.crop.circle.badge.plus")
                         }
                     }
                 }
@@ -116,32 +129,19 @@ struct SettingsView: View {
                         Spacer()
                         Text("settings.version.value \(version) \(libraryVersion())").foregroundColor(.secondary)
                     }
-                    if let url = URL(string: account.server ?? defaultServer) {
+                    if let url = URL(string: account.server ?? officialServerUrl()) {
                         Button { openURL(url) } label: { Label("settings.website", systemImage: "globe") }
                     }
                 }
 
-                if account.loggedIn == true {
-                    Section {
-                        Button(role: .destructive) { loggingOut = true } label: {
-                            Label("common.log_out", systemImage: "rectangle.portrait.and.arrow.right")
-                        }
-                    } footer: { Text("settings.log_out.footer") }
-                }
             }
             .navigationTitle("nav.profile")
             .sheet(isPresented: $loggingIn) {
                 LoginView(welcome: false) {}.environmentObject(account).environmentObject(settings)
             }
-            .confirmationDialog("settings.log_out.confirm", isPresented: $loggingOut, titleVisibility: .visible) {
-                Button("common.log_out", role: .destructive) {
-                    sessions.closeAll()
-                    account.logOut()
-                }
-            }
         }
         .navigationViewStyle(.stack)
-        .task(id: account.loggedIn) {
+        .task(id: account.current?.id) {
             if account.loggedIn == true {
                 twoFactor = try? await model.core.twoFactorStatus()
             } else {
@@ -157,20 +157,24 @@ struct SettingsView: View {
         .sheet(isPresented: $customizing) { KeyboardEditor().environmentObject(settings) }
     }
 
-    /// Who you are and where your vault syncs.
-    private var accountCard: some View {
+    /// The current account: who you are and where it syncs.
+    private func accountCard(_ current: AccountInfo) -> some View {
         HStack(spacing: 14) {
-            ProfileAvatar(name: account.user ?? "?")
+            AccountAvatar(account: current, size: 56)
             VStack(alignment: .leading, spacing: 3) {
-                Text(account.user ?? String(localized: "common.connected"))
+                Text(verbatim: current.email)
                     .font(.title3.weight(.semibold))
                     .lineLimit(1)
-                Text(verbatim: (account.server ?? "").replacingOccurrences(of: "https://", with: ""))
+                Text(verbatim: current.serverUrl.replacingOccurrences(of: "https://", with: ""))
                     .font(.subheadline).foregroundColor(.secondary).lineLimit(1)
-                HStack(spacing: 6) {
-                    Circle().fill(account.live ? Brand.green : Brand.amber).frame(width: 7, height: 7)
-                    Text(account.live ? String(localized: "nav.account.synced_live") : String(localized: "nav.account.synced"))
-                        .font(.caption).foregroundColor(.secondary)
+                if current.status == .active {
+                    HStack(spacing: 6) {
+                        Circle().fill(account.live ? Brand.green : Brand.amber).frame(width: 7, height: 7)
+                        Text(account.live ? String(localized: "nav.account.synced_live") : String(localized: "nav.account.synced"))
+                            .font(.caption).foregroundColor(.secondary)
+                    }
+                } else {
+                    AccountStatusText(info: current).font(.caption)
                 }
             }
         }
@@ -198,23 +202,5 @@ struct SettingsView: View {
         if account.syncing { return String(localized: "common.syncing") }
         if let last = account.lastSync { return String(localized: "settings.synced \(relativeTime(last))") }
         return String(localized: "settings.never_synced")
-    }
-}
-
-/// Round avatar with the first letter of the account.
-private struct ProfileAvatar: View {
-    let name: String
-
-    var body: some View {
-        Circle()
-            .fill(LinearGradient(gradient: Gradient(colors: [Brand.blue, Brand.blue.opacity(0.7)]),
-                                 startPoint: .topLeading, endPoint: .bottomTrailing))
-            .frame(width: 56, height: 56)
-            .overlay(
-                Text(verbatim: name.trimmingCharacters(in: .whitespaces).first.map { String($0).uppercased() } ?? "?")
-                    .font(.system(size: 24, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white)
-            )
-            .accessibilityHidden(true)
     }
 }

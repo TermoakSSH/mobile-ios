@@ -29,12 +29,12 @@ final class Tunnels: ObservableObject {
 
     func start(_ f: PortForward) async {
         do {
-            let s = try await connection(f.hostId)
+            let s = try await connection(f.hostId, accountId: f.accountId)
             running[f.id] = try await s.startForward(forwardId: f.id)
             hostOf[f.id] = f.hostId
             measure()
         } catch {
-            self.error = errorMessage(error)
+            self.error = userMessage(error)
             releaseIfUnused(f.hostId)
         }
     }
@@ -49,7 +49,8 @@ final class Tunnels: ObservableObject {
     /// A terminal has just connected: start the host's automatic tunnels.
     func onTerminalConnected(hostId: String, session: SshSession) async {
         connections[hostId] = (session, false)
-        let automatic = ((try? core.listForwards(hostId: hostId)) ?? []).filter { $0.autoStart && running[$0.id] == nil }
+        let everywhere = ItemFilter(accountIds: nil, vaultIds: nil, includeDevice: true)
+        let automatic = ((try? core.listForwards(hostId: hostId, filter: everywhere)) ?? []).filter { $0.autoStart && running[$0.id] == nil }
         for f in automatic {
             if let a = try? await session.startForward(forwardId: f.id) {
                 running[f.id] = a
@@ -59,7 +60,7 @@ final class Tunnels: ObservableObject {
         if !running.isEmpty { measure() }
     }
 
-    private func connection(_ hostId: String) async throws -> SshSession {
+    private func connection(_ hostId: String, accountId: String?) async throws -> SshSession {
         if let c = connections[hostId], !c.session.isClosed() { return c.session }
         if let s = terminalConnection?(hostId), !s.isClosed() {
             connections[hostId] = (s, false)
@@ -68,7 +69,7 @@ final class Tunnels: ObservableObject {
         let auth = AuthBridge { [weak self] p in
             Task { @MainActor in self?.prompt = p }
         }
-        let s = try await core.connect(hostId: hostId, auth: auth)
+        let s = try await core.connect(hostId: hostId, auth: auth, accountId: accountId)
         connections[hostId] = (s, true)
         return s
     }

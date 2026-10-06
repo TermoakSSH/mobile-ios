@@ -3,7 +3,7 @@ import SwiftUI
 
 struct KeychainView: View {
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @State private var keys: [SshKey] = []
     @State private var generating = false
     @State private var importing = false
@@ -94,7 +94,7 @@ struct KeychainView: View {
 
 struct GenerateKeyView: View {
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @State private var type: KeyType = .ed25519
@@ -135,7 +135,7 @@ struct GenerateKeyView: View {
                                 account.sync()
                                 dismiss()
                             } catch {
-                                self.error = errorMessage(error)
+                                self.error = userMessage(error)
                             }
                         }
                     }
@@ -148,7 +148,7 @@ struct GenerateKeyView: View {
 
 struct ImportKeyView: View {
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @State private var privateKey = ""
@@ -184,7 +184,7 @@ struct ImportKeyView: View {
                                 account.sync()
                                 dismiss()
                             } catch {
-                                self.error = errorMessage(error)
+                                self.error = userMessage(error)
                             }
                         }
                     }
@@ -199,7 +199,7 @@ struct ImportKeyView: View {
 /// in every open terminal.
 struct SnippetsView: View {
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @EnvironmentObject private var sessions: Sessions
     @State private var list: [Snippet] = []
     @State private var editing: SnippetEdit?
@@ -283,7 +283,7 @@ private struct SnippetEdit: Identifiable {
 private struct SnippetEditor: View {
     let original: Snippet
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @State private var script = ""
@@ -319,7 +319,7 @@ private struct SnippetEditor: View {
                             account.sync()
                             dismiss()
                         } catch {
-                            self.error = errorMessage(error)
+                            self.error = userMessage(error)
                         }
                     }
                     .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || script.isEmpty)
@@ -338,7 +338,7 @@ private struct SnippetEditor: View {
 private struct IdentityList: View {
     let keys: [SshKey]
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @State private var list: [SshIdentity] = []
     @State private var editing: IdentityEdit?
 
@@ -394,7 +394,7 @@ private struct IdentityEditor: View {
     let original: SshIdentity
     let keys: [SshKey]
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @State private var username = ""
@@ -430,7 +430,7 @@ private struct IdentityEditor: View {
                             account.sync()
                             dismiss()
                         } catch {
-                            self.error = errorMessage(error)
+                            self.error = userMessage(error)
                         }
                     }
                     .disabled(username.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -448,7 +448,7 @@ private struct IdentityEditor: View {
 /// Known hosts: the fingerprints of the servers you trust.
 struct KnownHostsView: View {
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @State private var list: [KnownHost] = []
 
     var body: some View {

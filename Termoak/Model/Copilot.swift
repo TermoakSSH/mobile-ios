@@ -22,7 +22,10 @@ struct LiveItem: Identifiable {
 /// following ones are messages of that task.
 @MainActor
 final class Copilot: ObservableObject {
-    private let core: TermoakCore
+    /// The AI of the account the terminal belongs to.
+    private let core: AccountApi
+    /// The host is known to that account's server (the task can name it).
+    private let sendsHost: Bool
 
     @Published private(set) var task: AiTask? {
         didSet { conversation = task.map(turns) ?? [] }
@@ -78,8 +81,9 @@ final class Copilot: ObservableObject {
         case screen
     }
 
-    init(core: TermoakCore) {
+    init(core: AccountApi, sendsHost: Bool = true) {
         self.core = core
+        self.sendsHost = sendsHost
     }
 
     var status: AiTaskStatus? { liveStatus ?? task?.status }
@@ -155,7 +159,7 @@ final class Copilot: ObservableObject {
         let own = (session as? ServerTerminal)?.sessionId
         let screen = session.screenText()
         let name = session.hostId == nil ? "local terminal" : session.label
-        let hostIds = session.hostId.map { [$0] } ?? []
+        let hostIds = sendsHost ? (session.hostId.map { [$0] } ?? []) : []
         let id = task?.id
         if id == nil {
             creating = true
@@ -433,7 +437,7 @@ final class Copilot: ObservableObject {
     /// message and the button to Settings → AI.
     private func fail(_ error: Error) {
         let problem = AiAccessProblem(error)
-        self.error = problem?.message ?? errorMessage(error)
+        self.error = problem?.message ?? userMessage(error)
         // After `error`: its didSet clears it.
         accessProblem = problem
     }

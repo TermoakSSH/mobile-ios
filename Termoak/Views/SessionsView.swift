@@ -6,12 +6,13 @@ import SwiftUI
 /// sessions that live on the server.
 struct ConnectionsView: View {
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @EnvironmentObject private var sessions: Sessions
     @EnvironmentObject private var router: HomeRouter
 
-    @State private var list: ServerSessionList?
-    @State private var terminating: ServerSession?
+    /// Server sessions of every signed-in account.
+    @State private var lists: [AccountSessionList] = []
+    @State private var terminating: AccountSession?
     @State private var closingAll = false
     @State private var error: String?
     @State private var hosts: [String: SshHost] = [:]
@@ -21,7 +22,7 @@ struct ConnectionsView: View {
     @State private var activity: SharingItem?
 
     private var serverEmpty: Bool {
-        list.map { $0.active.isEmpty && $0.shared.isEmpty && $0.recent.isEmpty } ?? true
+        lists.allSatisfy { $0.list.active.isEmpty && $0.list.shared.isEmpty && $0.list.recent.isEmpty }
     }
 
     var body: some View {
@@ -50,7 +51,7 @@ struct ConnectionsView: View {
                 if !sessions.open.isEmpty {
                     Section("sessions.section.open_here") {
                         ForEach(sessions.open) { s in
-                            OpenSessionRow(session: s, host: s.hostId.flatMap { hosts[$0] }) { sessions.show(s.id) }
+                            OpenSessionRow(session: s, host: s.hostId.flatMap { hosts[itemKey(s.accountId, $0)] }) { sessions.show(s.id) }
                                 .swipeActions {
                                     Button(role: .destructive) { sessions.close(s.id) } label: {
                                         Label("connections.disconnect", systemImage: "xmark.circle")
@@ -65,61 +66,8 @@ struct ConnectionsView: View {
                         }
                     }
                 }
-                if account.loggedIn == true {
-                    if let active = list?.active, !active.isEmpty {
-                        Section("sessions.section.on_server") {
-                            ForEach(active, id: \.id) { s in
-                                ServerSessionRow(session: s, host: s.hostId.flatMap { hosts[$0] }) { attach(s) }
-                                    .swipeActions {
-                                        Button("common.terminate", role: .destructive) { terminating = s }
-                                        Button { share(s) } label: { Label("share.menu.share", systemImage: "person.badge.plus") }
-                                            .tint(Brand.blue)
-                                    }
-                                    .contextMenu {
-                                        Button { attach(s) } label: { Label("common.open", systemImage: "terminal") }
-                                        Button { share(s) } label: { Label("share.menu.share", systemImage: "person.badge.plus") }
-                                        Button { showActivity(id: s.id, title: label(s)) } label: { Label("activity.menu", systemImage: "clock.arrow.circlepath") }
-                                        Button(role: .destructive) { terminating = s } label: { Label("common.terminate", systemImage: "power") }
-                                    }
-                            }
-                        }
-                    }
-                    if let shared = list?.shared, !shared.isEmpty {
-                        Section("sessions.section.shared") {
-                            ForEach(shared, id: \.id) { s in
-                                ServerSessionRow(session: s, host: nil, shared: true) { attach(s, owner: false) }
-                            }
-                        }
-                    }
-                    if let recent = list?.recent, !recent.isEmpty {
-                        Section("sessions.section.recent") {
-                            ForEach(recent.prefix(15), id: \.id) { r in
-                                let title = r.title.isEmpty ? (hosts[r.hostId ?? ""]?.label ?? String(localized: "common.session")) : r.title
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(verbatim: title)
-                                        Text([r.status, relativeTime(r.endedAt ?? r.createdAt), r.error ?? ""]
-                                            .filter { !$0.isEmpty }.joined(separator: " · "))
-                                            .font(.caption).foregroundColor(.secondary).lineLimit(1)
-                                    }
-                                    Spacer(minLength: 0)
-                                    if r.recording {
-                                        Image(systemName: "record.circle").foregroundColor(.secondary)
-                                            .accessibilityLabel(Text("activity.recorded"))
-                                    }
-                                }
-                                .contentShape(Rectangle())
-                                .onTapGesture { if r.recording { showActivity(id: r.id, title: title) } }
-                                .contextMenu {
-                                    if r.recording {
-                                        Button { showActivity(id: r.id, title: title) } label: {
-                                            Label("activity.menu", systemImage: "clock.arrow.circlepath")
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                ForEach(lists) { item in
+                    serverSections(item)
                 }
             }
             .listStyle(.insetGrouped)
@@ -145,8 +93,9 @@ struct ConnectionsView: View {
                                 titleVisibility: .visible) {
                 Button("common.terminate", role: .destructive) {
                     guard let s = terminating else { return }
+                    let api = model.core.api(for: s.accountId)
                     Task {
-                        do { try await model.core.closeServerSession(sessionId: s.id) } catch { self.error = errorMessage(error) }
+                        do { try await api.closeServerSession(sessionId: s.session.id) } catch { self.error = userMessage(error) }
                         await load()
                     }
                 }
@@ -155,7 +104,7 @@ struct ConnectionsView: View {
                 ShareSessionView(core: model.core, source: .server(sessionId: item.id), title: item.title)
             }
             .sheet(item: $activity) { item in
-                SessionActivityView(core: model.core, sessionId: item.id, title: item.title)
+                SessionActivityView(core: model.core.api(for: item.accountId), sessionId: item.id, title: item.title)
             }
             .confirmationDialog("connections.disconnect_all.title", isPresented: $closingAll, titleVisibility: .visible) {
                 Button("connections.disconnect_all", role: .destructive) { sessions.closeAll() }
@@ -171,43 +120,140 @@ struct ConnectionsView: View {
         }
     }
 
-    private func attach(_ s: ServerSession, owner: Bool = true) {
-        let label = s.title.isEmpty ? (hosts[s.hostId ?? ""]?.label ?? String(localized: "common.session")) : s.title
+    /// Sections of one account's server sessions (the account's email in
+    /// their titles when there are several).
+    @ViewBuilder private func serverSections(_ item: AccountSessionList) -> some View {
+        let list = item.list
+        let accountId = item.accountId
+        let several = lists.count > 1
+        let canShare = accountId == account.current?.id
+        if !list.active.isEmpty {
+            Section {
+                ForEach(list.active, id: \.id) { s in
+                    ServerSessionRow(session: s, host: host(s.hostId, accountId)) { attach(s, accountId: accountId) }
+                        .swipeActions {
+                            Button("common.terminate", role: .destructive) { terminating = AccountSession(accountId: accountId, session: s) }
+                            if canShare {
+                                Button { share(s, accountId: accountId) } label: { Label("share.menu.share", systemImage: "person.badge.plus") }
+                                    .tint(Brand.blue)
+                            }
+                        }
+                        .contextMenu {
+                            Button { attach(s, accountId: accountId) } label: { Label("common.open", systemImage: "terminal") }
+                            if canShare {
+                                Button { share(s, accountId: accountId) } label: { Label("share.menu.share", systemImage: "person.badge.plus") }
+                            }
+                            Button { showActivity(id: s.id, title: label(s, accountId), accountId: accountId) } label: {
+                                Label("activity.menu", systemImage: "clock.arrow.circlepath")
+                            }
+                            Button(role: .destructive) { terminating = AccountSession(accountId: accountId, session: s) } label: {
+                                Label("common.terminate", systemImage: "power")
+                            }
+                        }
+                }
+            } header: {
+                sectionTitle(String(localized: "sessions.section.on_server"), item, several)
+            }
+        }
+        if !list.shared.isEmpty {
+            Section {
+                ForEach(list.shared, id: \.id) { s in
+                    ServerSessionRow(session: s, host: nil, shared: true) { attach(s, owner: false, accountId: accountId) }
+                }
+            } header: {
+                sectionTitle(String(localized: "sessions.section.shared"), item, several)
+            }
+        }
+        if !list.recent.isEmpty {
+            Section {
+                ForEach(list.recent.prefix(15), id: \.id) { r in
+                    let title = r.title.isEmpty ? (host(r.hostId, accountId)?.label ?? String(localized: "common.session")) : r.title
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(verbatim: title)
+                            Text([r.status, relativeTime(r.endedAt ?? r.createdAt), r.error ?? ""]
+                                .filter { !$0.isEmpty }.joined(separator: " · "))
+                                .font(.caption).foregroundColor(.secondary).lineLimit(1)
+                        }
+                        Spacer(minLength: 0)
+                        if r.recording {
+                            Image(systemName: "record.circle").foregroundColor(.secondary)
+                                .accessibilityLabel(Text("activity.recorded"))
+                        }
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture { if r.recording { showActivity(id: r.id, title: title, accountId: accountId) } }
+                    .contextMenu {
+                        if r.recording {
+                            Button { showActivity(id: r.id, title: title, accountId: accountId) } label: {
+                                Label("activity.menu", systemImage: "clock.arrow.circlepath")
+                            }
+                        }
+                    }
+                }
+            } header: {
+                sectionTitle(String(localized: "sessions.section.recent"), item, several)
+            }
+        }
+    }
+
+    private func sectionTitle(_ title: String, _ item: AccountSessionList, _ several: Bool) -> Text {
+        several ? Text(verbatim: "\(title) · \(item.email)") : Text(verbatim: title)
+    }
+
+    private func host(_ hostId: String?, _ accountId: String) -> SshHost? {
+        hostId.flatMap { hosts[itemKey(accountId, $0)] }
+    }
+
+    private func attach(_ s: ServerSession, owner: Bool = true, accountId: String) {
+        let label = s.title.isEmpty ? (host(s.hostId, accountId)?.label ?? String(localized: "common.session")) : s.title
         // The host of a session shared with you is the owner's, not yours.
-        sessions.attach(sessionId: s.id, label: label, hostId: owner ? s.hostId : nil, owner: owner)
+        sessions.attach(sessionId: s.id, label: label, hostId: owner ? s.hostId : nil, owner: owner, accountId: accountId)
     }
 
-    private func share(_ s: ServerSession) {
-        sharing = SharingItem(id: s.id, title: label(s))
+    private func share(_ s: ServerSession, accountId: String) {
+        sharing = SharingItem(id: s.id, title: label(s, accountId), accountId: accountId)
     }
 
-    private func label(_ s: ServerSession) -> String {
-        s.title.isEmpty ? (hosts[s.hostId ?? ""]?.label ?? String(localized: "common.session")) : s.title
+    private func label(_ s: ServerSession, _ accountId: String) -> String {
+        s.title.isEmpty ? (host(s.hostId, accountId)?.label ?? String(localized: "common.session")) : s.title
     }
 
     /// Who typed in one of your sessions (open or closed).
-    private func showActivity(id: String, title: String) {
-        activity = SharingItem(id: id, title: title)
+    private func showActivity(id: String, title: String, accountId: String) {
+        activity = SharingItem(id: id, title: title, accountId: accountId)
     }
 
     private func load() async {
-        hosts = Dictionary(((try? model.core.listHosts()) ?? []).map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
-        guard account.loggedIn == true else {
-            list = nil
-            return
+        let everywhere = ItemFilter(accountIds: nil, vaultIds: nil, includeDevice: true)
+        hosts = Dictionary(((try? model.core.listHosts(filter: everywhere)) ?? []).map { ($0.key, $0) },
+                           uniquingKeysWith: { a, _ in a })
+        var out: [AccountSessionList] = []
+        for a in account.list where a.status == .active {
+            do {
+                let list = try await model.core.account(accountId: a.id).listServerSessions()
+                out.append(AccountSessionList(accountId: a.id, email: a.email, list: list))
+            } catch {
+                self.error = userMessage(error)
+            }
         }
-        do {
-            list = try await model.core.listServerSessions()
-        } catch {
-            self.error = errorMessage(error)
-        }
+        lists = out
     }
+}
+
+/// The server sessions of one account.
+private struct AccountSessionList: Identifiable {
+    let accountId: String
+    let email: String
+    let list: ServerSessionList
+    var id: String { accountId }
 }
 
 /// One of your server sessions in the invitations sheet.
 private struct SharingItem: Identifiable {
     let id: String
     let title: String
+    let accountId: String?
 }
 
 /// "Join with link": open a session someone shared with an invitation link.

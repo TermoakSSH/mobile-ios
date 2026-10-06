@@ -107,7 +107,7 @@ struct HostEditor: View {
     var onConnect: ((SshHost) -> Void)? = nil
 
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @Environment(\.dismiss) private var dismiss
 
     @State private var name = ""
@@ -713,7 +713,7 @@ struct HostEditor: View {
             dismiss()
             if connect { onConnect?(saved) }
         } catch {
-            self.error = errorMessage(error)
+            self.error = userMessage(error)
         }
     }
 
@@ -724,7 +724,7 @@ struct HostEditor: View {
             account.sync()
             dismiss()
         } catch {
-            self.error = errorMessage(error)
+            self.error = userMessage(error)
         }
     }
 }

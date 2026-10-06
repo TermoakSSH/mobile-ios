@@ -10,7 +10,7 @@ struct CopilotPanel: View {
     @ObservedObject var session: TerminalSession
     let onClose: () -> Void
 
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var model: AppModel
     @State private var loggingIn = false
@@ -127,7 +127,7 @@ struct CopilotPanel: View {
 
     /// Which terminal the AI sees and whether it can type in it.
     private var context: (icon: String, text: String, notice: String?) {
-        let host = session.hostId.flatMap { try? model.core.getHost(id: $0) }
+        let host = session.hostId.flatMap { try? model.core.getHost(id: $0, accountId: session.accountId) }
         let name = host.map { $0.label.isEmpty ? $0.address : $0.label } ?? session.label
         let onServer = session is ServerTerminal
         let shared = (session as? LocalTerminal)?.shared != nil

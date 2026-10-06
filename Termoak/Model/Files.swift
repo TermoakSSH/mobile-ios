@@ -51,24 +51,27 @@ final class SshFileSystem: RemoteFileSystem {
 final class ServerFileSystem: RemoteFileSystem {
     let core: TermoakCore
     let hostId: String
+    /// The host's account (`nil`: wherever the host is).
+    let accountId: String?
 
-    init(core: TermoakCore, hostId: String) {
+    init(core: TermoakCore, hostId: String, accountId: String?) {
         self.core = core
         self.hostId = hostId
+        self.accountId = accountId
     }
 
     var canChmod: Bool { false }
-    func home() async throws -> String { try await core.serverSftpHome(hostId: hostId) }
-    func list(_ path: String) async throws -> [RemoteFile] { try await core.serverSftpList(hostId: hostId, path: path) }
+    func home() async throws -> String { try await core.serverSftpHome(hostId: hostId, accountId: accountId) }
+    func list(_ path: String) async throws -> [RemoteFile] { try await core.serverSftpList(hostId: hostId, path: path, accountId: accountId) }
     func download(_ remote: String, to local: URL, progress: TransferListener) async throws {
-        _ = try await core.serverSftpDownload(hostId: hostId, remotePath: remote, localPath: local.path, listener: progress)
+        _ = try await core.serverSftpDownload(hostId: hostId, remotePath: remote, localPath: local.path, listener: progress, accountId: accountId)
     }
     func upload(_ local: URL, to remote: String, progress: TransferListener) async throws {
-        _ = try await core.serverSftpUpload(hostId: hostId, localPath: local.path, remotePath: remote, listener: progress)
+        _ = try await core.serverSftpUpload(hostId: hostId, localPath: local.path, remotePath: remote, listener: progress, accountId: accountId)
     }
-    func createFolder(_ path: String) async throws { try await core.serverSftpMkdir(hostId: hostId, path: path, parents: false) }
-    func rename(_ from: String, to: String) async throws { try await core.serverSftpRename(hostId: hostId, from: from, to: to) }
-    func delete(_ path: String, recursive: Bool) async throws { try await core.serverSftpDelete(hostId: hostId, path: path, recursive: recursive) }
+    func createFolder(_ path: String) async throws { try await core.serverSftpMkdir(hostId: hostId, path: path, parents: false, accountId: accountId) }
+    func rename(_ from: String, to: String) async throws { try await core.serverSftpRename(hostId: hostId, from: from, to: to, accountId: accountId) }
+    func delete(_ path: String, recursive: Bool) async throws { try await core.serverSftpDelete(hostId: hostId, path: path, recursive: recursive, accountId: accountId) }
     func setPermissions(_ path: String, mode: UInt32) async throws {
         throw TermoakError.Invalid(message: String(localized: "files.error.chmod_ssh_only"))
     }
@@ -114,9 +117,9 @@ final class FileBrowser: ObservableObject {
         /// Connection of an open terminal.
         case session(SshSession)
         /// Connect from the phone (asking for fingerprint or password if needed).
-        case connect(hostId: String)
-        /// SFTP from the server.
-        case server(hostId: String)
+        case connect(hostId: String, accountId: String?)
+        /// SFTP from the server (the host's account).
+        case server(hostId: String, accountId: String?)
     }
 
     let title: String
@@ -153,19 +156,19 @@ final class FileBrowser: ObservableObject {
             switch source {
             case .session(let s):
                 fileSystem = SshFileSystem(session: s, own: false)
-            case .server(let hostId):
-                fileSystem = ServerFileSystem(core: core, hostId: hostId)
-            case .connect(let hostId):
+            case .server(let hostId, let accountId):
+                fileSystem = ServerFileSystem(core: core, hostId: hostId, accountId: accountId)
+            case .connect(let hostId, let accountId):
                 let auth = AuthBridge { [weak self] p in
                     Task { @MainActor in self?.prompt = p }
                 }
-                fileSystem = SshFileSystem(session: try await core.connect(hostId: hostId, auth: auth), own: true)
+                fileSystem = SshFileSystem(session: try await core.connect(hostId: hostId, auth: auth, accountId: accountId), own: true)
             }
             let home = try await fileSystem!.home()
             await go(to: home)
         } catch {
             loading = false
-            self.error = errorMessage(error)
+            self.error = userMessage(error)
         }
     }
 
@@ -181,7 +184,7 @@ final class FileBrowser: ObservableObject {
             entries = try await fileSystem.list(newPath)
             path = newPath
         } catch {
-            self.error = errorMessage(error)
+            self.error = userMessage(error)
         }
     }
 
@@ -219,7 +222,7 @@ final class FileBrowser: ObservableObject {
         do {
             try await action(fileSystem)
         } catch {
-            self.error = errorMessage(error)
+            self.error = userMessage(error)
         }
         await reload()
     }
@@ -234,7 +237,7 @@ final class FileBrowser: ObservableObject {
             try await transfer(f.name, uploading: false) { p in try await fileSystem.download(f.path, to: target, progress: p) }
             return target
         } catch {
-            self.error = errorMessage(error)
+            self.error = userMessage(error)
             return nil
         }
     }
@@ -248,7 +251,7 @@ final class FileBrowser: ObservableObject {
         do {
             try await transfer(local.lastPathComponent, uploading: true) { p in try await fileSystem.upload(local, to: remote, progress: p) }
         } catch {
-            self.error = errorMessage(error)
+            self.error = userMessage(error)
         }
         await reload()
     }

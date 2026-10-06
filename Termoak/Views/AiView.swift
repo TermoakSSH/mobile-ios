@@ -21,7 +21,7 @@ private extension AiTask {
 /// Connections tab).
 struct AiView: View {
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @State private var tasks: [AiTask] = []
     @State private var approvals: [AiApproval] = []
     @State private var creating = false
@@ -96,7 +96,7 @@ struct AiView: View {
             approvals = try await model.core.listPendingApprovals()
             await account.refreshApprovals()
         } catch {
-            self.error = errorMessage(error)
+            self.error = userMessage(error)
         }
     }
 
@@ -105,7 +105,7 @@ struct AiView: View {
             do {
                 try await model.core.decideApproval(taskId: a.taskId, approvalId: a.id, approve: approve, always: always)
             } catch {
-                self.error = errorMessage(error)
+                self.error = userMessage(error)
             }
             await load()
         }
@@ -278,7 +278,10 @@ struct NewTaskView: View {
         }
         .sheet(isPresented: $showingAiSettings) { AiSettingsSheet().environmentObject(model) }
         .onAppear {
-            hosts = ((try? model.core.listHosts()) ?? [])
+            // The AI runs on the current account's server: only its hosts.
+            let current = model.account.current?.id
+            let filter = ItemFilter(accountIds: current.map { [$0] } ?? [], vaultIds: nil, includeDevice: false)
+            hosts = ((try? model.core.listHosts(filter: filter)) ?? [])
                 .sorted { $0.label.localizedCaseInsensitiveCompare($1.label) == .orderedAscending }
         }
     }
@@ -296,7 +299,7 @@ struct NewTaskView: View {
                 dismiss()
             } catch {
                 problem = AiAccessProblem(error)
-                self.error = problem?.message ?? errorMessage(error)
+                self.error = problem?.message ?? userMessage(error)
             }
         }
     }
@@ -305,7 +308,7 @@ struct NewTaskView: View {
 struct TaskView: View {
     let taskId: String
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @State private var task: AiTask?
     @State private var message = ""
     @State private var error: String?
@@ -416,7 +419,7 @@ struct TaskView: View {
         do {
             task = try await model.core.getAiTask(taskId: taskId)
         } catch {
-            self.error = errorMessage(error)
+            self.error = userMessage(error)
         }
     }
 
@@ -434,7 +437,7 @@ struct TaskView: View {
                 if let p = AiAccessProblem(error) {
                     problem = p
                 } else {
-                    self.error = errorMessage(error)
+                    self.error = userMessage(error)
                 }
             }
         }

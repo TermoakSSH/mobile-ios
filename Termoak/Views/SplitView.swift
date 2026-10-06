@@ -276,7 +276,7 @@ struct SessionStage: View {
     }
 
     private var host: SshHost? {
-        session.hostId.flatMap { try? model.core.getHost(id: $0) }
+        session.hostId.flatMap { try? model.core.getHost(id: $0, accountId: session.accountId) }
     }
 
     /// The host, the progress and the steps (or the error, if it never connected).

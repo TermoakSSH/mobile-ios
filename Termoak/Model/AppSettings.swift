@@ -70,14 +70,6 @@ final class AppSettings: ObservableObject {
     /// bracketed paste, which keeps the shell from running them).
     @Published var confirmMultilinePaste: Bool { didSet { d.set(confirmMultilinePaste, forKey: "confirm_multiline_paste") } }
 
-    var lastServer: String? {
-        get { d.string(forKey: "ultimo_servidor") }
-        set { d.set(newValue, forKey: "ultimo_servidor") }
-    }
-    var lastEmail: String? {
-        get { d.string(forKey: "ultimo_email") }
-        set { d.set(newValue, forKey: "ultimo_email") }
-    }
     /// The user already chose to use the app without a server: do not show the welcome again.
     var noServer: Bool {
         get { d.bool(forKey: "sin_servidor") }
@@ -85,6 +77,9 @@ final class AppSettings: ObservableObject {
     }
 
     init() {
+        // The server and email of the last sign-in: the accounts keep them now.
+        d.removeObject(forKey: "ultimo_servidor")
+        d.removeObject(forKey: "ultimo_email")
         let size = d.double(forKey: "tamano_letra")
         fontSize = size == 0 ? 13 : size
         appTheme = AppTheme(rawValue: d.string(forKey: "tema") ?? "") ?? .dark
@@ -106,6 +101,3 @@ final class AppSettings: ObservableObject {
         fontSize = min(AppSettings.maxFontSize, max(AppSettings.minFontSize, fontSize + delta))
     }
 }
-
-/// Server suggested when logging in.
-let defaultServer = "https://termoak.com"

@@ -69,7 +69,7 @@ final class HomeRouter: ObservableObject {
 struct Home: View {
     @StateObject private var router = HomeRouter()
     @EnvironmentObject private var sessions: Sessions
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
 
     var body: some View {
         TabView(selection: $router.tab) {

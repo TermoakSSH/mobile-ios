@@ -9,7 +9,7 @@ struct JoinLinkView: View {
     /// Known when opened from a link; `nil` to paste one.
     let link: JoinLink?
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @Environment(\.dismiss) private var dismiss
     @AppStorage("share.guest_name") private var savedName = ""
     @State private var text = ""
@@ -163,7 +163,7 @@ struct JoinLinkView: View {
             do {
                 info = try await linkInviteInfo(serverUrl: l.server, token: l.token)
             } catch {
-                self.error = errorMessage(error)
+                self.error = userMessage(error)
             }
         }
     }

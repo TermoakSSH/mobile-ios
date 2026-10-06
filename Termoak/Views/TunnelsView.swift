@@ -255,7 +255,7 @@ private struct TunnelEditor: View {
             _ = try model.core.saveForward(forward: f)
             dismiss()
         } catch {
-            self.error = errorMessage(error)
+            self.error = userMessage(error)
         }
     }
 }

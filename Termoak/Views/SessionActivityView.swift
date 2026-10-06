@@ -5,7 +5,7 @@ import SwiftUI
 /// from the author marks of its recording (`sessionActivity`). Only who
 /// typed and when, not what.
 struct SessionActivityView: View {
-    let core: TermoakCore
+    let core: AccountApi
     let sessionId: String
     let title: String
 
@@ -81,7 +81,7 @@ struct SessionActivityView: View {
                 load = .notRecorded
             }
         } catch {
-            load = .failed(errorMessage(error))
+            load = .failed(userMessage(error))
         }
     }
 

@@ -13,7 +13,7 @@ struct HostsView: View {
     var shortcuts = false
 
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @EnvironmentObject private var sessions: Sessions
 
     @State private var hosts: [SshHost] = []
@@ -197,7 +197,7 @@ struct HostsView: View {
         }
         .fullScreenCover(item: Binding(get: { filesHost.map(SelectedHost.init) }, set: { filesHost = $0?.host })) { e in
             FilesScreen(core: model.core, title: e.host.label.isEmpty ? e.host.address : e.host.label,
-                        source: .connect(hostId: e.host.id))
+                        source: .connect(hostId: e.host.id, accountId: e.host.accountId))
         }
         .sheet(item: Binding(get: { tunnelsHost.map(SelectedHost.init) }, set: { tunnelsHost = $0?.host }), onDismiss: load) { e in
             TunnelsView(host: e.host)
@@ -230,11 +230,11 @@ struct HostsView: View {
         }
         .onReceive(account.vaultChanged) { load() }
         .task {
-            if groupId == nil && account.loggedIn == true { await sessions.refreshServer() }
+            if groupId == nil && account.loggedIn == true { await sessions.refreshServer(accounts: account.list.filter { $0.status == .active }.map(\.id)) }
         }
         .onReceive(account.changes) { kind in
             guard groupId == nil, kind == "session" || kind == "lagged" else { return }
-            Task { await sessions.refreshServer() }
+            Task { await sessions.refreshServer(accounts: account.list.filter { $0.status == .active }.map(\.id)) }
         }
     }
 
@@ -434,7 +434,7 @@ struct HostsView: View {
     }
 
     private func show(_ error: Error) {
-        notice = Notice(title: String(localized: "common.error"), message: errorMessage(error))
+        notice = Notice(title: String(localized: "common.error"), message: userMessage(error))
     }
 
     private func save(_ host: SshHost) {
@@ -610,7 +610,7 @@ private struct HostRow: View {
 private struct GroupEditor: View {
     let original: HostGroup
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @State private var error: String?
@@ -634,7 +634,7 @@ private struct GroupEditor: View {
                             account.sync()
                             dismiss()
                         } catch {
-                            self.error = errorMessage(error)
+                            self.error = userMessage(error)
                         }
                     }
                     .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)

@@ -42,7 +42,7 @@ struct TermoakApp: App {
 final class AppModel: ObservableObject {
     let core: TermoakCore
     let settings: AppSettings
-    let account: Account
+    let account: Accounts
     let sessions: Sessions
     let tunnels: Tunnels
     /// "Join with link" sheet (opened from a link or from Connections).
@@ -52,26 +52,25 @@ final class AppModel: ObservableObject {
     init(core: TermoakCore, settings: AppSettings) {
         self.core = core
         self.settings = settings
-        account = Account(core: core)
+        account = Accounts(core: core)
         tunnels = Tunnels(core: core)
         sessions = Sessions(core: core, settings: settings, tunnels: tunnels)
         try? core.setDeviceName(name: UIDevice.current.name)
-        // When launching logged in (or when logging in), your running server
-        // sessions appear as sleeping tabs. Only once: coming back to the
-        // foreground does not repeat it.
-        account.$loggedIn
-            .removeDuplicates()
-            .sink { [weak self] loggedIn in
-                Task { @MainActor in
-                    guard let self else { return }
-                    if loggedIn == true {
-                        await self.sessions.restoreFromServer()
-                    } else if loggedIn == false {
-                        self.sessions.forgetServer()
-                    }
-                }
+        // The running server sessions of every signed-in account appear as
+        // sleeping tabs: at launch and when an account signs in. Those of an
+        // account that signs out go away.
+        account.accountsChanged
+            .sink { [weak self] in
+                Task { @MainActor in await self?.restoreServerSessions() }
             }
             .store(in: &subscriptions)
+    }
+
+    /// Server sessions of the signed-in accounts (only new ones are added).
+    func restoreServerSessions() async {
+        let active = account.list.filter { $0.status == .active }.map(\.id)
+        sessions.forgetServer(keeping: Set(active))
+        await sessions.restoreFromServer(accounts: active)
     }
 
     /// A link was opened (`termoak://join?…` or `https://…/join/<token>`).
@@ -144,13 +143,20 @@ private struct Root: View {
             .environmentObject(model.sessions)
             .environmentObject(model.settings)
             .environmentObject(model.tunnels)
-            .task { await model.account.refresh() }
+            .task {
+                await model.account.refresh()
+                await model.restoreServerSessions()
+                model.account.sync()
+            }
             .onChange(of: phase) { newPhase in
                 switch newPhase {
                 case .background: model.sessions.enterBackground()
                 case .active:
                     model.sessions.endBackground()
-                    Task { await model.account.refresh() }
+                    Task {
+                        await model.account.refresh()
+                        await model.sessions.refreshServer(accounts: model.account.list.filter { $0.status == .active }.map(\.id))
+                    }
                 default: break
                 }
             }
@@ -159,18 +165,22 @@ private struct Root: View {
 
 private struct RootContent: View {
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @EnvironmentObject private var sessions: Sessions
     @EnvironmentObject private var settings: AppSettings
     @State private var welcomeDone = false
+    /// The welcome screen is on: it stays until it finishes (an account
+    /// waiting for its email code is already in the list).
+    @State private var inWelcome = false
 
     var body: some View {
         Group {
             if account.loggedIn == nil {
                 ProgressView()
-            } else if account.loggedIn == false && !settings.noServer && !welcomeDone
+            } else if (account.list.isEmpty || inWelcome) && !settings.noServer && !welcomeDone
                         && model.joining == nil && sessions.open.isEmpty {
                 LoginView(welcome: true) { welcomeDone = true }
+                    .onAppear { inWelcome = true }
             } else {
                 Home()
                     .overlay(alignment: .top) { ShareToasts(notices: sessions.notices) }
@@ -190,5 +200,16 @@ private struct RootContent: View {
                 .environmentObject(model.account)
         }
         .onReceive(account.sessionNotices) { model.sessionNotice($0) }
+        // Notices of the syncs (vaults shared or lost, changes discarded)
+        // and of the update that moved the data to one store per account.
+        .alert(account.notice?.title ?? "", isPresented: Binding(get: { account.notice != nil },
+                                                               set: { if !$0 { account.noticeDismissed() } })) {
+            Button("common.ok", role: .cancel) {}
+        } message: { Text(account.notice?.message ?? "") }
+        .sheet(item: $account.uploadOffer) { offer in
+            UploadDeviceItemsView(accountId: offer.accountId)
+                .environmentObject(model)
+                .environmentObject(account)
+        }
     }
 }

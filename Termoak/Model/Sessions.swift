@@ -22,6 +22,9 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     let core: TermoakCore
     let label: String
     let hostId: String?
+    /// Account of the host and of the server session (`nil`: This device,
+    /// or the current account for sessions opened without a host).
+    let accountId: String?
     let view: TerminalView
     let settings: AppSettings
     /// Terminal theme chosen in the host (`dark`, `light`, as the desktop
@@ -131,12 +134,13 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         }
     }
 
-    init(core: TermoakCore, label: String, hostId: String?, settings: AppSettings) {
+    init(core: TermoakCore, label: String, hostId: String?, accountId: String? = nil, settings: AppSettings) {
         self.core = core
         self.label = label
         self.hostId = hostId
+        self.accountId = accountId
         self.settings = settings
-        let host = hostId.flatMap { try? core.getHost(id: $0) }
+        let host = hostId.flatMap { try? core.getHost(id: $0, accountId: accountId) }
         os = host?.os
         hostTheme = host?.settings.theme
         let terminal = PasteAwareTerminalView(frame: CGRect(x: 0, y: 0, width: 400, height: 600))
@@ -636,7 +640,8 @@ final class LocalTerminal: TerminalSession {
 
     init(core: TermoakCore, host: SshHost, settings: AppSettings) {
         address = host.address
-        super.init(core: core, label: host.label.isEmpty ? host.address : host.label, hostId: host.id, settings: settings)
+        super.init(core: core, label: host.label.isEmpty ? host.address : host.label, hostId: host.id,
+                   accountId: host.accountId, settings: settings)
     }
 
     override func start() {
@@ -650,7 +655,8 @@ final class LocalTerminal: TerminalSession {
         task = Task {
             defer { task = nil }
             do {
-                let h = try await core.connectTerminal(hostId: hostId, cols: cols, rows: rows, auth: auth, listener: listener)
+                let h = try await core.connectTerminal(hostId: hostId, cols: cols, rows: rows, auth: auth,
+                                                       listener: listener, accountId: accountId)
                 handle = h
                 state = .connected
                 let (c, r) = size
@@ -658,7 +664,7 @@ final class LocalTerminal: TerminalSession {
                 onConnected?(hostId, h.session())
                 _ = view.becomeFirstResponder()
             } catch {
-                state = .closed(errorMessage(error))
+                state = .closed(userMessage(error))
             }
         }
     }
@@ -744,7 +750,7 @@ final class LocalTerminal: TerminalSession {
                 case .stopSharing: break
                 }
             } catch {
-                self?.showFlash(errorMessage(error))
+                self?.showFlash(userMessage(error))
             }
         }
     }
@@ -896,9 +902,10 @@ final class ServerTerminal: TerminalSession {
     /// With `sessionId` it attaches to an existing one; without it, it opens a new one on `hostId`.
     /// `owner`: it is yours (`false` for sessions shared with you); the
     /// server confirms it on connecting.
-    init(core: TermoakCore, label: String, hostId: String?, sessionId: String?, owner: Bool = true, settings: AppSettings) {
+    init(core: TermoakCore, label: String, hostId: String?, sessionId: String?, owner: Bool = true,
+         accountId: String? = nil, settings: AppSettings) {
         self.sessionId = sessionId
-        super.init(core: core, label: label, hostId: hostId, settings: settings)
+        super.init(core: core, label: label, hostId: hostId, accountId: accountId, settings: settings)
         // Until the server says who you are, nothing is sent.
         canWrite = false
         isOwner = owner
@@ -945,19 +952,25 @@ final class ServerTerminal: TerminalSession {
                     if let sessionId {
                         id = sessionId
                     } else if let hostId {
-                        id = try await core.openServerSession(hostId: hostId, cols: cols, rows: rows, title: label, record: nil).id
+                        // On the host's account (the current one for This-device hosts).
+                        if let accountId {
+                            id = try await core.account(accountId: accountId)
+                                .openServerSession(hostId: hostId, cols: cols, rows: rows, title: label, record: nil).id
+                        } else {
+                            id = try await core.openServerSession(hostId: hostId, cols: cols, rows: rows, title: label, record: nil).id
+                        }
                         sessionId = id
                     } else {
                         return
                     }
-                    h = try await core.attachServerSession(sessionId: id, listener: listener)
+                    h = try await core.api(for: accountId).attachServerSession(sessionId: id, listener: listener)
                 }
                 handle = h
                 syncSeat()
                 sendSize()
                 if canWrite { _ = view.becomeFirstResponder() }
             } catch {
-                state = .closed(errorMessage(error))
+                state = .closed(userMessage(error))
             }
         }
     }
@@ -986,7 +999,8 @@ final class ServerTerminal: TerminalSession {
         if let handle {
             handle.closeSession()
         } else if let sessionId {
-            Task { try? await core.closeServerSession(sessionId: sessionId) }
+            let api = core.api(for: accountId)
+            Task { try? await api.closeServerSession(sessionId: sessionId) }
         }
     }
 
@@ -1044,7 +1058,7 @@ final class ServerTerminal: TerminalSession {
             case .stopSharing: h.stopSharing()
             }
         } catch {
-            showFlash(errorMessage(error))
+            showFlash(userMessage(error))
         }
     }
 
@@ -1217,8 +1231,9 @@ final class Sessions: ObservableObject {
     @Published var copilotOpen = false {
         didSet { if oldValue && !copilotOpen { copilotClosed() } }
     }
-    /// Your running server sessions (the notice on the home screen).
-    @Published private(set) var onServer: [ServerSession] = []
+    /// Your running server sessions, of every signed-in account (the notice
+    /// on the home screen).
+    @Published private(set) var onServer: [AccountSession] = []
     /// A paste of several lines waiting to be confirmed.
     @Published var pasteRequest: PasteRequest?
 
@@ -1377,7 +1392,16 @@ final class Sessions: ObservableObject {
     /// The copilot conversation of a tab (created the first time).
     func copilot(for s: TerminalSession) -> Copilot {
         if let c = copilots[s.id] { return c }
-        let c = Copilot(core: core)
+        // A server session talks to its own account's AI; a terminal of this
+        // device is shared through the current account (relay), which only
+        // knows the hosts of its own vaults.
+        let c: Copilot
+        if s is ServerTerminal {
+            c = Copilot(core: core.api(for: s.accountId))
+        } else {
+            let current = core.currentAccount()?.id
+            c = Copilot(core: core, sendsHost: s.accountId != nil && s.accountId == current)
+        }
         copilots[s.id] = c
         return c
     }
@@ -1447,18 +1471,28 @@ final class Sessions: ObservableObject {
         return new
     }
 
+    /// A persistent session on the host's server (its account).
     func openOnServer(_ host: SshHost) {
         add(ServerTerminal(core: core, label: host.label.isEmpty ? host.address : host.label,
-                              hostId: host.id, sessionId: nil, settings: settings))
+                           hostId: host.id, sessionId: nil, accountId: host.accountId, settings: settings))
+    }
+
+    /// Connects to a host from this device, or through its server when it
+    /// is a Use-only host of a Strict vault (its secrets never leave the
+    /// server).
+    func connect(_ host: SshHost, strict: Bool) {
+        if strict && host.isUseOnly && host.accountId != nil { openOnServer(host) } else { openLocal(host) }
     }
 
     /// `owner`: one of yours (`false` for the ones shared with you).
-    func attach(sessionId: String, label: String, hostId: String?, owner: Bool = true) {
+    /// `accountId`: the account of the session (`nil`: the current one).
+    func attach(sessionId: String, label: String, hostId: String?, owner: Bool = true, accountId: String? = nil) {
         if let existing = open.first(where: { ($0 as? ServerTerminal)?.sessionId == sessionId }) {
             show(existing.id)
             return
         }
-        add(ServerTerminal(core: core, label: label, hostId: hostId, sessionId: sessionId, owner: owner, settings: settings))
+        add(ServerTerminal(core: core, label: label, hostId: hostId, sessionId: sessionId, owner: owner,
+                           accountId: accountId, settings: settings))
     }
 
     /// Joins a shared session with an invitation link, in a new tab.
@@ -1547,45 +1581,58 @@ final class Sessions: ObservableObject {
 
     // ----- Server sessions at launch -----
 
-    /// When opening the app or logging in: your server sessions that are still
-    /// running appear as sleeping tabs (not connected) and the screen does not
-    /// change. The ones shared with you are not added.
-    func restoreFromServer() async {
-        guard let list = try? await core.listServerSessions() else { return }
-        onServer = list.active.filter(\.restorable)
-        let hosts = Dictionary(((try? core.listHosts()) ?? []).map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
-        for s in onServer where !open.contains(where: { ($0 as? ServerTerminal)?.sessionId == s.id }) {
-            let h = s.hostId.flatMap { hosts[$0] }
+    /// When opening the app or signing in: your server sessions that are
+    /// still running, on every signed-in account, appear as sleeping tabs
+    /// (not connected) and the screen does not change. The ones shared with
+    /// you are not added.
+    func restoreFromServer(accounts: [String]) async {
+        onServer = await runningSessions(accounts)
+        for item in onServer where !open.contains(where: { ($0 as? ServerTerminal)?.sessionId == item.session.id }) {
+            let s = item.session
+            let h = s.hostId.flatMap { try? core.getHost(id: $0, accountId: item.accountId) }
             let label = !s.title.isEmpty ? s.title : h.map { $0.label.isEmpty ? $0.address : $0.label } ?? String(localized: "common.session")
-            let newSession = ServerTerminal(core: core, label: label, hostId: s.hostId, sessionId: s.id, settings: settings)
+            let newSession = ServerTerminal(core: core, label: label, hostId: s.hostId, sessionId: s.id,
+                                            accountId: item.accountId, settings: settings)
             newSession.asleep = true
             prepare(newSession)
             open.append(newSession)
         }
     }
 
-    /// Checks again how many sessions are running on the server.
-    func refreshServer() async {
-        guard let list = try? await core.listServerSessions() else { return }
-        onServer = list.active.filter(\.restorable)
+    /// Checks again how many sessions are running on the servers.
+    func refreshServer(accounts: [String]) async {
+        onServer = await runningSessions(accounts)
     }
 
-    /// Logged out of the account: remove the notice and the sleeping tabs.
-    func forgetServer() {
-        onServer = []
-        for s in open where s.asleep { close(s.id) }
+    private func runningSessions(_ accounts: [String]) async -> [AccountSession] {
+        var out: [AccountSession] = []
+        for id in accounts {
+            guard let handle = try? core.account(accountId: id),
+                  let list = try? await handle.listServerSessions() else { continue }
+            out += list.active.filter(\.restorable).map { AccountSession(accountId: id, session: $0) }
+        }
+        return out
+    }
+
+    /// Accounts signed out: remove their notice and their sleeping tabs.
+    func forgetServer(keeping accounts: Set<String>) {
+        onServer.removeAll { !accounts.contains($0.accountId) }
+        for s in open where s.asleep && s is ServerTerminal && !(s.accountId.map(accounts.contains) ?? !accounts.isEmpty) {
+            close(s.id)
+        }
     }
 
     /// Button of the home notice: opens the first tab of a running session (or
     /// attaches to the first one, if it no longer has a tab).
     func openRunningSessions() {
-        let ids = Set(onServer.map(\.id))
+        let ids = Set(onServer.map(\.session.id))
         if let s = open.first(where: { a in (a as? ServerTerminal)?.sessionId.map { ids.contains($0) } ?? false }) {
             show(s.id)
-        } else if let s = onServer.first {
-            let host = s.hostId.flatMap { try? core.getHost(id: $0) }
+        } else if let item = onServer.first {
+            let s = item.session
+            let host = s.hostId.flatMap { try? core.getHost(id: $0, accountId: item.accountId) }
             let label = !s.title.isEmpty ? s.title : host.map { $0.label.isEmpty ? $0.address : $0.label } ?? String(localized: "common.session")
-            attach(sessionId: s.id, label: label, hostId: s.hostId)
+            attach(sessionId: s.id, label: label, hostId: s.hostId, accountId: item.accountId)
         }
     }
 
@@ -1618,6 +1665,13 @@ final class Sessions: ObservableObject {
 enum ShareError: LocalizedError {
     case notConnected
     var errorDescription: String? { String(localized: "terminal.error.not_connected") }
+}
+
+/// A server session and the account it runs on.
+struct AccountSession: Identifiable {
+    let accountId: String
+    let session: ServerSession
+    var id: String { itemKey(accountId, session.id) }
 }
 
 extension ServerSession {

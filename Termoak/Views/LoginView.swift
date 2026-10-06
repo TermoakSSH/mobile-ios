@@ -1,23 +1,74 @@
 import TermoakKit
 import SwiftUI
 
+/// Public information of a server (`/info`), to show before signing in.
+struct ServerDetails: Equatable {
+    let url: String
+    let name: String
+    let version: String
+    let registrationOpen: Bool
+    /// `preprod` on a test server (`nil` in production).
+    let environment: String?
+    let termsUrl: String?
+    let privacyUrl: String?
+    let vaults: Bool
+    let insecure: Bool
+
+    init(url: String, json: String) throws {
+        guard let data = json.data(using: .utf8),
+              let v = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw TermoakError.Invalid(message: String(localized: "login.server.not_termoak"))
+        }
+        self.url = url
+        name = (v["name"] as? String) ?? "Termoak"
+        version = (v["version"] as? String) ?? "?"
+        registrationOpen = (v["registration"] as? String) == "open"
+        environment = (v["environment"] as? String).flatMap { $0.isEmpty ? nil : $0 }
+        termsUrl = v["terms_url"] as? String
+        privacyUrl = v["privacy_url"] as? String
+        vaults = ((v["features"] as? [String: Any])?["vaults"] as? Bool) ?? false
+        insecure = url.hasPrefix("http://")
+    }
+}
+
+/// Signing in or creating an account, on the official server (no address
+/// to type) or on your own. Used as the welcome screen and to add more
+/// accounts. Accounts that wait for their email code resume here.
 struct LoginView: View {
     let welcome: Bool
+    /// An account to sign in again (prefilled) or to finish verifying.
+    var resume: AccountInfo? = nil
     let onFinish: () -> Void
 
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @EnvironmentObject private var settings: AppSettings
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
 
-    @State private var server = ""
+    private enum Step: Equatable {
+        case start
+        case custom
+        case signIn
+        case signUp
+        case verify(accountId: String, email: String)
+    }
+
+    @State private var step: Step = .start
+    /// The server chosen (`nil`: the official one).
+    @State private var custom: ServerDetails?
+    @State private var official: ServerDetails?
+    @State private var serverText = ""
+    @State private var name = ""
     @State private var email = ""
     @State private var password = ""
-    @State private var code = ""
-    @State private var needsCode = false
+    @State private var invite = ""
+    @State private var acceptTerms = false
+    @State private var totp = ""
+    @State private var needsTotp = false
     @State private var busy = false
     @State private var error: String?
 
-    // Email verification (`account.pendingVerification`).
+    // Email verification.
     @State private var emailCode = ""
     @State private var verifyTotp = ""
     @State private var verifyNeedsTotp = false
@@ -25,81 +76,260 @@ struct LoginView: View {
     @State private var resendAt: Date?
     @State private var resent = false
 
+    private var choice: ServerChoice {
+        custom.map { .custom(url: $0.url) } ?? .official
+    }
+
+    private var officialHost: String {
+        officialServerUrl().replacingOccurrences(of: "https://", with: "").replacingOccurrences(of: "http://", with: "")
+    }
+
+    /// The server's details for the forms (the official one's are loaded
+    /// when needed).
+    private var details: ServerDetails? { custom ?? official }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                if !welcome {
-                    HStack {
-                        Button("common.cancel") { dismiss() }
-                        Spacer()
-                    }
-                }
+                topBar
                 Image("Logo")
                     .resizable()
-                    .frame(width: 88, height: 88)
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    .padding(.top, welcome ? 40 : 8)
-                Text(verbatim: "Termoak").font(.largeTitle.bold())
-                if let pending = account.pendingVerification {
-                    verifyStep(email: pending.isEmpty ? email : pending)
-                } else {
-                    signInForm
+                    .frame(width: 80, height: 80)
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .padding(.top, welcome && step == .start ? 40 : 4)
+                switch step {
+                case .start: startStep
+                case .custom: customStep
+                case .signIn: signInStep
+                case .signUp: signUpStep
+                case .verify(let id, let mail): verifyStep(accountId: id, email: mail)
                 }
             }
             .padding(24)
+            .frame(maxWidth: 520)
+            .frame(maxWidth: .infinity)
         }
-        .onAppear {
-            server = settings.lastServer ?? defaultServer
-            email = settings.lastEmail ?? ""
-        }
+        .onAppear(perform: start)
     }
 
-    @ViewBuilder
-    private var signInForm: some View {
-        Text(needsCode ? String(localized: "login.code_hint") : String(localized: "login.tagline"))
+    // MARK: Steps
+
+    @ViewBuilder private var topBar: some View {
+        HStack {
+            if step != .start && resume == nil {
+                Button { back() } label: { Label("login.back", systemImage: "chevron.left") }
+            } else if !welcome {
+                Button("common.cancel") { dismiss() }
+            }
+            Spacer()
+        }
+        .frame(minHeight: 24)
+    }
+
+    /// The official server first, then creating an account and your own server.
+    @ViewBuilder private var startStep: some View {
+        Text(verbatim: "Termoak").font(.largeTitle.bold())
+        Text("login.tagline")
             .foregroundColor(.secondary)
             .multilineTextAlignment(.center)
             .padding(.bottom, 12)
-
-        VStack(spacing: 12) {
-            if needsCode {
-                LoginField(icon: "number", title: String(localized: "login.code"), text: $code, keyboard: .numberPad)
-                Text("login.recovery_hint").font(.caption).foregroundColor(.secondary)
-            } else {
-                LoginField(icon: "server.rack", title: String(localized: "login.server"), text: $server, keyboard: .URL)
-                LoginField(icon: "envelope", title: String(localized: "login.email"), text: $email, keyboard: .emailAddress)
-                LoginField(icon: "lock", title: String(localized: "common.password"), text: $password, secure: true)
+        Button { go(.signIn, server: nil) } label: {
+            VStack(spacing: 2) {
+                Text("login.official.sign_in").font(.headline)
+                Text(verbatim: officialHost).font(.caption).opacity(0.85)
             }
-        }
-        errorBanner
-        Button(action: logIn) {
-            Group {
-                if busy {
-                    ProgressView().tint(.white)
-                } else {
-                    Text(needsCode ? String(localized: "login.verify") : String(localized: "common.log_in"))
-                }
-            }
-            .frame(maxWidth: .infinity).frame(height: 30)
+            .frame(maxWidth: .infinity, minHeight: 48)
         }
         .buttonStyle(.borderedProminent)
-        .disabled(busy || server.isEmpty || email.isEmpty || password.isEmpty || (needsCode && code.isEmpty))
-        if needsCode {
-            Button("login.back") { needsCode = false; code = "" }
+        Button { go(.signUp, server: nil) } label: {
+            Text("login.official.sign_up").font(.headline).frame(maxWidth: .infinity, minHeight: 40)
         }
-        if welcome {
+        .buttonStyle(.bordered)
+        Button { step = .custom; error = nil } label: {
+            Label("login.custom.link", systemImage: "server.rack")
+        }
+        .padding(.top, 8)
+        if welcome && account.list.isEmpty {
             Button("login.no_server") {
                 settings.noServer = true
                 onFinish()
             }
             .padding(.top, 24)
+            .foregroundColor(.secondary)
         }
-        Text("login.no_account")
-            .font(.footnote).foregroundColor(.secondary)
     }
 
-    @ViewBuilder
-    private var errorBanner: some View {
+    /// Your own server: its address, checked with `/info`.
+    @ViewBuilder private var customStep: some View {
+        Text("login.custom.title").font(.title2.bold())
+        Text("login.custom.hint")
+            .foregroundColor(.secondary)
+            .multilineTextAlignment(.center)
+        LoginField(icon: "server.rack", title: String(localized: "login.server"), text: $serverText, keyboard: .URL)
+            .onSubmit(checkServer)
+            .onChange(of: serverText) { _ in custom = nil }
+        errorBanner
+        if let c = custom {
+            serverCard(c)
+            Button { go(.signIn, server: c) } label: {
+                Text("common.log_in").frame(maxWidth: .infinity, minHeight: 30)
+            }
+            .buttonStyle(.borderedProminent)
+            Button { go(.signUp, server: c) } label: {
+                Group {
+                    if c.registrationOpen { Text("login.sign_up") } else { Text("login.sign_up_invite") }
+                }
+                .frame(maxWidth: .infinity, minHeight: 30)
+            }
+            .buttonStyle(.bordered)
+        } else {
+            Button(action: checkServer) {
+                Group {
+                    if busy { ProgressView().tint(.white) } else { Text("login.custom.continue") }
+                }
+                .frame(maxWidth: .infinity, minHeight: 30)
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(busy || serverText.trimmingCharacters(in: .whitespaces).isEmpty)
+        }
+    }
+
+    /// Name, version, registration and environment of a server.
+    private func serverCard(_ c: ServerDetails) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                Image(systemName: "checkmark.seal.fill").foregroundColor(Brand.green)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(verbatim: c.name).font(.headline)
+                    Text(verbatim: c.url).font(.caption).foregroundColor(.secondary).lineLimit(1)
+                }
+            }
+            Text("login.server.version \(c.version)").font(.subheadline).foregroundColor(.secondary)
+            Group {
+                if c.registrationOpen { Text("login.server.registration_open") } else { Text("login.server.registration_closed") }
+            }
+            .font(.subheadline).foregroundColor(.secondary)
+            if let env = c.environment {
+                Label(String(localized: "login.server.environment \(env)"), systemImage: "flask")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(Brand.amber)
+            }
+            if c.insecure {
+                Label("login.server.insecure", systemImage: "exclamationmark.triangle.fill")
+                    .font(.subheadline)
+                    .foregroundColor(Brand.red)
+            }
+            if !c.vaults {
+                Text("login.server.no_vaults").font(.caption).foregroundColor(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    /// The server the forms are for.
+    @ViewBuilder private var serverHeader: some View {
+        HStack(spacing: 6) {
+            Image(systemName: custom == nil ? "checkmark.seal" : "server.rack")
+            Text(verbatim: custom.map { $0.url.replacingOccurrences(of: "https://", with: "") } ?? officialHost)
+        }
+        .font(.subheadline)
+        .foregroundColor(.secondary)
+        if let env = details?.environment {
+            Label(String(localized: "login.server.environment \(env)"), systemImage: "flask")
+                .font(.caption.weight(.semibold))
+                .foregroundColor(Brand.amber)
+        }
+    }
+
+    @ViewBuilder private var signInStep: some View {
+        Text("login.sign_in.title").font(.title2.bold())
+        serverHeader
+        if needsTotp {
+            Text("login.code_hint")
+                .font(.callout).foregroundColor(.secondary).multilineTextAlignment(.center)
+        }
+        VStack(spacing: 12) {
+            if needsTotp {
+                LoginField(icon: "number", title: String(localized: "login.code"), text: $totp, keyboard: .numberPad)
+                Text("login.recovery_hint").font(.caption).foregroundColor(.secondary)
+            } else {
+                LoginField(icon: "envelope", title: String(localized: "login.email"), text: $email, keyboard: .emailAddress)
+                LoginField(icon: "lock", title: String(localized: "common.password"), text: $password, secure: true)
+            }
+        }
+        errorBanner
+        Button(action: signIn) {
+            Group {
+                if busy {
+                    ProgressView().tint(.white)
+                } else if needsTotp {
+                    Text("login.verify")
+                } else {
+                    Text("common.log_in")
+                }
+            }
+            .frame(maxWidth: .infinity, minHeight: 30)
+        }
+        .buttonStyle(.borderedProminent)
+        .disabled(busy || email.isEmpty || password.isEmpty || (needsTotp && totp.isEmpty))
+        if needsTotp {
+            Button("login.back") { needsTotp = false; totp = "" }
+        } else {
+            Button("login.forgot_password") { openForgotPassword() }
+                .font(.footnote)
+            if resume == nil {
+                Button { go(.signUp, server: custom) } label: { Text("login.no_account_yet") }
+                    .font(.footnote)
+            }
+        }
+    }
+
+    @ViewBuilder private var signUpStep: some View {
+        Text("login.sign_up.title").font(.title2.bold())
+        serverHeader
+        VStack(spacing: 12) {
+            LoginField(icon: "person", title: String(localized: "login.name"), text: $name)
+            LoginField(icon: "envelope", title: String(localized: "login.email"), text: $email, keyboard: .emailAddress)
+            LoginField(icon: "lock", title: String(localized: "login.new_password"), text: $password, secure: true)
+            if let c = custom, !c.registrationOpen {
+                LoginField(icon: "ticket", title: String(localized: "login.invite"), text: $invite, keyboard: .asciiCapable)
+            }
+        }
+        if let terms = details?.termsUrl {
+            Toggle(isOn: $acceptTerms) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("login.terms.accept").font(.callout)
+                    HStack(spacing: 12) {
+                        Button("login.terms.link") { if let u = URL(string: terms) { openURL(u) } }
+                        if let privacy = details?.privacyUrl {
+                            Button("login.privacy.link") { if let u = URL(string: privacy) { openURL(u) } }
+                        }
+                    }
+                    .font(.footnote)
+                    .buttonStyle(.borderless)
+                }
+            }
+            .padding(.vertical, 4)
+        }
+        errorBanner
+        Button(action: signUp) {
+            Group {
+                if busy { ProgressView().tint(.white) } else { Text("login.sign_up.action") }
+            }
+            .frame(maxWidth: .infinity, minHeight: 30)
+        }
+        .buttonStyle(.borderedProminent)
+        .disabled(busy || name.trimmingCharacters(in: .whitespaces).isEmpty || email.isEmpty || password.count < 8
+                  || (details?.termsUrl != nil && !acceptTerms)
+                  || (custom.map { !$0.registrationOpen } == true && invite.trimmingCharacters(in: .whitespaces).isEmpty))
+        Text("login.password_rules").font(.caption).foregroundColor(.secondary)
+        Button { go(.signIn, server: custom) } label: { Text("login.have_account") }
+            .font(.footnote)
+    }
+
+    @ViewBuilder private var errorBanner: some View {
         if let error {
             Text(error)
                 .font(.callout)
@@ -110,9 +340,8 @@ struct LoginView: View {
         }
     }
 
-    /// "Check your email": the six-digit code the server emailed to `email`.
-    @ViewBuilder
-    private func verifyStep(email: String) -> some View {
+    /// "Check your email": the six-digit code the server emailed.
+    @ViewBuilder private func verifyStep(accountId: String, email: String) -> some View {
         Image(systemName: "envelope.badge")
             .font(.system(size: 34))
             .foregroundColor(Brand.blue)
@@ -149,21 +378,17 @@ struct LoginView: View {
                 .foregroundColor(.secondary)
         }
         errorBanner
-        Button { verify(email: email) } label: {
+        Button { verify(accountId) } label: {
             Group {
-                if busy {
-                    ProgressView().tint(.white)
-                } else {
-                    Text("login.verify")
-                }
+                if busy { ProgressView().tint(.white) } else { Text("login.verify") }
             }
-            .frame(maxWidth: .infinity).frame(height: 30)
+            .frame(maxWidth: .infinity, minHeight: 30)
         }
         .buttonStyle(.borderedProminent)
         .disabled(busy || emailCode.count != 6 || (verifyNeedsTotp && verifyTotp.isEmpty))
         TimelineView(.periodic(from: .now, by: 1)) { context in
             let wait = max(0, Int(ceil((resendAt ?? .distantPast).timeIntervalSince(context.date))))
-            Button { resend(email: email) } label: {
+            Button { resend(accountId) } label: {
                 if wait > 0 {
                     Text("login.verify_email.resend_in \(wait)")
                 } else {
@@ -172,33 +397,153 @@ struct LoginView: View {
             }
             .disabled(busy || wait > 0)
         }
-        Button("login.verify_email.different_email") { differentEmail() }
+        Button("login.verify_email.different_email") { differentEmail(accountId) }
             .padding(.top, 12)
+        Text("login.verify_email.later")
+            .font(.footnote).foregroundColor(.secondary)
+            .multilineTextAlignment(.center)
         Text("login.verify_email.spam_hint")
             .font(.footnote).foregroundColor(.secondary)
             .multilineTextAlignment(.center)
     }
 
-    /// The URL of the server the account signed in to.
-    private var serverUrl: String {
-        account.server ?? server.trimmingCharacters(in: .whitespaces).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+    // MARK: Actions
+
+    private func start() {
+        guard let r = resume else { return }
+        email = r.email
+        if !r.official {
+            serverText = r.serverUrl
+            Task {
+                if let json = try? await serverInfo(url: r.serverUrl) {
+                    custom = try? ServerDetails(url: r.serverUrl, json: json)
+                }
+                // Without its /info the account's own address is used.
+                if custom == nil { custom = try? ServerDetails(url: r.serverUrl, json: "{}") }
+            }
+        }
+        if r.status == .unverified {
+            step = .verify(accountId: r.id, email: r.email)
+        } else {
+            step = .signIn
+        }
     }
 
-    private func verify(email: String) {
+    private func back() {
+        error = nil
+        needsTotp = false
+        switch step {
+        case .signIn, .signUp: step = custom == nil ? .start : .custom
+        default: step = .start
+        }
+    }
+
+    /// To a form, for the official server (`nil`) or your own.
+    private func go(_ s: Step, server: ServerDetails?) {
+        error = nil
+        custom = server
+        step = s
+        if server == nil && official == nil {
+            let url = officialServerUrl()
+            Task {
+                if let json = try? await serverInfo(url: url) { official = try? ServerDetails(url: url, json: json) }
+            }
+        }
+    }
+
+    /// Checks the address with `/info` and shows what the server says.
+    private func checkServer() {
+        let typed = serverText.trimmingCharacters(in: .whitespaces)
+        guard !typed.isEmpty else { return }
+        busy = true
+        error = nil
+        Task {
+            defer { busy = false }
+            do {
+                let url = try canonicalServerUrl(url: typed)
+                let json = try await serverInfo(url: url)
+                let d = try ServerDetails(url: url, json: json)
+                // The official server typed by hand is the official one.
+                custom = url == officialServerUrl() ? nil : d
+                if url == officialServerUrl() {
+                    official = d
+                    step = .signIn
+                }
+            } catch {
+                self.error = String(localized: "login.server.unreachable \(userMessage(error))")
+            }
+        }
+    }
+
+    private func openForgotPassword() {
+        let base = custom?.url ?? officialServerUrl()
+        if let u = URL(string: "\(base)/forgot-password") { openURL(u) }
+    }
+
+    private func signIn() {
+        busy = true
+        error = nil
+        let mail = email.trimmingCharacters(in: .whitespaces)
+        let code = needsTotp && !totp.isEmpty ? totp : nil
+        Task {
+            defer { busy = false }
+            do {
+                let info = try await account.signIn(server: choice, email: mail, password: password, totp: code)
+                finishOrVerify(info)
+            } catch TermoakError.TotpRequired {
+                needsTotp = true
+            } catch TermoakError.TotpInvalid {
+                error = String(localized: "login.code_invalid")
+            } catch {
+                self.error = userMessage(error)
+            }
+        }
+    }
+
+    private func signUp() {
+        busy = true
+        error = nil
+        let mail = email.trimmingCharacters(in: .whitespaces)
+        let code = invite.trimmingCharacters(in: .whitespaces)
+        Task {
+            defer { busy = false }
+            do {
+                let info = try await account.signUp(server: choice, email: mail,
+                                                    name: name.trimmingCharacters(in: .whitespaces),
+                                                    password: password, invite: code.isEmpty ? nil : code)
+                finishOrVerify(info)
+            } catch {
+                self.error = userMessage(error)
+            }
+        }
+    }
+
+    /// Signed in; or the email still has to be verified with its code.
+    private func finishOrVerify(_ info: AccountInfo) {
+        if info.status == .unverified {
+            password = ""
+            resendAt = Date().addingTimeInterval(60)
+            step = .verify(accountId: info.id, email: info.email)
+            return
+        }
+        done()
+    }
+
+    private func done() {
+        onFinish()
+        if !welcome { dismiss() }
+    }
+
+    private func verify(_ accountId: String) {
         busy = true
         error = nil
         resent = false
-        let url = serverUrl
         let totp = verifyNeedsTotp && !verifyTotp.isEmpty ? verifyTotp : nil
         Task {
             defer { busy = false }
             do {
-                try await account.verifyEmail(server: url, email: email, code: emailCode, totpCode: totp)
-                settings.lastServer = url
-                settings.lastEmail = email
-                resetVerification()
-                onFinish()
-                if !welcome { dismiss() }
+                _ = try await account.verify(accountId, code: emailCode, totp: totp)
+                done()
             } catch TermoakError.TotpRequired {
                 verifyNeedsTotp = true
             } catch TermoakError.TotpInvalid {
@@ -206,84 +551,47 @@ struct LoginView: View {
             } catch TermoakError.Invalid {
                 error = String(localized: "login.verify_email.invalid_code")
             } catch {
-                self.error = errorMessage(error)
+                self.error = userMessage(error)
             }
         }
     }
 
-    private func resend(email: String) {
+    private func resend(_ accountId: String) {
         busy = true
         error = nil
         resent = false
-        let url = serverUrl
         Task {
             defer { busy = false }
             do {
-                try await account.resendCode(server: url, email: email)
+                try await account.resendCode(accountId)
                 resent = true
             } catch {
                 // Usually "too many attempts" (HTTP 429): wait before retrying.
-                self.error = errorMessage(error)
+                self.error = userMessage(error)
             }
             resendAt = Date().addingTimeInterval(60)
         }
     }
 
-    private func differentEmail() {
+    /// Drops the unverified account to start again with another email.
+    private func differentEmail(_ accountId: String) {
         busy = true
         Task {
             defer { busy = false }
-            await account.cancelVerification()
-            resetVerification()
+            _ = try? await account.signOut(accountId, discard: true)
+            emailCode = ""
+            verifyTotp = ""
+            verifyNeedsTotp = false
+            resendAt = nil
+            resent = false
+            error = nil
             password = ""
-            code = ""
-            needsCode = false
-        }
-    }
-
-    private func resetVerification() {
-        emailCode = ""
-        verifyTotp = ""
-        verifyNeedsTotp = false
-        resendAt = nil
-        resent = false
-        error = nil
-    }
-
-    private func logIn() {
-        busy = true
-        error = nil
-        let url = server.trimmingCharacters(in: .whitespaces).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-        Task {
-            defer { busy = false }
-            do {
-                let done = try await account.logIn(server: url, email: email.trimmingCharacters(in: .whitespaces),
-                                                   password: password, code: code.isEmpty ? nil : code)
-                settings.lastServer = url
-                settings.lastEmail = email
-                guard done else {
-                    // The account has to verify its email: the code step
-                    // (`account.pendingVerification`) takes over. Signing in
-                    // may have just emailed a new code.
-                    needsCode = false
-                    code = ""
-                    resendAt = Date().addingTimeInterval(60)
-                    return
-                }
-                onFinish()
-                if !welcome { dismiss() }
-            } catch TermoakError.TotpRequired {
-                needsCode = true
-            } catch TermoakError.TotpInvalid {
-                error = String(localized: "login.code_invalid")
-            } catch {
-                self.error = errorMessage(error)
-            }
+            step = .start
         }
     }
 }
 
-private struct LoginField: View {
+struct LoginField: View {
     let icon: String
     let title: String
     @Binding var text: String
@@ -299,7 +607,7 @@ private struct LoginField: View {
                 } else {
                     TextField(title, text: $text)
                         .keyboardType(keyboard)
-                        .textInputAutocapitalization(.never)
+                        .textInputAutocapitalization(keyboard == .default ? .words : .never)
                         .autocorrectionDisabled()
                 }
             }

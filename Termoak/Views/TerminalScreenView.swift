@@ -36,7 +36,7 @@ private struct TerminalContent: View {
     @EnvironmentObject private var sessions: Sessions
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var model: AppModel
-    @EnvironmentObject private var account: Account
+    @EnvironmentObject private var account: Accounts
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var terminating = false
     /// People in the shared session.
@@ -108,7 +108,7 @@ private struct TerminalContent: View {
         }
         .sheet(isPresented: $showingActivity) {
             if let id = activitySessionId {
-                SessionActivityView(core: model.core, sessionId: id, title: session.title ?? session.label)
+                SessionActivityView(core: model.core.api(for: session.accountId), sessionId: id, title: session.title ?? session.label)
             }
         }
         .fullScreenCover(isPresented: $showingFiles) {
@@ -467,12 +467,12 @@ private struct TerminalContent: View {
     /// session lives there.
     private var filesSource: FileBrowser.Source? {
         if let local = session as? LocalTerminal, let c = local.connection { return .session(c) }
-        if session is ServerTerminal, session.isOwner, let h = session.hostId { return .server(hostId: h) }
+        if session is ServerTerminal, session.isOwner, let h = session.hostId { return .server(hostId: h, accountId: session.accountId) }
         return nil
     }
 
     private var host: SshHost? {
-        session.hostId.flatMap { try? model.core.getHost(id: $0) }
+        session.hostId.flatMap { try? model.core.getHost(id: $0, accountId: session.accountId) }
     }
 
     private func toggleKeyboard() {

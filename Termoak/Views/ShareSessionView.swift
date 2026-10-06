@@ -311,7 +311,7 @@ struct ShareSessionView: View {
                 }
                 await reload()
             } catch {
-                self.error = errorMessage(error)
+                self.error = userMessage(error)
             }
         }
     }
@@ -324,7 +324,7 @@ struct ShareSessionView: View {
         do {
             shares = try await b.list()
         } catch {
-            self.error = errorMessage(error)
+            self.error = userMessage(error)
         }
     }
 
@@ -334,7 +334,7 @@ struct ShareSessionView: View {
             do {
                 try await b.revoke(s.id)
             } catch {
-                self.error = errorMessage(error)
+                self.error = userMessage(error)
             }
             await reload()
         }
@@ -347,7 +347,7 @@ struct ShareSessionView: View {
                 do {
                     _ = try await core.stopSharingServerSession(sessionId: id)
                 } catch {
-                    self.error = errorMessage(error)
+                    self.error = userMessage(error)
                 }
                 created = nil
                 await reload()
@@ -530,7 +530,7 @@ private struct ShareEditView: View {
                 try await save(changes)
                 dismiss()
             } catch {
-                self.error = errorMessage(error)
+                self.error = userMessage(error)
             }
         }
     }

@@ -6,7 +6,9 @@ as the desktop app and the CLI (through UniFFI).
 
 The app is SwiftUI, iOS 15+, with
 [SwiftTerm](https://github.com/migueldeicaza/SwiftTerm) as the terminal
-emulator). It has the same features as the Android app: sign-in and sync,
+emulator). It has the same features as the Android app: several accounts at
+once (the official server or your own, with in-app sign-up), vaults shared
+with people and teams (Editor or Use only), sync,
 hosts (search, groups, favorites, full editor), a tabbed terminal (local SSH
 and persistent server sessions, snippets, copy/paste), server sessions, live
 session sharing (invite by email, team or link; one person types at a time,
@@ -52,6 +54,12 @@ Requirements: macOS with Xcode, [rustup](https://rustup.rs) and XcodeGen.
 rebuild the engine), generates the Xcode project and creates the `.ipa`. For
 day-to-day work, run `core/scripts/build-ios.sh debug` once, then
 `xcodegen generate` and open `Termoak.xcodeproj`.
+
+The "official server" button signs in to `https://termoak.com`. To test
+against another server as the official one (the staging server, for
+example), build the engine with
+`TERMOAK_OFFICIAL_SERVER=https://next.termoak.com core/scripts/build-ios.sh`;
+any server also works through "Use your own server".
 
 ## Releases
 
