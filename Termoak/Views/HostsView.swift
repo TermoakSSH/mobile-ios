@@ -125,104 +125,11 @@ struct HostsView: View {
     }
 
     var body: some View {
-        // Selection only while selecting: otherwise a tap connects (or opens
-        // the group), also on an iPad.
-        List(selection: selectionBinding) {
-            if shortcuts && !searching && !selecting {
-                Section { shortcutTiles }
-            }
-            if isRoot && !searching && !selecting && account.showsVaults {
-                Section {
-                    VaultFilterBar(hasDeviceItems: deviceItems)
-                        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
-                        .listRowBackground(Color.clear)
-                }
-            }
-            if isRoot && !searching && !selecting {
-                if let pending = account.scoped.first(where: { $0.status == .needsSignIn || $0.status == .unverified }) {
-                    Section { signInAgainBanner(pending) }
-                }
-                if !sessions.onServer.isEmpty {
-                    Section { serverNotice }
-                }
-            }
-            if hosts.isEmpty && groups.isEmpty && !searching {
-                Section { emptyState }
-            }
-            if !subgroups.isEmpty && !selecting {
-                Section("hosts.groups") {
-                    ForEach(subgroups, id: \.key) { g in
-                        NavigationLink { HostsView(groupId: g.id, groupAccountId: g.accountId) } label: {
-                            GroupRow(group: g, total: totalIn(g), account: account.showsAccountBadges ? account.account(g.accountId) : nil,
-                                     vault: account.showsVaults ? account.vault(g.accountId, g.vaultId) : nil)
-                        }
-                        .contextMenu { groupMenu(g) }
-                        .swipeActions(edge: .trailing) {
-                            if g.canEdit {
-                                Button(role: .destructive) { deletingGroup = g } label: { Label("hosts.group.delete", systemImage: "trash") }
-                                Button { editedGroup = GroupEdit(group: g) } label: { Label("hosts.group.rename", systemImage: "pencil") }
-                                    .tint(.orange)
-                            }
-                        }
-                    }
-                }
-            }
-            ForEach(sections) { section in
-                Section(section.title) {
-                    ForEach(section.hosts, id: \.key) { host in
-                        HostRow(host: host, selecting: selecting,
-                                account: account.showsAccountBadges ? account.account(host.accountId) : nil,
-                                vault: account.showsVaults ? account.vault(host.accountId, host.vaultId) : nil,
-                                showVault: account.showsVaults || (host.accountId == nil && !account.scoped.isEmpty)) {
-                            connect(host, onServer: false)
-                        }
-                        .contextMenu { menu(host) }
-                        .swipeActions(edge: .trailing) {
-                            if host.canEdit {
-                                Button(role: .destructive) { deleting = host } label: { Label("common.delete", systemImage: "trash") }
-                                Button { editing = HostEdit(host: host) } label: { Label("common.edit", systemImage: "pencil") }
-                                    .tint(.orange)
-                            }
-                        }
-                        .swipeActions(edge: .leading) {
-                            if host.canEdit {
-                                Button { toggleFavorite(host) } label: {
-                                    if host.favorite {
-                                        Label("hosts.menu.unfavorite", systemImage: "star.slash")
-                                    } else {
-                                        Label("hosts.menu.favorite", systemImage: "star")
-                                    }
-                                }
-                                .tint(Brand.amber)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        .listStyle(.insetGrouped)
-        .environment(\.editMode, $editMode)
-        .overlay {
-            if searching && visible.isEmpty {
-                Text("hosts.search.no_results \(query)")
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding()
-            }
-        }
-        .searchable(text: $query, prompt: Text("hosts.search.prompt"))
-        .refreshable {
-            account.sync()
-            load()
-        }
-        .navigationTitle(selecting ? selectionTitle : title)
+        hostList
         .toolbar {
             if selecting {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(selection.count == visible.count && !visible.isEmpty
-                           ? String(localized: "hosts.select.none") : String(localized: "hosts.select.all")) {
-                        if selection.count == visible.count { selection = [] } else { selection = Set(visible.map(\.key)) }
-                    }
+                    Button(selectAllTitle) { toggleSelectAll() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.done") { endSelection() }
@@ -330,6 +237,109 @@ struct HostsView: View {
             guard isRoot, kind == "session" || kind == "lagged" else { return }
             Task { await sessions.refreshServer(accounts: activeAccounts) }
         }
+    }
+
+    private var hostList: some View {
+        // Selection only while selecting: otherwise a tap connects (or opens
+        // the group), also on an iPad.
+        List(selection: selectionBinding) {
+            if shortcuts && !searching && !selecting {
+                Section { shortcutTiles }
+            }
+            if isRoot && !searching && !selecting && account.showsVaults {
+                Section {
+                    VaultFilterBar(hasDeviceItems: deviceItems)
+                        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+                        .listRowBackground(Color.clear)
+                }
+            }
+            if isRoot && !searching && !selecting {
+                if let pending = account.scoped.first(where: { $0.status == .needsSignIn || $0.status == .unverified }) {
+                    Section { signInAgainBanner(pending) }
+                }
+                if !sessions.onServer.isEmpty {
+                    Section { serverNotice }
+                }
+            }
+            if hosts.isEmpty && groups.isEmpty && !searching {
+                Section { emptyState }
+            }
+            if !subgroups.isEmpty && !selecting {
+                Section("hosts.groups") {
+                    ForEach(subgroups, id: \.key) { g in
+                        NavigationLink { HostsView(groupId: g.id, groupAccountId: g.accountId) } label: {
+                            GroupRow(group: g, total: totalIn(g), account: account.showsAccountBadges ? account.account(g.accountId) : nil,
+                                     vault: account.showsVaults ? account.vault(g.accountId, g.vaultId) : nil)
+                        }
+                        .contextMenu { groupMenu(g) }
+                        .swipeActions(edge: .trailing) {
+                            if g.canEdit {
+                                Button(role: .destructive) { deletingGroup = g } label: { Label("hosts.group.delete", systemImage: "trash") }
+                                Button { editedGroup = GroupEdit(group: g) } label: { Label("hosts.group.rename", systemImage: "pencil") }
+                                    .tint(.orange)
+                            }
+                        }
+                    }
+                }
+            }
+            ForEach(sections) { section in
+                Section(section.title) {
+                    ForEach(section.hosts, id: \.key) { host in
+                        HostRow(host: host, selecting: selecting,
+                                account: account.showsAccountBadges ? account.account(host.accountId) : nil,
+                                vault: account.showsVaults ? account.vault(host.accountId, host.vaultId) : nil,
+                                showVault: account.showsVaults || (host.accountId == nil && !account.scoped.isEmpty)) {
+                            connect(host, onServer: false)
+                        }
+                        .contextMenu { menu(host) }
+                        .swipeActions(edge: .trailing) {
+                            if host.canEdit {
+                                Button(role: .destructive) { deleting = host } label: { Label("common.delete", systemImage: "trash") }
+                                Button { editing = HostEdit(host: host) } label: { Label("common.edit", systemImage: "pencil") }
+                                    .tint(.orange)
+                            }
+                        }
+                        .swipeActions(edge: .leading) {
+                            if host.canEdit {
+                                Button { toggleFavorite(host) } label: {
+                                    if host.favorite {
+                                        Label("hosts.menu.unfavorite", systemImage: "star.slash")
+                                    } else {
+                                        Label("hosts.menu.favorite", systemImage: "star")
+                                    }
+                                }
+                                .tint(Brand.amber)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .environment(\.editMode, $editMode)
+        .overlay {
+            if searching && visible.isEmpty {
+                Text("hosts.search.no_results \(query)")
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding()
+            }
+        }
+        .searchable(text: $query, prompt: Text("hosts.search.prompt"))
+        .refreshable {
+            account.sync()
+            load()
+        }
+        .navigationTitle(selecting ? selectionTitle : title)
+    }
+
+    private var selectAllTitle: String {
+        !visible.isEmpty && selection.count == visible.count
+            ? String(localized: "hosts.select.none") : String(localized: "hosts.select.all")
+    }
+
+    private func toggleSelectAll() {
+        if selection.count == visible.count { selection = [] } else { selection = Set(visible.map(\.key)) }
     }
 
     private var activeAccounts: [String] {
