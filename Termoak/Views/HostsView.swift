@@ -5,19 +5,24 @@ import UniformTypeIdentifiers
 /// Hosts in the style of Termius: search, groups as rows above the hosts and
 /// each host with its colored avatar. Tapping a host connects; holding it or
 /// swiping shows its actions. "Select" picks several to connect to them at
-/// once, move them to a group or delete them. With `groupId`, the contents
-/// of a group. With `shortcuts` (the root of the vault on the phone), the
-/// other sections of the vault go as tiles at the top.
+/// once, move them to a group or a vault, or delete them. With `groupId`,
+/// the contents of a group. With `shortcuts` (the root of the vault on the
+/// phone), the other sections of the vault go as tiles at the top. At the
+/// root, the account switcher and the vault chips.
 struct HostsView: View {
     let groupId: String?
+    /// Account of the group (`nil`: This device, or the root).
+    var groupAccountId: String? = nil
     var shortcuts = false
 
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Accounts
     @EnvironmentObject private var sessions: Sessions
+    @EnvironmentObject private var settings: AppSettings
 
     @State private var hosts: [SshHost] = []
     @State private var groups: [HostGroup] = []
+    @State private var deviceItems = false
     @State private var counts: [VaultSection: Int] = [:]
     @State private var query = ""
     @State private var editing: HostEdit?
@@ -29,13 +34,20 @@ struct HostsView: View {
     @State private var generatingKey = false
     @State private var importingKey = false
     @State private var importingConfig = false
+    @State private var transferring: TransferRequest?
+    @State private var addingAccount = false
+    /// An account to sign in again, or whose email code is pending.
+    @State private var resuming: AccountInfo?
+    @State private var managingAccounts = false
+    @State private var showingVaults = false
     @State private var notice: Notice?
-    /// Selecting several hosts.
+    /// Selecting several hosts (by `SshHost.key`).
     @State private var editMode: EditMode = .inactive
     @State private var selection: Set<String> = []
     @State private var deletingSelection = false
 
     private var selecting: Bool { editMode.isEditing }
+    private var isRoot: Bool { groupId == nil }
 
     /// The list selects only while selecting.
     private var selectionBinding: Binding<Set<String>>? {
@@ -44,12 +56,17 @@ struct HostsView: View {
 
     /// The selected hosts, in the order of the list.
     private var selectedHosts: [SshHost] {
-        hosts.filter { selection.contains($0.id) }.sorted(by: listOrder)
+        hosts.filter { selection.contains($0.key) }.sorted(by: listOrder)
     }
 
-    private var group: HostGroup? { groups.first { $0.id == groupId } }
+    private var group: HostGroup? { groups.first { $0.id == groupId && $0.accountId == groupAccountId } }
 
     private var searching: Bool { !query.trimmingCharacters(in: .whitespaces).isEmpty }
+
+    /// Groups whose hosts are shown inside them (of the same account).
+    private func hasGroup(_ h: SshHost) -> Bool {
+        groups.contains { $0.id == h.groupId && $0.accountId == h.accountId }
+    }
 
     private var visible: [SshHost] {
         let q = query.trimmingCharacters(in: .whitespaces).lowercased()
@@ -58,7 +75,8 @@ struct HostsView: View {
                 return [h.label, h.address, h.settings.username ?? "", h.tags.joined(separator: " ")]
                     .contains { $0.lowercased().contains(q) }
             }
-            return h.groupId == groupId || (groupId == nil && !groups.contains { $0.id == h.groupId })
+            if let groupId { return h.groupId == groupId && h.accountId == groupAccountId }
+            return !hasGroup(h)
         }
         .sorted(by: listOrder)
     }
@@ -72,12 +90,33 @@ struct HostsView: View {
     private var subgroups: [HostGroup] {
         guard !searching else { return [] }
         return groups.filter { g in
-            g.parentId == groupId || (groupId == nil && g.parentId != nil && !groups.contains { $0.id == g.parentId })
+            if let groupId { return g.parentId == groupId && g.accountId == groupAccountId }
+            return g.parentId == nil || !groups.contains { $0.id == g.parentId && $0.accountId == g.accountId }
         }
     }
 
     private func totalIn(_ g: HostGroup) -> Int {
-        hosts.filter { $0.groupId == g.id }.count + groups.filter { $0.parentId == g.id }.reduce(0) { $0 + totalIn($1) }
+        hosts.filter { $0.groupId == g.id && $0.accountId == g.accountId }.count
+            + groups.filter { $0.parentId == g.id && $0.accountId == g.accountId }.reduce(0) { $0 + totalIn($1) }
+    }
+
+    /// With several accounts at the root, the hosts go in a section per
+    /// account (This device first).
+    private var sections: [HostSection] {
+        let list = visible
+        guard isRoot, account.showsAccountBadges, !searching else {
+            return list.isEmpty ? [] : [HostSection(id: "all", title: searching ? String(localized: "hosts.results") : String(localized: "nav.hosts"), hosts: list)]
+        }
+        var out: [HostSection] = []
+        let device = list.filter { $0.accountId == nil }
+        if !device.isEmpty {
+            out.append(HostSection(id: "device", title: String(localized: "accounts.this_device"), hosts: device))
+        }
+        for a in account.list {
+            let mine = list.filter { $0.accountId == a.id }
+            if !mine.isEmpty { out.append(HostSection(id: a.id, title: a.email, hosts: mine)) }
+        }
+        return out
     }
 
     private var title: String {
@@ -92,36 +131,61 @@ struct HostsView: View {
             if shortcuts && !searching && !selecting {
                 Section { shortcutTiles }
             }
-            if groupId == nil && !searching && !selecting && !sessions.onServer.isEmpty {
-                Section { serverNotice }
+            if isRoot && !searching && !selecting && account.showsVaults {
+                Section {
+                    VaultFilterBar(hasDeviceItems: deviceItems)
+                        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+                        .listRowBackground(Color.clear)
+                }
+            }
+            if isRoot && !searching && !selecting {
+                if let pending = account.scoped.first(where: { $0.status == .needsSignIn || $0.status == .unverified }) {
+                    Section { signInAgainBanner(pending) }
+                }
+                if !sessions.onServer.isEmpty {
+                    Section { serverNotice }
+                }
             }
             if hosts.isEmpty && groups.isEmpty && !searching {
                 Section { emptyState }
             }
             if !subgroups.isEmpty && !selecting {
                 Section("hosts.groups") {
-                    ForEach(subgroups, id: \.id) { g in
-                        NavigationLink { HostsView(groupId: g.id) } label: { GroupRow(group: g, total: totalIn(g)) }
-                            .contextMenu { groupMenu(g) }
-                            .swipeActions(edge: .trailing) {
+                    ForEach(subgroups, id: \.key) { g in
+                        NavigationLink { HostsView(groupId: g.id, groupAccountId: g.accountId) } label: {
+                            GroupRow(group: g, total: totalIn(g), account: account.showsAccountBadges ? account.account(g.accountId) : nil,
+                                     vault: account.showsVaults ? account.vault(g.accountId, g.vaultId) : nil)
+                        }
+                        .contextMenu { groupMenu(g) }
+                        .swipeActions(edge: .trailing) {
+                            if g.canEdit {
                                 Button(role: .destructive) { deletingGroup = g } label: { Label("hosts.group.delete", systemImage: "trash") }
                                 Button { editedGroup = GroupEdit(group: g) } label: { Label("hosts.group.rename", systemImage: "pencil") }
                                     .tint(.orange)
                             }
+                        }
                     }
                 }
             }
-            if !visible.isEmpty {
-                Section(searching ? String(localized: "hosts.results") : String(localized: "nav.hosts")) {
-                    ForEach(visible, id: \.id) { host in
-                        HostRow(host: host, selecting: selecting) { connect(host, onServer: false) }
-                            .contextMenu { menu(host) }
-                            .swipeActions(edge: .trailing) {
+            ForEach(sections) { section in
+                Section(section.title) {
+                    ForEach(section.hosts, id: \.key) { host in
+                        HostRow(host: host, selecting: selecting,
+                                account: account.showsAccountBadges ? account.account(host.accountId) : nil,
+                                vault: account.showsVaults ? account.vault(host.accountId, host.vaultId) : nil,
+                                showVault: account.showsVaults || (host.accountId == nil && !account.scoped.isEmpty)) {
+                            connect(host, onServer: false)
+                        }
+                        .contextMenu { menu(host) }
+                        .swipeActions(edge: .trailing) {
+                            if host.canEdit {
                                 Button(role: .destructive) { deleting = host } label: { Label("common.delete", systemImage: "trash") }
                                 Button { editing = HostEdit(host: host) } label: { Label("common.edit", systemImage: "pencil") }
                                     .tint(.orange)
                             }
-                            .swipeActions(edge: .leading) {
+                        }
+                        .swipeActions(edge: .leading) {
+                            if host.canEdit {
                                 Button { toggleFavorite(host) } label: {
                                     if host.favorite {
                                         Label("hosts.menu.unfavorite", systemImage: "star.slash")
@@ -131,6 +195,7 @@ struct HostsView: View {
                                 }
                                 .tint(Brand.amber)
                             }
+                        }
                     }
                 }
             }
@@ -147,7 +212,7 @@ struct HostsView: View {
         }
         .searchable(text: $query, prompt: Text("hosts.search.prompt"))
         .refreshable {
-            if account.loggedIn == true { account.sync() }
+            account.sync()
             load()
         }
         .navigationTitle(selecting ? selectionTitle : title)
@@ -156,7 +221,7 @@ struct HostsView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(selection.count == visible.count && !visible.isEmpty
                            ? String(localized: "hosts.select.none") : String(localized: "hosts.select.all")) {
-                        if selection.count == visible.count { selection = [] } else { selection = Set(visible.map(\.id)) }
+                        if selection.count == visible.count { selection = [] } else { selection = Set(visible.map(\.key)) }
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
@@ -164,10 +229,17 @@ struct HostsView: View {
                 }
                 ToolbarItemGroup(placement: .bottomBar) { selectionActions }
             } else {
+                if isRoot {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        AccountSwitcher(onAdd: { addingAccount = true },
+                                        onManage: { managingAccounts = true },
+                                        onVaults: { showingVaults = true })
+                    }
+                }
                 ToolbarItemGroup(placement: .primaryAction) {
                     if account.syncing {
                         ProgressView()
-                    } else if account.loggedIn == true && groupId == nil {
+                    } else if account.list.contains(where: { $0.status == .active }) && isRoot {
                         Button { account.sync() } label: { Image(systemName: "arrow.triangle.2.circlepath") }
                             .accessibilityLabel("settings.sync")
                     }
@@ -180,11 +252,11 @@ struct HostsView: View {
             }
         }
         .sheet(item: $editing, onDismiss: load) { e in
-            HostEditor(original: e.host, initialGroup: groupId) { saved in
+            HostEditor(original: e.host, initialGroup: groupId, initialPlace: newPlace) { saved in
                 // After the sheet has gone, the terminal comes up.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { sessions.openLocal(saved) }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { connect(saved, onServer: false) }
             }
-            .environmentObject(model).environmentObject(account)
+            .environmentObject(model).environmentObject(account).environmentObject(sessions)
         }
         .sheet(item: $editedGroup, onDismiss: load) { e in
             GroupEditor(original: e.group).environmentObject(model).environmentObject(account)
@@ -195,9 +267,26 @@ struct HostsView: View {
         .sheet(isPresented: $importingKey, onDismiss: load) {
             ImportKeyView().environmentObject(model).environmentObject(account)
         }
+        .sheet(item: $transferring, onDismiss: load) { r in
+            TransferView(request: r).environmentObject(model).environmentObject(account)
+        }
+        .sheet(isPresented: $addingAccount) {
+            LoginView(welcome: false) {}.environmentObject(account).environmentObject(settings)
+        }
+        .sheet(item: Binding(get: { resuming.map(ResumeItem.init) }, set: { resuming = $0?.account })) { r in
+            LoginView(welcome: false, resume: r.account) {}.environmentObject(account).environmentObject(settings)
+        }
+        .sheet(isPresented: $managingAccounts) {
+            NavigationView { AccountsView(closable: true) }
+                .environmentObject(model).environmentObject(account).environmentObject(sessions).environmentObject(settings)
+        }
+        .sheet(isPresented: $showingVaults, onDismiss: load) {
+            NavigationView { VaultsView(closable: true) }
+                .environmentObject(model).environmentObject(account)
+        }
         .fullScreenCover(item: Binding(get: { filesHost.map(SelectedHost.init) }, set: { filesHost = $0?.host })) { e in
-            FilesScreen(core: model.core, title: e.host.label.isEmpty ? e.host.address : e.host.label,
-                        source: .connect(hostId: e.host.id, accountId: e.host.accountId))
+            FilesScreen(core: model.core, title: e.host.displayName,
+                        source: filesSource(e.host))
         }
         .sheet(item: Binding(get: { tunnelsHost.map(SelectedHost.init) }, set: { tunnelsHost = $0?.host }), onDismiss: load) { e in
             TunnelsView(host: e.host)
@@ -209,42 +298,69 @@ struct HostsView: View {
                             isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
                             titleVisibility: .visible) {
             Button("common.delete", role: .destructive) { if let h = deleting { delete(h) } }
-        } message: { Text("hosts.delete.message") }
+        } message: { Text(deleteMessage(deleting.map { [$0] } ?? [])) }
         .confirmationDialog(Text("hosts.group.delete.title \(deletingGroup?.name ?? "")"),
                             isPresented: Binding(get: { deletingGroup != nil }, set: { if !$0 { deletingGroup = nil } }),
                             titleVisibility: .visible) {
             Button("hosts.group.delete", role: .destructive) {
-                if let g = deletingGroup { try? model.core.deleteGroup(id: g.id); load(); account.sync() }
+                if let g = deletingGroup {
+                    do { try model.core.deleteGroup(id: g.id, accountId: g.accountId) } catch { show(error) }
+                    load()
+                    account.sync()
+                }
             }
         } message: { Text("hosts.group.delete.message") }
         .confirmationDialog(Text("hosts.select.delete.title \(selectedHosts.count)"), isPresented: $deletingSelection,
                             titleVisibility: .visible) {
             Button("common.delete", role: .destructive) { deleteSelection() }
-        } message: { Text("hosts.delete.message") }
+        } message: { Text(deleteMessage(selectedHosts)) }
         .alert(notice?.title ?? "", isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } })) {
             Button("common.ok", role: .cancel) {}
         } message: { Text(notice?.message ?? "") }
         .onAppear {
             load()
-            if groupId == nil { account.sync() }
+            if isRoot { account.sync() }
         }
         .onReceive(account.vaultChanged) { load() }
+        .onChange(of: account.vaultFilter) { _ in load() }
         .task {
-            if groupId == nil && account.loggedIn == true { await sessions.refreshServer(accounts: account.list.filter { $0.status == .active }.map(\.id)) }
+            if isRoot { await sessions.refreshServer(accounts: activeAccounts) }
         }
         .onReceive(account.changes) { kind in
-            guard groupId == nil, kind == "session" || kind == "lagged" else { return }
-            Task { await sessions.refreshServer(accounts: account.list.filter { $0.status == .active }.map(\.id)) }
+            guard isRoot, kind == "session" || kind == "lagged" else { return }
+            Task { await sessions.refreshServer(accounts: activeAccounts) }
         }
+    }
+
+    private var activeAccounts: [String] {
+        account.list.filter { $0.status == .active }.map(\.id)
+    }
+
+    /// Where a new host or group goes: the open group's place, or the
+    /// default one.
+    private var newPlace: ItemPlace {
+        if let group { return account.place(accountId: group.accountId, vaultId: group.vaultId) }
+        return account.defaultPlace
     }
 
     private var selectionTitle: String {
         selection.isEmpty ? String(localized: "hosts.select.title") : String(localized: "hosts.select.count \(selectedHosts.count)")
     }
 
+    /// The selected hosts all come from the same place (needed to move or
+    /// copy them together).
+    private var selectionPlace: ItemPlace? {
+        let chosen = selectedHosts
+        guard let first = chosen.first else { return nil }
+        let p = account.place(accountId: first.accountId, vaultId: first.vaultId)
+        return chosen.allSatisfy({ account.place(accountId: $0.accountId, vaultId: $0.vaultId) == p }) ? p : nil
+    }
+
     /// Bottom bar while selecting: connect to all, move them, delete them.
     @ViewBuilder private var selectionActions: some View {
         let chosen = selectedHosts
+        let editable = chosen.allSatisfy(\.canEdit)
+        let sameAccount = Set(chosen.map { $0.accountId ?? "" }).count == 1
         Button { connectSelection() } label: {
             Label(String(localized: "hosts.select.connect \(chosen.count)"), systemImage: "terminal")
                 .labelStyle(.titleAndIcon)
@@ -252,23 +368,42 @@ struct HostsView: View {
         .disabled(chosen.isEmpty)
         Spacer()
         Menu {
-            Button { move(chosen, to: nil) } label: { Label("host_editor.no_group", systemImage: "tray") }
-            ForEach(groups, id: \.id) { g in
-                Button { move(chosen, to: g.id) } label: { Label(g.name, systemImage: "folder") }
+            if sameAccount && editable {
+                let accountId = chosen.first?.accountId
+                Section {
+                    Button { move(chosen, to: nil) } label: { Label("host_editor.no_group", systemImage: "tray") }
+                    ForEach(groups.filter { $0.accountId == accountId && $0.vaultId == chosen.first?.vaultId }, id: \.key) { g in
+                        Button { move(chosen, to: g.id) } label: { Label(g.name, systemImage: "folder") }
+                    }
+                }
+            }
+            if !account.list.isEmpty, let place = selectionPlace {
+                Section {
+                    if editable {
+                        Button { transferring = TransferRequest(hosts: chosen, from: place, mode: .move) } label: {
+                            Label("transfer.move_to", systemImage: "arrow.right.square")
+                        }
+                    }
+                    if chosen.allSatisfy({ !$0.isUseOnly }) {
+                        Button { transferring = TransferRequest(hosts: chosen, from: place, mode: .copy) } label: {
+                            Label("transfer.copy_to", systemImage: "plus.square.on.square")
+                        }
+                    }
+                }
             }
         } label: {
             Label("hosts.select.move", systemImage: "folder")
         }
-        .disabled(chosen.isEmpty)
+        .disabled(chosen.isEmpty || (!editable && selectionPlace == nil))
         Spacer()
         Button(role: .destructive) { deletingSelection = true } label: {
             Label("common.delete", systemImage: "trash")
         }
-        .disabled(chosen.isEmpty)
+        .disabled(chosen.isEmpty || !editable)
     }
 
     private func startSelection(_ host: SshHost?) {
-        selection = host.map { Set([$0.id]) } ?? []
+        selection = host.map { Set([$0.key]) } ?? []
         withAnimation { editMode = .active }
     }
 
@@ -282,7 +417,14 @@ struct HostsView: View {
         let chosen = selectedHosts
         guard !chosen.isEmpty else { return }
         endSelection()
-        if chosen.count == 1 { sessions.openLocal(chosen[0]) } else { sessions.openLocal(chosen) }
+        if chosen.count == 1 {
+            connect(chosen[0], onServer: false)
+        } else {
+            // Strict Use-only hosts open through their server.
+            let strict = chosen.filter { isStrict($0) }
+            sessions.openLocal(chosen.filter { !isStrict($0) })
+            strict.forEach { sessions.openOnServer($0) }
+        }
     }
 
     private func move(_ chosen: [SshHost], to group: String?) {
@@ -301,7 +443,7 @@ struct HostsView: View {
 
     private func deleteSelection() {
         do {
-            for h in selectedHosts { try model.core.deleteHost(id: h.id) }
+            for h in selectedHosts { try model.core.deleteHost(id: h.id, accountId: h.accountId) }
         } catch {
             show(error)
         }
@@ -310,11 +452,23 @@ struct HostsView: View {
         account.sync()
     }
 
+    /// Deleting a host of a shared vault deletes it for everyone in it.
+    private func deleteMessage(_ chosen: [SshHost]) -> String {
+        let shared = chosen.contains { h in
+            guard let v = account.vault(h.accountId, h.vaultId) else { return false }
+            return v.kind != .personal
+        }
+        return shared ? String(localized: "hosts.delete.message_shared") : String(localized: "hosts.delete.message")
+    }
+
     /// "+": new host or group, a new key and the imports.
     private var addMenu: some View {
         Menu {
             Button { editing = HostEdit(host: nil) } label: { Label("common.new_host", systemImage: "server.rack") }
-            Button { editedGroup = GroupEdit(group: HostGroup(name: "", parentId: groupId)) } label: {
+            Button {
+                let p = newPlace
+                editedGroup = GroupEdit(group: HostGroup(name: "", parentId: groupId, accountId: p.accountId, vaultId: p.vaultId))
+            } label: {
                 Label("hosts.group.new", systemImage: "folder.badge.plus")
             }
             Divider()
@@ -349,7 +503,7 @@ struct HostsView: View {
             EmptyState(
                 icon: "server.rack",
                 title: account.syncing ? String(localized: "common.syncing") : String(localized: "hosts.empty.title"),
-                text: account.loggedIn == true
+                text: !account.scoped.isEmpty
                     ? String(localized: "hosts.empty.text_synced")
                     : String(localized: "hosts.empty.text_local"),
                 action: String(localized: "common.new_host")
@@ -362,6 +516,25 @@ struct HostsView: View {
             .padding(.bottom, 20)
         }
         .listRowBackground(Color.clear)
+    }
+
+    /// "Sign in again to sync" for an account whose session ended (its
+    /// items stay usable offline), or "Enter the email code".
+    private func signInAgainBanner(_ a: AccountInfo) -> some View {
+        Button { resuming = a } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "exclamationmark.arrow.triangle.2.circlepath")
+                    .foregroundColor(Brand.amber)
+                    .frame(width: 30, height: 30)
+                    .background(Brand.amber.opacity(0.15), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(a.status == .unverified ? String(localized: "accounts.enter_code") : String(localized: "accounts.sign_in_again"))
+                        .font(.subheadline.weight(.medium)).foregroundColor(.primary)
+                    Text(verbatim: a.email).font(.caption).foregroundColor(.secondary)
+                }
+                Spacer(minLength: 0)
+            }
+        }
     }
 
     /// "☁ N sessions running on the server", with a button to go to them.
@@ -382,54 +555,107 @@ struct HostsView: View {
         }
     }
 
+    /// A server session can be opened for this host: its account is signed
+    /// in (This-device hosts use the current account).
+    private func canOpenOnServer(_ host: SshHost) -> Bool {
+        if let a = account.account(host.accountId) { return a.status == .active }
+        return account.loggedIn == true
+    }
+
     @ViewBuilder private func menu(_ host: SshHost) -> some View {
         Button { connect(host, onServer: false) } label: { Label("common.connect", systemImage: "terminal") }
-        if account.loggedIn == true {
+        if canOpenOnServer(host) {
             Button { connect(host, onServer: true) } label: { Label("hosts.menu.persistent", systemImage: "icloud") }
         }
         Button { filesHost = host } label: { Label("common.files_sftp", systemImage: "folder") }
-        Button { tunnelsHost = host } label: { Label("common.tunnels", systemImage: "arrow.left.arrow.right") }
-        Divider()
-        Button { editing = HostEdit(host: host) } label: { Label("common.edit", systemImage: "pencil") }
-        Button { startSelection(host) } label: { Label("hosts.select", systemImage: "checkmark.circle") }
-        Button { toggleFavorite(host) } label: {
-            if host.favorite {
-                Label("hosts.menu.unfavorite", systemImage: "star.slash")
-            } else {
-                Label("hosts.menu.favorite", systemImage: "star")
-            }
+        if !isStrict(host) {
+            Button { tunnelsHost = host } label: { Label("common.tunnels", systemImage: "arrow.left.arrow.right") }
         }
-        Button { duplicate(host) } label: { Label("hosts.menu.duplicate", systemImage: "plus.square.on.square") }
+        Divider()
+        if host.canEdit {
+            Button { editing = HostEdit(host: host) } label: { Label("common.edit", systemImage: "pencil") }
+        }
+        Button { startSelection(host) } label: { Label("hosts.select", systemImage: "checkmark.circle") }
+        if host.canEdit {
+            Button { toggleFavorite(host) } label: {
+                if host.favorite {
+                    Label("hosts.menu.unfavorite", systemImage: "star.slash")
+                } else {
+                    Label("hosts.menu.favorite", systemImage: "star")
+                }
+            }
+            Button { duplicate(host) } label: { Label("hosts.menu.duplicate", systemImage: "plus.square.on.square") }
+        }
         Button { UIPasteboard.general.string = host.address } label: {
             Label("hosts.menu.copy_address", systemImage: "doc.on.doc")
         }
-        Divider()
-        Button(role: .destructive) { deleting = host } label: { Label("common.delete", systemImage: "trash") }
+        if !account.list.isEmpty {
+            let place = account.place(accountId: host.accountId, vaultId: host.vaultId)
+            Menu {
+                if host.canEdit {
+                    Button { transferring = TransferRequest(hosts: [host], from: place, mode: .move) } label: {
+                        Label("transfer.move_to", systemImage: "arrow.right.square")
+                    }
+                }
+                if !host.isUseOnly {
+                    Button { transferring = TransferRequest(hosts: [host], from: place, mode: .copy) } label: {
+                        Label("transfer.copy_to", systemImage: "plus.square.on.square")
+                    }
+                }
+            } label: {
+                Label("transfer.menu", systemImage: "lock.shield")
+            }
+        }
+        if host.canEdit {
+            Divider()
+            Button(role: .destructive) { deleting = host } label: { Label("common.delete", systemImage: "trash") }
+        }
     }
 
     @ViewBuilder private func groupMenu(_ g: HostGroup) -> some View {
-        Button { editedGroup = GroupEdit(group: g) } label: { Label("hosts.group.rename", systemImage: "pencil") }
-        Button(role: .destructive) { deletingGroup = g } label: { Label("hosts.group.delete", systemImage: "trash") }
+        if g.canEdit {
+            Button { editedGroup = GroupEdit(group: g) } label: { Label("hosts.group.rename", systemImage: "pencil") }
+            Button(role: .destructive) { deletingGroup = g } label: { Label("hosts.group.delete", systemImage: "trash") }
+        }
+    }
+
+    private func isStrict(_ host: SshHost) -> Bool {
+        host.isUseOnly && account.isStrict(accountId: host.accountId, vaultId: host.vaultId)
     }
 
     private func connect(_ host: SshHost, onServer: Bool) {
-        if onServer { sessions.openOnServer(host) } else { sessions.openLocal(host) }
+        if onServer {
+            sessions.openOnServer(host)
+        } else {
+            sessions.connect(host, strict: isStrict(host))
+        }
+    }
+
+    /// Files over SFTP: from the phone, or from the server for Strict
+    /// Use-only hosts.
+    private func filesSource(_ host: SshHost) -> FileBrowser.Source {
+        isStrict(host) ? .server(hostId: host.id, accountId: host.accountId) : .connect(hostId: host.id, accountId: host.accountId)
     }
 
     private func load() {
         do {
-            hosts = try model.core.listHosts()
-            groups = try model.core.listGroups().sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+            hosts = try model.core.listHosts(filter: account.hostFilter)
+            groups = try model.core.listGroups(filter: account.hostFilter)
+                .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         } catch {
             show(error)
         }
-        guard shortcuts else { return }
+        guard isRoot else { return }
         let core = model.core
+        let device = ItemFilter(accountIds: [], vaultIds: nil, includeDevice: true)
+        deviceItems = !account.scoped.isEmpty && !((try? core.listHosts(filter: device)) ?? []).isEmpty
+        guard shortcuts else { return }
+        let f = account.itemFilter
         counts = [
-            .keychain: (try? core.listKeys().count) ?? 0,
-            .portForwarding: (try? core.listForwards(hostId: nil).count) ?? 0,
-            .snippets: (try? core.listSnippets().count) ?? 0,
-            .knownHosts: (try? core.listKnownHosts().count) ?? 0,
+            .keychain: (try? core.listKeys(filter: f).count) ?? 0,
+            .portForwarding: (try? core.listForwards(hostId: nil, filter: f).count) ?? 0,
+            .snippets: (try? core.listSnippets(filter: f).count) ?? 0,
+            .knownHosts: (try? core.listKnownHosts(filter: f).count) ?? 0,
         ]
     }
 
@@ -453,6 +679,8 @@ struct HostsView: View {
         save(h)
     }
 
+    /// A copy next to it (same account and vault; the password stays with
+    /// the original).
     private func duplicate(_ host: SshHost) {
         var h = host
         h.id = ""
@@ -463,7 +691,7 @@ struct HostsView: View {
 
     private func delete(_ host: SshHost) {
         do {
-            try model.core.deleteHost(id: host.id)
+            try model.core.deleteHost(id: host.id, accountId: host.accountId)
             load()
             account.sync()
         } catch {
@@ -501,6 +729,19 @@ struct HostEdit: Identifiable {
 private struct GroupEdit: Identifiable {
     let id = UUID()
     let group: HostGroup
+}
+
+/// An account to sign in again (sheet).
+private struct ResumeItem: Identifiable {
+    let account: AccountInfo
+    var id: String { account.id }
+}
+
+/// Hosts of one account (or all of them) in the list.
+private struct HostSection: Identifiable {
+    let id: String
+    let title: String
+    let hosts: [SshHost]
 }
 
 /// Title and text of an alert.
@@ -544,6 +785,8 @@ private struct VaultTile: View {
 private struct GroupRow: View {
     let group: HostGroup
     let total: Int
+    var account: AccountInfo? = nil
+    var vault: VaultInfo? = nil
 
     var body: some View {
         let tint = hexColor(group.color) ?? Color.accentColor
@@ -555,18 +798,29 @@ private struct GroupRow: View {
                 .background(tint.opacity(0.16), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
             VStack(alignment: .leading, spacing: 2) {
                 Text(group.name).font(.headline).lineLimit(1)
-                Text("hosts.group.count \(total)").font(.subheadline).foregroundColor(.secondary)
+                HStack(spacing: 6) {
+                    Text("hosts.group.count \(total)").font(.subheadline).foregroundColor(.secondary)
+                    if let vault { VaultChip(vault: vault) }
+                }
             }
+            Spacer(minLength: 0)
+            if let account { AccountAvatar(account: account, size: 20) }
         }
         .padding(.vertical, 2)
     }
 }
 
-/// A host: avatar, name, "ssh, user" and its tags. Tapping it connects
-/// (while selecting, it selects it).
+/// A host: avatar, name, "ssh, user", its vault and its tags. Tapping it
+/// connects (while selecting, it selects it).
 private struct HostRow: View {
     let host: SshHost
     var selecting = false
+    /// Several accounts on screen: the host's account.
+    var account: AccountInfo? = nil
+    /// Several vaults on screen: the host's vault.
+    var vault: VaultInfo? = nil
+    /// Show the vault chip (or "This device").
+    var showVault = false
     let onConnect: () -> Void
 
     var body: some View {
@@ -583,15 +837,21 @@ private struct HostRow: View {
             HostIcon(host: host, size: 42)
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
-                    Text(host.label.isEmpty ? host.address : host.label)
+                    Text(host.displayName)
                         .font(.headline)
                         .foregroundColor(.primary)
                         .lineLimit(1)
                     if host.favorite { Image(systemName: "star.fill").font(.caption2).foregroundColor(Brand.amber) }
+                    if host.isUseOnly {
+                        Image(systemName: "lock.fill").font(.caption2).foregroundColor(Brand.amber)
+                            .accessibilityLabel(Text("vaults.use_only_badge"))
+                    }
                 }
                 Text(hostSubtitle(host)).font(.subheadline).foregroundColor(.secondary).lineLimit(1)
-                if !host.tags.isEmpty {
+                if !host.tags.isEmpty || showVault || host.isUseOnly {
                     HStack(spacing: 4) {
+                        if showVault && (vault != nil || host.accountId == nil) { VaultChip(vault: vault) }
+                        if host.isUseOnly { UseOnlyBadge() }
                         ForEach(Array(host.tags.prefix(3).enumerated()), id: \.offset) { _, tag in
                             TagChip(text: tag)
                         }
@@ -600,6 +860,7 @@ private struct HostRow: View {
                 }
             }
             Spacer(minLength: 0)
+            if let account { AccountAvatar(account: account, size: 20) }
         }
         .padding(.vertical, 2)
         .contentShape(Rectangle())
@@ -613,12 +874,19 @@ private struct GroupEditor: View {
     @EnvironmentObject private var account: Accounts
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
+    @State private var place: ItemPlace = .device
     @State private var error: String?
+
+    /// A new top-level group: choose its vault.
+    private var choosesPlace: Bool {
+        original.id.isEmpty && original.parentId == nil && account.places.count > 1
+    }
 
     var body: some View {
         NavigationView {
             Form {
                 TextField("hosts.group.name", text: $name)
+                if choosesPlace { PlacePicker(place: $place) }
                 if let error { Text(error).foregroundColor(Brand.red) }
             }
             .navigationTitle(original.id.isEmpty ? String(localized: "hosts.group.new") : String(localized: "hosts.group.rename"))
@@ -629,8 +897,14 @@ private struct GroupEditor: View {
                     Button("common.save") {
                         var g = original
                         g.name = name.trimmingCharacters(in: .whitespaces)
+                        if choosesPlace {
+                            g.accountId = place.accountId
+                            g.vaultId = place.vaultId
+                            g.syncMode = place.accountId == nil && !account.list.isEmpty ? .deviceOnly : nil
+                        }
                         do {
                             _ = try model.core.saveGroup(group: g)
+                            if choosesPlace { account.rememberPlace(place) }
                             account.sync()
                             dismiss()
                         } catch {
@@ -641,12 +915,15 @@ private struct GroupEditor: View {
                 }
             }
         }
-        .onAppear { name = original.name }
+        .onAppear {
+            name = original.name
+            place = account.place(accountId: original.accountId, vaultId: original.vaultId)
+        }
     }
 }
 
 /// Host picked to open a sheet (SFTP, tunnels).
 struct SelectedHost: Identifiable {
     let host: SshHost
-    var id: String { host.id }
+    var id: String { host.key }
 }

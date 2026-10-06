@@ -133,8 +133,8 @@ struct SnippetSendView: View {
             if hosts.isEmpty && loaded {
                 Text("snippets.send.no_hosts").foregroundColor(.secondary)
             }
-            ForEach(filteredHosts, id: \.id) { h in
-                Button { toggle(h.id) } label: {
+            ForEach(filteredHosts, id: \.key) { h in
+                Button { toggle(h.key) } label: {
                     HStack(spacing: 12) {
                         HostIcon(host: h, size: 30)
                         VStack(alignment: .leading, spacing: 1) {
@@ -142,7 +142,7 @@ struct SnippetSendView: View {
                             Text(h.address).font(.caption).foregroundColor(.secondary).lineLimit(1)
                         }
                         Spacer()
-                        check(chosenHosts.contains(h.id))
+                        check(chosenHosts.contains(h.key))
                     }
                 }
             }
@@ -152,7 +152,7 @@ struct SnippetSendView: View {
                 Spacer()
                 if !filteredHosts.isEmpty {
                     Button(allFilteredChosen ? String(localized: "hosts.select.none") : String(localized: "hosts.select.all")) {
-                        let ids = filteredHosts.map(\.id)
+                        let ids = filteredHosts.map(\.key)
                         if allFilteredChosen { chosenHosts.subtract(ids) } else { chosenHosts.formUnion(ids) }
                     }
                     .font(.footnote)
@@ -212,12 +212,12 @@ struct SnippetSendView: View {
     }
 
     private var allFilteredChosen: Bool {
-        !filteredHosts.isEmpty && filteredHosts.allSatisfy { chosenHosts.contains($0.id) }
+        !filteredHosts.isEmpty && filteredHosts.allSatisfy { chosenHosts.contains($0.key) }
     }
 
     private var chosenCount: Int {
         switch target {
-        case .servers: return hosts.filter { chosenHosts.contains($0.id) }.count
+        case .servers: return hosts.filter { chosenHosts.contains($0.key) }.count
         case .openTerminals: return sessions.open.filter { chosenOpen.contains($0.id) && canTake($0) }.count
         }
     }
@@ -241,7 +241,7 @@ struct SnippetSendView: View {
             grew = !more.isEmpty
             ids.formUnion(more)
         }
-        return hosts.filter { h in h.groupId.map { ids.contains($0) } == true }.map(\.id)
+        return hosts.filter { h in h.groupId.map { ids.contains($0) } == true }.map(\.key)
     }
 
     private func toggle(_ id: String) {
@@ -274,7 +274,7 @@ struct SnippetSendView: View {
             : ((try? renderSnippet(script: snippet.script, values: values)) ?? snippet.script)
         switch target {
         case .servers:
-            let chosen = hosts.filter { chosenHosts.contains($0.id) }
+            let chosen = hosts.filter { chosenHosts.contains($0.key) }
             guard !chosen.isEmpty else { return }
             batch = SnippetBatch(text: text, run: run, terminals: sessions.openInBackground(chosen))
         case .openTerminals:

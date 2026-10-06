@@ -44,7 +44,7 @@ struct TunnelsView: View {
                 }
             }
             .sheet(item: $editing, onDismiss: load) { e in
-                TunnelEditor(hostId: host.id, original: e.tunnel)
+                TunnelEditor(host: host, original: e.tunnel)
             }
             .sheet(item: $tunnels.prompt) { p in
                 AuthPromptView(prompt: p) { tunnels.prompt = nil }.interactiveDismissDisabled()
@@ -56,7 +56,7 @@ struct TunnelsView: View {
                     if let f = deleting {
                         Task {
                             await tunnels.stop(f)
-                            try? model.core.deleteForward(id: f.id)
+                            try? model.core.deleteForward(id: f.id, accountId: f.accountId)
                             load()
                         }
                     }
@@ -106,14 +106,19 @@ struct TunnelsView: View {
         }
         .padding(.vertical, 2)
         .contentShape(Rectangle())
-        .onTapGesture { editing = TunnelEdit(tunnel: f) }
+        .onTapGesture { if f.canEdit { editing = TunnelEdit(tunnel: f) } }
         .swipeActions(edge: .trailing) {
-            Button(role: .destructive) { deleting = f } label: { Label("common.delete", systemImage: "trash") }
+            if f.canEdit {
+                Button(role: .destructive) { deleting = f } label: { Label("common.delete", systemImage: "trash") }
+            }
         }
     }
 
     private func load() {
-        list = ((try? model.core.listForwards(hostId: host.id)) ?? [])
+        // The host's account and This device (a This-device host may have
+        // older tunnels in an account).
+        let filter = ItemFilter(accountIds: host.accountId.map { [$0] }, vaultIds: nil, includeDevice: true)
+        list = ((try? model.core.listForwards(hostId: host.id, filter: filter)) ?? [])
             .sorted { name($0).localizedCaseInsensitiveCompare(name($1)) == .orderedAscending }
     }
 
@@ -153,7 +158,7 @@ private struct TunnelEdit: Identifiable {
 
 /// Create or edit a saved tunnel.
 private struct TunnelEditor: View {
-    let hostId: String
+    let host: SshHost
     let original: PortForward?
     @EnvironmentObject private var model: AppModel
     @Environment(\.dismiss) private var dismiss
@@ -243,7 +248,8 @@ private struct TunnelEditor: View {
             guard let d = number(destinationPort), let d else { error = String(localized: "tunnels.error.destination_port"); return }
             dp = d
         }
-        var f = original ?? PortForward(label: "", hostId: hostId, kind: kind)
+        // A new tunnel goes where its host is.
+        var f = original ?? PortForward(label: "", hostId: host.id, kind: kind, accountId: host.accountId, vaultId: host.vaultId)
         f.label = name.trimmingCharacters(in: .whitespaces)
         f.kind = kind
         f.bindAddress = listenAddress.trimmingCharacters(in: .whitespaces).isEmpty ? "127.0.0.1" : listenAddress.trimmingCharacters(in: .whitespaces)

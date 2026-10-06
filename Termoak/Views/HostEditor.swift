@@ -103,6 +103,8 @@ private func sameColor(_ a: String?, _ b: String?) -> Bool {
 struct HostEditor: View {
     let original: SshHost?
     var initialGroup: String? = nil
+    /// Where a new host goes (This device or a vault).
+    var initialPlace: ItemPlace? = nil
     /// "Connect": called with the saved host after the editor closes.
     var onConnect: ((SshHost) -> Void)? = nil
 
@@ -146,6 +148,9 @@ struct HostEditor: View {
     @State private var snippets: [Snippet] = []
     @State private var others: [SshHost] = []
     @State private var showAdvanced = false
+    /// This device or the vault of the host.
+    @State private var place: ItemPlace = .device
+    @State private var transferring: TransferRequest?
     /// Tried to save: missing values are errors now.
     @State private var attempted = false
     @State private var deleting = false
@@ -189,8 +194,16 @@ struct HostEditor: View {
                                 titleVisibility: .visible) {
                 Button("common.delete", role: .destructive, action: delete)
             } message: { Text("hosts.delete.message") }
+            .sheet(item: $transferring) { r in
+                TransferView(request: r) {
+                    // Moved: this copy of the host is no longer where it was.
+                    dismiss()
+                }
+                .environmentObject(model).environmentObject(account)
+            }
         }
         .onAppear(perform: load)
+        .onChange(of: place) { _ in loadReferences() }
     }
 
     // MARK: Sections
@@ -244,6 +257,7 @@ struct HostEditor: View {
 
     private var organize: some View {
         Section("host_editor.organize") {
+            vaultRow
             Picker("host_editor.group", selection: $groupId) {
                 Text("host_editor.no_group").tag(String?.none)
                 ForEach(groups, id: \.id) { Text($0.name).tag(Optional($0.id)) }
@@ -254,6 +268,27 @@ struct HostEditor: View {
                 .submitLabel(.next)
                 .onSubmit { focus = .username }
             colorRow
+        }
+    }
+
+    /// The vault: chosen for a new host (when there is more than one place);
+    /// for an existing one it is shown with "Move to…".
+    @ViewBuilder private var vaultRow: some View {
+        if let original {
+            if !account.list.isEmpty {
+                HStack {
+                    Text("host_editor.vault")
+                    Spacer()
+                    Text(verbatim: account.placeTitle(place)).foregroundColor(.secondary).lineLimit(1)
+                }
+                Button {
+                    transferring = TransferRequest(hosts: [original], from: place, mode: .move)
+                } label: {
+                    Label("transfer.move_to", systemImage: "arrow.right.square")
+                }
+            }
+        } else if account.places.count > 1 {
+            PlacePicker(place: $place)
         }
     }
 
@@ -368,7 +403,10 @@ struct HostEditor: View {
     private var options: some View {
         Section("host_editor.options") {
             Toggle("host_editor.favorite", isOn: $favorite)
-            Toggle("common.device_only", isOn: $deviceOnly)
+            // With accounts, This device is one of the places above.
+            if account.list.isEmpty {
+                Toggle("common.device_only", isOn: $deviceOnly)
+            }
             TextField("host_editor.notes", text: $notes)
         }
     }
@@ -592,15 +630,37 @@ struct HostEditor: View {
 
     // MARK: Loading and saving
 
+    /// Keys, identities, groups, snippets and jump hosts the host can use:
+    /// those of its own vault and those of This device (references never
+    /// leave a vault).
+    private func loadReferences() {
+        let p = place
+        let filter = ItemFilter(accountIds: p.accountId.map { [$0] } ?? [], vaultIds: nil, includeDevice: true)
+        func usable(_ accountId: String?, _ vaultId: String?) -> Bool {
+            accountId == nil || (accountId == p.accountId && vaultId == p.vaultId)
+        }
+        keys = ((try? model.core.listKeys(filter: filter)) ?? []).filter { usable($0.accountId, $0.vaultId) }
+        identities = ((try? model.core.listIdentities(filter: filter)) ?? []).filter { usable($0.accountId, $0.vaultId) }
+        // A group is in the same place as its hosts.
+        groups = ((try? model.core.listGroups(filter: filter)) ?? [])
+            .filter { $0.accountId == p.accountId && $0.vaultId == p.vaultId }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        snippets = ((try? model.core.listSnippets(filter: filter)) ?? [])
+            .filter { usable($0.accountId, $0.vaultId) }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        others = ((try? model.core.listHosts(filter: filter)) ?? [])
+            .filter { usable($0.accountId, $0.vaultId) && !($0.id == original?.id && $0.accountId == original?.accountId) }
+        if let g = groupId, !groups.contains(where: { $0.id == g }) { groupId = nil }
+    }
+
     private func load() {
-        keys = (try? model.core.listKeys()) ?? []
-        identities = (try? model.core.listIdentities()) ?? []
-        groups = ((try? model.core.listGroups()) ?? [])
-            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-        snippets = ((try? model.core.listSnippets()) ?? [])
-            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-        others = ((try? model.core.listHosts()) ?? []).filter { $0.id != original?.id }
+        if let h = original {
+            place = account.place(accountId: h.accountId, vaultId: h.vaultId)
+        } else {
+            place = initialPlace ?? account.defaultPlace
+        }
         groupId = initialGroup
+        loadReferences()
         guard let h = original else {
             // A new host: straight to the address.
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { focus = .address }
@@ -634,7 +694,7 @@ struct HostEditor: View {
         envText = s.env.sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }.joined(separator: "\n")
         hostTheme = s.theme
         recordSessions = s.recordSessions ?? false
-        hadProxyPassword = (try? model.core.hostHasProxyPassword(id: h.id)) ?? false
+        hadProxyPassword = (try? model.core.hostHasProxyPassword(id: h.id, accountId: h.accountId)) ?? false
         // It starts open if the host uses anything in it.
         showAdvanced = !jumps.isEmpty || s.proxy != nil || agentForwarding || s.keepaliveSecs != nil
             || s.startupSnippetId != nil || !s.env.isEmpty || recordSessions
@@ -660,7 +720,15 @@ struct HostEditor: View {
         host.color = color
         host.notes = notes
         host.favorite = favorite
-        host.syncMode = deviceOnly ? .deviceOnly : .synced
+        if account.list.isEmpty {
+            host.syncMode = deviceOnly ? .deviceOnly : .synced
+        } else if original == nil {
+            // A new host goes where it was chosen; This-device items never
+            // leave the device.
+            host.accountId = place.accountId
+            host.vaultId = place.vaultId
+            host.syncMode = place.accountId == nil ? .deviceOnly : .synced
+        }
         var s = host.settings
         s.port = parsePort(port)
         let user = username.trimmingCharacters(in: .whitespaces)
@@ -708,7 +776,8 @@ struct HostEditor: View {
         }
         do {
             let saved = try model.core.saveHost(host: host, password: secret)
-            try model.core.setHostProxyPassword(id: saved.id, password: proxySecret)
+            try model.core.setHostProxyPassword(id: saved.id, password: proxySecret, accountId: saved.accountId)
+            if original == nil { account.rememberPlace(place) }
             account.sync()
             dismiss()
             if connect { onConnect?(saved) }
@@ -720,7 +789,7 @@ struct HostEditor: View {
     private func delete() {
         guard let h = original else { return }
         do {
-            try model.core.deleteHost(id: h.id)
+            try model.core.deleteHost(id: h.id, accountId: h.accountId)
             account.sync()
             dismiss()
         } catch {

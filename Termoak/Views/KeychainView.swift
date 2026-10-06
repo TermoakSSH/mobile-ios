@@ -34,7 +34,7 @@ struct KeychainView: View {
                 ) { generating = true }
                 .listRowBackground(Color.clear)
             }
-            ForEach(keys, id: \.id) { k in
+            ForEach(keys, id: \.key) { k in
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Image(systemName: "key.fill").foregroundColor(.accentColor)
@@ -44,16 +44,17 @@ struct KeychainView: View {
                                 .font(.caption).foregroundColor(.secondary)
                         }
                         Spacer()
-                        if k.syncMode == .deviceOnly {
-                            Image(systemName: "iphone").foregroundColor(.secondary)
-                        }
+                        ItemPlaceBadge(accountId: k.accountId, vaultId: k.vaultId, useOnly: k.isUseOnly,
+                                       deviceOnly: k.syncMode == .deviceOnly)
                     }
                     Text(k.fingerprint).font(.system(.caption2, design: .monospaced)).foregroundColor(.secondary).lineLimit(1)
                     Button { copy(k) } label: { Label("keychain.copy_public", systemImage: "doc.on.doc") }
                         .buttonStyle(.borderless).font(.footnote)
                 }
                 .padding(.vertical, 4)
-                .swipeActions { Button("common.delete", role: .destructive) { deleting = k } }
+                .swipeActions {
+                    if !k.isUseOnly { Button("common.delete", role: .destructive) { deleting = k } }
+                }
             }
             }
         }
@@ -72,17 +73,22 @@ struct KeychainView: View {
                             isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
                             titleVisibility: .visible) {
             Button("common.delete", role: .destructive) {
-                if let k = deleting { try? model.core.deleteKey(id: k.id); load(); account.sync() }
+                if let k = deleting {
+                    do { try model.core.deleteKey(id: k.id, accountId: k.accountId) } catch { notice = userMessage(error) }
+                    load()
+                    account.sync()
+                }
             }
         } message: { Text("keychain.delete.message") }
         .alert(notice ?? "", isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } })) {
             Button("common.ok", role: .cancel) {}
         }
         .onAppear(perform: load)
+        .onReceive(account.vaultChanged) { load() }
     }
 
     private func load() {
-        keys = ((try? model.core.listKeys()) ?? [])
+        keys = ((try? model.core.listKeys(filter: account.itemFilter)) ?? [])
             .sorted { $0.label.localizedCaseInsensitiveCompare($1.label) == .orderedAscending }
     }
 
@@ -100,6 +106,7 @@ struct GenerateKeyView: View {
     @State private var type: KeyType = .ed25519
     @State private var passphrase = ""
     @State private var deviceOnly = true
+    @State private var place: ItemPlace = .device
     @State private var busy = false
     @State private var error: String?
 
@@ -114,7 +121,12 @@ struct GenerateKeyView: View {
                 }
                 .pickerStyle(.segmented)
                 SecureField("keychain.passphrase_optional", text: $passphrase)
-                Toggle("common.device_only", isOn: $deviceOnly)
+                if account.list.isEmpty {
+                    Toggle("common.device_only", isOn: $deviceOnly)
+                } else {
+                    // A private key stays on this device unless you choose a vault.
+                    PlacePicker(place: $place)
+                }
                 if let error { Text(error).foregroundColor(Brand.red) }
             }
             .navigationTitle("keychain.generate")
@@ -128,10 +140,13 @@ struct GenerateKeyView: View {
                         Task {
                             defer { busy = false }
                             do {
+                                let p = account.list.isEmpty ? ItemPlace.device : place
+                                let local = account.list.isEmpty ? deviceOnly : p.accountId == nil
                                 _ = try await model.core.generateKey(
                                     label: label, keyType: type, comment: "\(label) (Termoak)",
                                     passphrase: passphrase.isEmpty ? nil : passphrase, storePassphrase: !passphrase.isEmpty,
-                                    syncMode: deviceOnly ? .deviceOnly : .synced)
+                                    syncMode: local ? .deviceOnly : .synced, accountId: p.accountId, vaultId: p.vaultId)
+                                account.rememberPlace(p)
                                 account.sync()
                                 dismiss()
                             } catch {
@@ -153,6 +168,7 @@ struct ImportKeyView: View {
     @State private var name = ""
     @State private var privateKey = ""
     @State private var passphrase = ""
+    @State private var place: ItemPlace = .device
     @State private var error: String?
 
     var body: some View {
@@ -167,6 +183,7 @@ struct ImportKeyView: View {
                         .autocorrectionDisabled()
                 }
                 SecureField("keychain.import.passphrase", text: $passphrase)
+                if account.places.count > 1 { PlacePicker(place: $place) }
                 if let error { Text(error).foregroundColor(Brand.red) }
             }
             .navigationTitle("keychain.import.title")
@@ -180,7 +197,10 @@ struct ImportKeyView: View {
                                 _ = try await model.core.importKey(
                                     label: name.isEmpty ? String(localized: "keychain.import.default_label") : name,
                                     privateKey: privateKey.trimmingCharacters(in: .whitespacesAndNewlines),
-                                    passphrase: passphrase.isEmpty ? nil : passphrase, storePassphrase: !passphrase.isEmpty, syncMode: nil)
+                                    passphrase: passphrase.isEmpty ? nil : passphrase, storePassphrase: !passphrase.isEmpty,
+                                    syncMode: account.list.isEmpty ? nil : (place.accountId == nil ? .deviceOnly : .synced),
+                                    accountId: place.accountId, vaultId: place.vaultId)
+                                account.rememberPlace(place)
                                 account.sync()
                                 dismiss()
                             } catch {
@@ -192,6 +212,7 @@ struct ImportKeyView: View {
                 }
             }
         }
+        .onAppear { place = account.defaultPlace }
     }
 }
 
@@ -216,16 +237,21 @@ struct SnippetsView: View {
                 ) { editing = SnippetEdit(snippet: Snippet(name: "", script: "")) }
                 .listRowBackground(Color.clear)
             }
-            ForEach(list, id: \.id) { sn in
-                Button { editing = SnippetEdit(snippet: sn) } label: {
+            ForEach(list, id: \.key) { sn in
+                Button { if sn.canEdit { editing = SnippetEdit(snippet: sn) } } label: {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(sn.name).font(.headline).foregroundColor(.primary)
+                        HStack {
+                            Text(sn.name).font(.headline).foregroundColor(.primary)
+                            Spacer()
+                            ItemPlaceBadge(accountId: sn.accountId, vaultId: sn.vaultId, useOnly: !sn.canEdit,
+                                           deviceOnly: sn.syncMode == .deviceOnly)
+                        }
                         if !sn.description.isEmpty { Text(sn.description).font(.caption).foregroundColor(.secondary) }
                         Text(sn.script).font(.system(.caption, design: .monospaced)).foregroundColor(.secondary).lineLimit(3)
                     }
                 }
                 .swipeActions {
-                    Button("common.delete", role: .destructive) { delete(sn) }
+                    if sn.canEdit { Button("common.delete", role: .destructive) { delete(sn) } }
                 }
                 .swipeActions(edge: .leading) {
                     Button { sending = SnippetSendItem(snippet: sn, target: .servers) } label: {
@@ -242,9 +268,11 @@ struct SnippetsView: View {
                             Label("snippets.send.open", systemImage: "rectangle.stack")
                         }
                     }
-                    Divider()
-                    Button { editing = SnippetEdit(snippet: sn) } label: { Label("common.edit", systemImage: "pencil") }
-                    Button(role: .destructive) { delete(sn) } label: { Label("common.delete", systemImage: "trash") }
+                    if sn.canEdit {
+                        Divider()
+                        Button { editing = SnippetEdit(snippet: sn) } label: { Label("common.edit", systemImage: "pencil") }
+                        Button(role: .destructive) { delete(sn) } label: { Label("common.delete", systemImage: "trash") }
+                    }
                 }
             }
         }
@@ -261,16 +289,17 @@ struct SnippetsView: View {
                 .environmentObject(sessions)
         }
         .onAppear(perform: load)
+        .onReceive(account.vaultChanged) { load() }
     }
 
     private func delete(_ sn: Snippet) {
-        try? model.core.deleteSnippet(id: sn.id)
+        try? model.core.deleteSnippet(id: sn.id, accountId: sn.accountId)
         load()
         account.sync()
     }
 
     private func load() {
-        list = ((try? model.core.listSnippets()) ?? [])
+        list = ((try? model.core.listSnippets(filter: account.itemFilter)) ?? [])
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 }
@@ -288,12 +317,14 @@ private struct SnippetEditor: View {
     @State private var name = ""
     @State private var script = ""
     @State private var summary = ""
+    @State private var place: ItemPlace = .device
     @State private var error: String?
 
     var body: some View {
         NavigationView {
             Form {
                 TextField("common.name", text: $name)
+                if original.id.isEmpty && account.places.count > 1 { PlacePicker(place: $place) }
                 Section {
                     TextEditor(text: $script)
                         .font(.system(.body, design: .monospaced))
@@ -314,8 +345,14 @@ private struct SnippetEditor: View {
                         sn.name = name.trimmingCharacters(in: .whitespaces)
                         sn.script = script
                         sn.description = summary
+                        if sn.id.isEmpty && !account.list.isEmpty {
+                            sn.accountId = place.accountId
+                            sn.vaultId = place.vaultId
+                            sn.syncMode = place.accountId == nil ? .deviceOnly : .synced
+                        }
                         do {
                             _ = try model.core.saveSnippet(snippet: sn)
+                            if original.id.isEmpty { account.rememberPlace(place) }
                             account.sync()
                             dismiss()
                         } catch {
@@ -330,6 +367,7 @@ private struct SnippetEditor: View {
             name = original.name
             script = original.script
             summary = original.description
+            place = account.defaultPlace
         }
     }
 }
@@ -348,24 +386,29 @@ private struct IdentityList: View {
                 Text("identities.empty")
                     .foregroundColor(.secondary)
             }
-            ForEach(list, id: \.id) { i in
-                Button { editing = IdentityEdit(identity: i) } label: {
+            ForEach(list, id: \.key) { i in
+                Button { if !i.isUseOnly { editing = IdentityEdit(identity: i) } } label: {
                     HStack(spacing: 12) {
                         HostTile(name: i.label, os: nil, size: 36)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(i.label).foregroundColor(.primary)
                             Text([i.username, i.hasPassword ? String(localized: "identities.has_password") : nil,
-                                  keys.first { $0.id == i.keyId }.map { String(localized: "identities.key \($0.label)") }]
+                                  keys.first { $0.id == i.keyId && $0.accountId == i.accountId }.map { String(localized: "identities.key \($0.label)") }]
                                 .compactMap { $0 }.joined(separator: " · "))
                                 .font(.caption).foregroundColor(.secondary)
                         }
+                        Spacer(minLength: 0)
+                        ItemPlaceBadge(accountId: i.accountId, vaultId: i.vaultId, useOnly: i.isUseOnly,
+                                       deviceOnly: i.syncMode == .deviceOnly)
                     }
                 }
                 .swipeActions {
-                    Button("common.delete", role: .destructive) {
-                        try? model.core.deleteIdentity(id: i.id)
-                        load()
-                        account.sync()
+                    if !i.isUseOnly {
+                        Button("common.delete", role: .destructive) {
+                            try? model.core.deleteIdentity(id: i.id, accountId: i.accountId)
+                            load()
+                            account.sync()
+                        }
                     }
                 }
             }
@@ -377,10 +420,11 @@ private struct IdentityList: View {
             IdentityEditor(original: e.identity, keys: keys).environmentObject(model).environmentObject(account)
         }
         .onAppear(perform: load)
+        .onReceive(account.vaultChanged) { load() }
     }
 
     private func load() {
-        list = ((try? model.core.listIdentities()) ?? [])
+        list = ((try? model.core.listIdentities(filter: account.itemFilter)) ?? [])
             .sorted { $0.label.localizedCaseInsensitiveCompare($1.label) == .orderedAscending }
     }
 }
@@ -400,18 +444,25 @@ private struct IdentityEditor: View {
     @State private var username = ""
     @State private var password = ""
     @State private var keyId: String?
+    @State private var place: ItemPlace = .device
     @State private var error: String?
+
+    /// Keys of the identity's vault and of This device.
+    private var usableKeys: [SshKey] {
+        keys.filter { $0.accountId == nil || ($0.accountId == place.accountId && $0.vaultId == place.vaultId) }
+    }
 
     var body: some View {
         NavigationView {
             Form {
                 TextField("common.name", text: $name)
+                if original.id.isEmpty && account.places.count > 1 { PlacePicker(place: $place) }
                 TextField("common.username", text: $username).textInputAutocapitalization(.never).autocorrectionDisabled()
                 SecureField(original.hasPassword ? String(localized: "identities.password_keep")
                             : String(localized: "common.password_optional"), text: $password)
                 Picker("common.key", selection: $keyId) {
                     Text("identities.no_key").tag(String?.none)
-                    ForEach(keys, id: \.id) { Text($0.label).tag(Optional($0.id)) }
+                    ForEach(usableKeys, id: \.key) { Text($0.label).tag(Optional($0.id)) }
                 }
                 if let error { Text(error).foregroundColor(Brand.red) }
             }
@@ -425,8 +476,14 @@ private struct IdentityEditor: View {
                         i.label = name.isEmpty ? username : name
                         i.username = username
                         i.keyId = keyId
+                        if i.id.isEmpty && !account.list.isEmpty {
+                            i.accountId = place.accountId
+                            i.vaultId = place.vaultId
+                            i.syncMode = place.accountId == nil ? .deviceOnly : .synced
+                        }
                         do {
                             _ = try model.core.saveIdentity(identity: i, password: password.isEmpty ? .keep : .set(value: password))
+                            if original.id.isEmpty { account.rememberPlace(place) }
                             account.sync()
                             dismiss()
                         } catch {
@@ -441,6 +498,7 @@ private struct IdentityEditor: View {
             name = original.label
             username = original.username
             keyId = original.keyId
+            place = original.id.isEmpty ? account.defaultPlace : account.place(accountId: original.accountId, vaultId: original.vaultId)
         }
     }
 }
@@ -461,16 +519,20 @@ struct KnownHostsView: View {
                 )
                 .listRowBackground(Color.clear)
             }
-            ForEach(list, id: \.id) { k in
+            ForEach(list, id: \.key) { k in
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(k.port == 22 ? k.host : "\(k.host):\(k.port)").font(.headline)
+                    HStack {
+                        Text(k.port == 22 ? k.host : "\(k.host):\(k.port)").font(.headline)
+                        Spacer()
+                        ItemPlaceBadge(accountId: k.accountId, vaultId: k.vaultId, useOnly: false, deviceOnly: false)
+                    }
                     Text(k.keyType).font(.caption).foregroundColor(.secondary)
                     Text(k.fingerprint).font(.system(.caption2, design: .monospaced)).foregroundColor(.secondary)
                         .lineLimit(1).textSelection(.enabled)
                 }
                 .swipeActions {
                     Button("known_hosts.forget", role: .destructive) {
-                        try? model.core.deleteKnownHost(id: k.id)
+                        try? model.core.deleteKnownHost(id: k.id, accountId: k.accountId)
                         load()
                         account.sync()
                     }
@@ -479,9 +541,40 @@ struct KnownHostsView: View {
         }
         .navigationTitle("nav.known_hosts")
         .onAppear(perform: load)
+        .onReceive(account.vaultChanged) { load() }
     }
 
     private func load() {
-        list = ((try? model.core.listKnownHosts()) ?? []).sorted { $0.host < $1.host }
+        list = ((try? model.core.listKnownHosts(filter: account.itemFilter)) ?? []).sorted { $0.host < $1.host }
+    }
+}
+
+/// Where an item of the keychain lives: its vault (when several are shown),
+/// "This device" (with accounts) and the Use-only lock.
+struct ItemPlaceBadge: View {
+    let accountId: String?
+    let vaultId: String?
+    let useOnly: Bool
+    let deviceOnly: Bool
+    @EnvironmentObject private var account: Accounts
+
+    var body: some View {
+        HStack(spacing: 4) {
+            if useOnly {
+                Image(systemName: "lock.fill").font(.caption).foregroundColor(Brand.amber)
+                    .accessibilityLabel(Text("vaults.use_only_badge"))
+            }
+            if accountId == nil {
+                if deviceOnly || !account.scoped.isEmpty {
+                    Image(systemName: "iphone").foregroundColor(.secondary)
+                        .accessibilityLabel(Text("accounts.this_device"))
+                }
+            } else if account.showsVaults, let v = account.vault(accountId, vaultId) {
+                VaultChip(vault: v)
+            }
+            if account.showsAccountBadges, let a = account.account(accountId) {
+                AccountAvatar(account: a, size: 18)
+            }
+        }
     }
 }

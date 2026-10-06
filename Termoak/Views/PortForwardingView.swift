@@ -5,6 +5,7 @@ import SwiftUI
 /// and stop them here, and tap one to manage the tunnels of its host.
 struct PortForwardingView: View {
     @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var account: Accounts
     @EnvironmentObject private var tunnels: Tunnels
     @EnvironmentObject private var sessions: Sessions
     @State private var forwards: [PortForward] = []
@@ -21,7 +22,8 @@ struct PortForwardingView: View {
 
     private var sections: [HostForwards] {
         hosts.compactMap { (h: SshHost) -> HostForwards? in
-            let list = forwards.filter { $0.hostId == h.id }
+            // A tunnel lives with its host (older ones of a This-device host may be in an account).
+            let list = forwards.filter { $0.hostId == h.id && ($0.accountId == h.accountId || h.accountId == nil || $0.accountId == nil) }
             return list.isEmpty ? nil : HostForwards(host: h, forwards: list)
         }
     }
@@ -41,7 +43,7 @@ struct PortForwardingView: View {
             }
             ForEach(sections) { s in
                 Section {
-                    ForEach(s.forwards, id: \.id) { f in
+                    ForEach(s.forwards, id: \.key) { f in
                         ForwardRow(forward: f) { managing = s.host }
                     }
                 } header: {
@@ -92,9 +94,9 @@ struct PortForwardingView: View {
     }
 
     private func load() {
-        forwards = ((try? model.core.listForwards(hostId: nil)) ?? [])
+        forwards = ((try? model.core.listForwards(hostId: nil, filter: account.itemFilter)) ?? [])
             .sorted { forwardName($0).localizedCaseInsensitiveCompare(forwardName($1)) == .orderedAscending }
-        hosts = ((try? model.core.listHosts()) ?? [])
+        hosts = ((try? model.core.listHosts(filter: account.itemFilter)) ?? [])
             .sorted { hostName($0).localizedCaseInsensitiveCompare(hostName($1)) == .orderedAscending }
     }
 }
@@ -102,7 +104,7 @@ struct PortForwardingView: View {
 private struct HostForwards: Identifiable {
     let host: SshHost
     let forwards: [PortForward]
-    var id: String { host.id }
+    var id: String { host.key }
 }
 
 private func hostName(_ h: SshHost) -> String {
@@ -174,7 +176,7 @@ private struct HostPicker: View {
 
     var body: some View {
         NavigationView {
-            List(hosts, id: \.id) { h in
+            List(hosts, id: \.key) { h in
                 Button {
                     onPick(h)
                     dismiss()
