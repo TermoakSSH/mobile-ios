@@ -105,7 +105,6 @@ final class AppModel: ObservableObject {
         guard let id = n.sessionId else { return }
         switch n.type {
         case "session_shared":
-            if let by = n.by { SharedOwners.remember(by, for: id) }
             sessions.notices.post(ShareToast(kind: .shared, sessionId: id, title: n.title, name: n.by ?? "", participantId: nil))
         case "join_request", "control_request":
             guard let pid = n.participantId else { return }

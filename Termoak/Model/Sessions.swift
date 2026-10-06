@@ -61,7 +61,9 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     /// Your input and resizes reach the terminal: always in a terminal of
     /// this device; in a shared server session only for the owner and for
     /// whoever has the keyboard (the driver). Nothing is sent otherwise.
-    @Published var canWrite = true
+    @Published var canWrite = true {
+        didSet { if canWrite != oldValue { writeAccessChanged() } }
+    }
     /// You own the session (you can share it, let people in, hand over the keyboard...).
     @Published var isOwner = true
     /// Your permission: guests with `control` can ask for the keyboard.
@@ -103,6 +105,20 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
 
     /// Lives on the server: closing the tab only detaches it.
     var persistent: Bool { false }
+
+    /// Container of `view` on screen: it zooms the terminal out when it
+    /// keeps a size bigger than the screen (`followSize`).
+    private(set) lazy var viewport = TerminalViewport(terminal: view)
+    /// Columns and rows of the terminal on the server that a read-only guest
+    /// keeps (the owner's or the driver's), zoomed to fit; `nil`: the
+    /// terminal takes the size of this screen.
+    fileprivate(set) var followSize: TermSize? {
+        didSet {
+            guard followSize != oldValue else { return }
+            gesture?.suspended = followSize != nil
+            viewport.follow = followSize
+        }
+    }
 
     init(core: TermoakCore, label: String, hostId: String?, settings: AppSettings) {
         self.core = core
@@ -152,6 +168,8 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     func disconnect() {}
     fileprivate func send(_ data: Data) {}
     fileprivate func resize(cols: UInt32, rows: UInt32) {}
+    /// `canWrite` changed.
+    fileprivate func writeAccessChanged() {}
 
     // ----- Live sharing -----
 
@@ -253,6 +271,8 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
 
     func applyAppearance(_ settings: AppSettings) {
         view.font = settings.terminalFont.ui(settings.fontSize)
+        // A kept size is measured again with the new font.
+        if followSize != nil { viewport.setNeedsLayout() }
         settings.terminalTheme.apply(to: view)
         keyBar?.applyTheme(settings.terminalTheme)
         suggestionMode = settings.suggestionMode
@@ -784,6 +804,8 @@ final class ServerTerminal: TerminalSession {
     private var greeted = false
     /// Last size of the view: sent only while you can write.
     private var lastSize: (cols: UInt32, rows: UInt32)?
+    /// Size of the terminal on the server (read-only guests keep it).
+    private var remoteSize: TermSize?
 
     override var persistent: Bool { true }
     override var shareSessionId: String? { sessionId }
@@ -892,10 +914,23 @@ final class ServerTerminal: TerminalSession {
     }
 
     override fileprivate func resize(cols: UInt32, rows: UInt32) {
-        lastSize = (cols, rows)
-        // Read-only: the owner or the driver decide the size.
+        // While keeping the server's size the view reports that one, not this screen's.
+        if followSize == nil { lastSize = (cols, rows) }
+        // Read-only: the owner or the driver decide the size (and the library
+        // would drop it anyway).
         guard canWrite else { return }
         handle?.resize(cols: cols, rows: rows)
+    }
+
+    override fileprivate func writeAccessChanged() {
+        updateFollow()
+    }
+
+    /// Read-only, the terminal keeps the server's size (zoomed to fit this
+    /// screen); with the keyboard, it takes the size of this screen again
+    /// (and sends it).
+    private func updateFollow() {
+        followSize = canWrite ? nil : remoteSize
     }
 
     /// Sends the size of this screen (when you can write).
@@ -958,12 +993,16 @@ final class ServerTerminal: TerminalSession {
             title = session.title.isEmpty ? nil : session.title
             access = session.access
             isOwner = session.access == .owner
+            if session.cols > 0 && session.rows > 0 {
+                remoteSize = TermSize(cols: Int(session.cols), rows: Int(session.rows))
+            }
             setPeople(session.participants, driver: session.driver)
             driverUntil = session.driverUntil.map(dateFromMillis)
             // Servers before protocol 2 have no people list: `control` could type.
             let me = session.participants.first(where: { $0.you })
             canWrite = isOwner || (me?.isDriver ?? (session.participants.isEmpty && session.access == .control))
             syncSeat()
+            updateFollow()
             if !canWrite { _ = view.resignFirstResponder() }
             apply(session.state)
             sendSize()
@@ -977,6 +1016,12 @@ final class ServerTerminal: TerminalSession {
             apply(st)
         case .title(let t):
             title = t.isEmpty ? nil : t
+        case .resize(let cols, let rows):
+            // The owner (or the driver) resized it.
+            if cols > 0 && rows > 0 {
+                remoteSize = TermSize(cols: Int(cols), rows: Int(rows))
+                updateFollow()
+            }
         case .participants(let people, let driver):
             setPeople(people, driver: driver)
         case .control(let driver, let name, let write, let until):

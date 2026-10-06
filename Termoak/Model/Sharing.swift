@@ -343,28 +343,11 @@ final class ShareNotices: ObservableObject {
     }
 }
 
-/// Names of who shared each session with you (from the `session_shared`
-/// notices), since the session list only has the owner's id.
-enum SharedOwners {
-    private static let key = "shared_session_owners"
-
-    static func name(for sessionId: String) -> String? {
-        (UserDefaults.standard.dictionary(forKey: key) as? [String: String])?[sessionId]
-    }
-
-    static func remember(_ name: String, for sessionId: String) {
-        guard !name.isEmpty else { return }
-        var names = (UserDefaults.standard.dictionary(forKey: key) as? [String: String]) ?? [:]
-        if names.count > 300 { names = [:] }
-        names[sessionId] = name
-        UserDefaults.standard.set(names, forKey: key)
-    }
-}
-
 extension ServerSession {
-    /// Who shares it (if known): the owner among the people inside, or the
-    /// name that came with the "shared with you" notice.
-    var ownerName: String? {
-        participants.first(where: { $0.kind == .owner })?.name ?? SharedOwners.name(for: id)
+    /// Who shares it: `ownerName` from the server, or the owner among the
+    /// people inside (servers before 0.3 do not send the name).
+    var sharedBy: String? {
+        if let name = ownerName?.trimmingCharacters(in: .whitespaces), !name.isEmpty { return name }
+        return participants.first(where: { $0.kind == .owner })?.name
     }
 }

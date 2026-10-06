@@ -89,17 +89,28 @@ final class CursorGesture: NSObject, UIGestureRecognizerDelegate {
         configure(.hold, cursorByButton: false)
     }
 
+    private var mode: GestureMode = .hold
+    private var cursorByButton = false
+    /// Off while the terminal is zoomed to the owner's size (read-only
+    /// guest): one finger pans and two pinch, there is no cursor to move.
+    var suspended = false {
+        didSet { if suspended != oldValue { configure(mode, cursorByButton: cursorByButton) } }
+    }
+
     /// `cursorByButton`: in button mode, whether the cursor is active.
     func configure(_ mode: GestureMode, cursorByButton: Bool) {
-        let oneFinger = mode == .oneFinger || (mode == .button && cursorByButton)
+        self.mode = mode
+        self.cursorByButton = cursorByButton
+        let effective: GestureMode = suspended ? .off : mode
+        let oneFinger = effective == .oneFinger || (effective == .button && cursorByButton)
         // Not disabled: failing immediately, the menu and scrolling (which
         // wait for it to fail) keep working.
-        hold.active = mode == .hold
+        hold.active = effective == .hold
         swipe.isEnabled = oneFinger
-        twoFingers.isEnabled = mode == .twoFingers
+        twoFingers.isEnabled = effective == .twoFingers
         guard let scroll = session?.view.panGestureRecognizer else { return }
         scroll.minimumNumberOfTouches = oneFinger ? 2 : 1
-        scroll.maximumNumberOfTouches = mode == .twoFingers ? 1 : Int.max
+        scroll.maximumNumberOfTouches = effective == .twoFingers ? 1 : Int.max
     }
 
     @objc private func changed(_ g: UIGestureRecognizer) {

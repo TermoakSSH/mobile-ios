@@ -32,6 +32,8 @@ private struct TerminalContent: View {
     @State private var showingPeople = false
     /// Invitations (share sheet).
     @State private var sharing = false
+    /// Who typed in this server session (owner).
+    @State private var showingActivity = false
     @State private var customizing = false
     @State private var filling: SnippetChoice?
     @State private var showingFiles = false
@@ -54,7 +56,7 @@ private struct TerminalContent: View {
                 topBar
                 tabs
                 ZStack(alignment: .topLeading) {
-                    SwiftTermView(view: session.view)
+                    SwiftTermView(viewport: session.viewport)
                     CursorSuggestions(session: session)
                     ShareBanners(session: session, background: theme.barColor) { showingPeople = true }
                     notice.frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -123,6 +125,11 @@ private struct TerminalContent: View {
         .sheet(isPresented: $sharing) {
             if let source = shareSource {
                 ShareSessionView(core: model.core, source: source, title: session.title ?? session.label)
+            }
+        }
+        .sheet(isPresented: $showingActivity) {
+            if let id = activitySessionId {
+                SessionActivityView(core: model.core, sessionId: id, title: session.title ?? session.label)
             }
         }
         .fullScreenCover(isPresented: $showingFiles) {
@@ -306,6 +313,9 @@ private struct TerminalContent: View {
                 if showsPeopleButton {
                     Button { showingPeople = true } label: { Label("share.participants.title", systemImage: "person.2") }
                 }
+                if activitySessionId != nil {
+                    Button { showingActivity = true } label: { Label("activity.menu", systemImage: "clock.arrow.circlepath") }
+                }
                 Divider()
                 if filesSource != nil {
                     Button { showingFiles = true } label: { Label("common.files_sftp", systemImage: "folder") }
@@ -330,6 +340,13 @@ private struct TerminalContent: View {
         }
         .padding(.horizontal, 4)
         .background(theme.barColor)
+    }
+
+    /// Your session on the server (not a relay of a terminal of this
+    /// device): its activity says who typed.
+    private var activitySessionId: String? {
+        guard session is ServerTerminal, session.isOwner, account.loggedIn == true else { return nil }
+        return session.shareSessionId
     }
 
     private var subtitle: String {
@@ -571,11 +588,13 @@ private struct TabChip: View {
 }
 
 /// The SwiftTerm view of the active session.
+/// The terminal of a session, in its viewport (which zooms it when a
+/// read-only guest keeps the owner's size).
 private struct SwiftTermView: UIViewRepresentable {
-    let view: TerminalView
+    let viewport: TerminalViewport
 
-    func makeUIView(context: Context) -> TerminalView { view }
-    func updateUIView(_ uiView: TerminalView, context: Context) {}
+    func makeUIView(context: Context) -> TerminalViewport { viewport }
+    func updateUIView(_ uiView: TerminalViewport, context: Context) {}
 }
 
 /// Values for a snippet's variables (`{{name}}`) before using it.

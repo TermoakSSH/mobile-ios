@@ -17,6 +17,182 @@
         }
       }
     },
+    "activity.failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not load the activity"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo cargar la actividad"
+          }
+        }
+      }
+    },
+    "activity.from %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "from %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "desde %@"
+          }
+        }
+      }
+    },
+    "activity.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Who typed and when, counted from the start of the recording. Only who and when is kept, not what was typed."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quién escribió y cuándo, contado desde el inicio de la grabación. Solo se guarda quién y cuándo, no lo que se escribió."
+          }
+        }
+      }
+    },
+    "activity.kind.ai": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IA"
+          }
+        }
+      }
+    },
+    "activity.menu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activity: who typed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actividad: quién escribió"
+          }
+        }
+      }
+    },
+    "activity.none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nobody has typed yet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nadie ha escrito todavía."
+          }
+        }
+      }
+    },
+    "activity.not_recorded": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This session was not recorded, so there is no record of who typed and when."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta sesión no se grabó, así que no hay registro de quién escribió ni cuándo."
+          }
+        }
+      }
+    },
+    "activity.recorded": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recorded"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grabada"
+          }
+        }
+      }
+    },
+    "activity.started %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Who typed and when, counted from the start of the recording (%@). Only who and when is kept, not what was typed."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quién escribió y cuándo, contado desde el inicio de la grabación (%@). Solo se guarda quién y cuándo, no lo que se escribió."
+          }
+        }
+      }
+    },
+    "activity.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activity"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actividad"
+          }
+        }
+      }
+    },
+    "activity.unknown": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Someone"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alguien"
+          }
+        }
+      }
+    },
     "ai.always": {
       "localizations": {
         "en": {

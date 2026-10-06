@@ -17,6 +17,8 @@ struct ConnectionsView: View {
     @State private var hosts: [String: SshHost] = [:]
     /// One of your server sessions being shared (invitations sheet).
     @State private var sharing: SharingItem?
+    /// One of your server sessions whose activity (who typed) is on screen.
+    @State private var activity: SharingItem?
 
     private var serverEmpty: Bool {
         list.map { $0.active.isEmpty && $0.shared.isEmpty && $0.recent.isEmpty } ?? true
@@ -76,6 +78,7 @@ struct ConnectionsView: View {
                                     .contextMenu {
                                         Button { attach(s) } label: { Label("common.open", systemImage: "terminal") }
                                         Button { share(s) } label: { Label("share.menu.share", systemImage: "person.badge.plus") }
+                                        Button { showActivity(id: s.id, title: label(s)) } label: { Label("activity.menu", systemImage: "clock.arrow.circlepath") }
                                         Button(role: .destructive) { terminating = s } label: { Label("common.terminate", systemImage: "power") }
                                     }
                             }
@@ -91,11 +94,28 @@ struct ConnectionsView: View {
                     if let recent = list?.recent, !recent.isEmpty {
                         Section("sessions.section.recent") {
                             ForEach(recent.prefix(15), id: \.id) { r in
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(r.title.isEmpty ? (hosts[r.hostId ?? ""]?.label ?? String(localized: "common.session")) : r.title)
-                                    Text([r.status, relativeTime(r.endedAt ?? r.createdAt), r.error ?? ""]
-                                        .filter { !$0.isEmpty }.joined(separator: " · "))
-                                        .font(.caption).foregroundColor(.secondary).lineLimit(1)
+                                let title = r.title.isEmpty ? (hosts[r.hostId ?? ""]?.label ?? String(localized: "common.session")) : r.title
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(verbatim: title)
+                                        Text([r.status, relativeTime(r.endedAt ?? r.createdAt), r.error ?? ""]
+                                            .filter { !$0.isEmpty }.joined(separator: " · "))
+                                            .font(.caption).foregroundColor(.secondary).lineLimit(1)
+                                    }
+                                    Spacer(minLength: 0)
+                                    if r.recording {
+                                        Image(systemName: "record.circle").foregroundColor(.secondary)
+                                            .accessibilityLabel(Text("activity.recorded"))
+                                    }
+                                }
+                                .contentShape(Rectangle())
+                                .onTapGesture { if r.recording { showActivity(id: r.id, title: title) } }
+                                .contextMenu {
+                                    if r.recording {
+                                        Button { showActivity(id: r.id, title: title) } label: {
+                                            Label("activity.menu", systemImage: "clock.arrow.circlepath")
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -134,6 +154,9 @@ struct ConnectionsView: View {
             .sheet(item: $sharing) { item in
                 ShareSessionView(core: model.core, source: .server(sessionId: item.id), title: item.title)
             }
+            .sheet(item: $activity) { item in
+                SessionActivityView(core: model.core, sessionId: item.id, title: item.title)
+            }
             .confirmationDialog("connections.disconnect_all.title", isPresented: $closingAll, titleVisibility: .visible) {
                 Button("connections.disconnect_all", role: .destructive) { sessions.closeAll() }
             } message: { Text("connections.disconnect_all.message") }
@@ -155,8 +178,16 @@ struct ConnectionsView: View {
     }
 
     private func share(_ s: ServerSession) {
-        let label = s.title.isEmpty ? (hosts[s.hostId ?? ""]?.label ?? String(localized: "common.session")) : s.title
-        sharing = SharingItem(id: s.id, title: label)
+        sharing = SharingItem(id: s.id, title: label(s))
+    }
+
+    private func label(_ s: ServerSession) -> String {
+        s.title.isEmpty ? (hosts[s.hostId ?? ""]?.label ?? String(localized: "common.session")) : s.title
+    }
+
+    /// Who typed in one of your sessions (open or closed).
+    private func showActivity(id: String, title: String) {
+        activity = SharingItem(id: id, title: title)
     }
 
     private func load() async {
@@ -353,7 +384,7 @@ private struct ServerSessionRow: View {
     /// "Ana · Can request control".
     private var sharedText: String {
         let access = session.access.shareLabel
-        guard let owner = session.ownerName, !owner.isEmpty else { return access }
+        guard let owner = session.sharedBy, !owner.isEmpty else { return access }
         return String(localized: "sessions.shared_by \(owner)") + " · " + access
     }
 
