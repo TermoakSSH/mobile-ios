@@ -313,9 +313,9 @@ final class Accounts: ObservableObject {
 
     /// Creates an account. With email verification it stays `unverified`
     /// until `verify`.
-    func signUp(server: ServerChoice, email: String, name: String, password: String, invite: String?) async throws -> AccountInfo {
+    func signUp(server: ServerChoice, email: String, name: String, password: String, invite: String?, acceptTerms: Bool = false) async throws -> AccountInfo {
         let first = list.isEmpty
-        let info = try await core.signUp(server: server, email: email, name: name, password: password, invite: invite)
+        let info = try await core.signUp(server: server, email: email, name: name, password: password, invite: invite, acceptTerms: acceptTerms)
         added(info, first: first)
         return info
     }

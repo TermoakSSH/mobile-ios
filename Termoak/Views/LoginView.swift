@@ -510,7 +510,8 @@ struct LoginView: View {
             do {
                 let info = try await account.signUp(server: choice, email: mail,
                                                     name: name.trimmingCharacters(in: .whitespaces),
-                                                    password: password, invite: code.isEmpty ? nil : code)
+                                                    password: password, invite: code.isEmpty ? nil : code,
+                                                    acceptTerms: details?.termsUrl != nil && acceptTerms)
                 finishOrVerify(info)
             } catch {
                 self.error = userMessage(error)
