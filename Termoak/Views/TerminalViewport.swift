@@ -38,6 +38,10 @@ final class TerminalViewport: UIScrollView, UIScrollViewDelegate {
     }
 
     private var laidOut: Layout?
+    /// A tap anywhere on the terminal (the split view focuses its pane). It
+    /// does not get in the way of the terminal's own gestures.
+    var onTap: (() -> Void)?
+    private let tapDelegate = SimultaneousTaps()
     /// Zoom with the whole terminal in view.
     private var fitScale: CGFloat = 1
     /// Zoomed in by hand (kept when the space changes, e.g. the key bar).
@@ -59,6 +63,16 @@ final class TerminalViewport: UIScrollView, UIScrollViewDelegate {
         scrollsToTop = false
         addSubview(terminal)
         apply()
+        let tap = UITapGestureRecognizer(target: self, action: #selector(tapped))
+        tap.cancelsTouchesInView = false
+        tap.delaysTouchesBegan = false
+        tap.delaysTouchesEnded = false
+        tap.delegate = tapDelegate
+        addGestureRecognizer(tap)
+    }
+
+    @objc private func tapped() {
+        onTap?()
     }
 
     @available(*, unavailable)
@@ -140,5 +154,15 @@ final class TerminalViewport: UIScrollView, UIScrollViewDelegate {
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         guard !resetting else { return }
         zoomChanged()
+    }
+}
+
+/// Lets the viewport's tap be recognized together with the terminal's
+/// gestures. (A separate object: the scroll view is already the delegate of
+/// its own pan and pinch.)
+private final class SimultaneousTaps: NSObject, UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                           shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool {
+        true
     }
 }

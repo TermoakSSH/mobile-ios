@@ -23,6 +23,10 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     let label: String
     let hostId: String?
     let view: TerminalView
+    let settings: AppSettings
+    /// Terminal theme chosen in the host (`dark`, `light`, as the desktop
+    /// saves it; `nil`: the app's).
+    let hostTheme: String?
 
     @Published var state: TerminalState = .connecting(TerminalState.connectingMessage) {
         didSet {
@@ -97,6 +101,13 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     private var observers: [NSObjectProtocol] = []
     /// Requested by the key bar (grid button).
     var onOpenPanel: (() -> Void)?
+    /// What is typed here, to broadcast it to the other panes (`Sessions`).
+    var onMirror: ((TerminalSession, MirroredInput) -> Void)?
+    /// A paste of several lines that has to be confirmed first (`Sessions`).
+    var onConfirmPaste: ((TerminalSession, String) -> Void)?
+    /// Set while the output is interpreted: what the terminal answers then
+    /// was not typed (and is not broadcast).
+    private let feeding = FeedFlag()
     /// Host OS, to suggest the right package manager.
     private let os: String?
     /// Look for suggestions as soon as the echo of what was typed arrives.
@@ -124,12 +135,18 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         self.core = core
         self.label = label
         self.hostId = hostId
-        os = hostId.flatMap { try? core.getHost(id: $0).os }
-        view = TerminalView(frame: CGRect(x: 0, y: 0, width: 400, height: 600))
+        self.settings = settings
+        let host = hostId.flatMap { try? core.getHost(id: $0) }
+        os = host?.os
+        hostTheme = host?.settings.theme
+        let terminal = PasteAwareTerminalView(frame: CGRect(x: 0, y: 0, width: 400, height: 600))
+        view = terminal
         super.init()
+        terminal.onPaste = { [weak self] in self?.pasteClipboard() }
         view.terminalDelegate = self
         applyAppearance(settings)
         keyBar = KeyBar(session: self, settings: settings)
+        keyBar.applyTheme(theme)
         view.inputAccessoryView = keyBar
         gesture = CursorGesture(session: self)
         gestureMode = settings.gestureMode
@@ -269,12 +286,16 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         }
     }
 
+    /// Colors of this terminal: the host's theme or the app's.
+    var theme: TerminalTheme { TerminalTheme.forHost(hostTheme, app: settings.terminalTheme) }
+
     func applyAppearance(_ settings: AppSettings) {
         view.font = settings.terminalFont.ui(settings.fontSize)
         // A kept size is measured again with the new font.
         if followSize != nil { viewport.setNeedsLayout() }
-        settings.terminalTheme.apply(to: view)
-        keyBar?.applyTheme(settings.terminalTheme)
+        let theme = TerminalTheme.forHost(hostTheme, app: settings.terminalTheme)
+        theme.apply(to: view)
+        keyBar?.applyTheme(theme)
         suggestionMode = settings.suggestionMode
         suggestions = []
         gestureMode = settings.gestureMode
@@ -283,19 +304,38 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     }
 
     /// Everything that goes to the terminal passes through here: the typed line
-    /// is tracked (for the history) and sent.
-    func input(_ data: Data) {
-        guard state == .connected else { return }
+    /// is tracked (for the history) and sent. While broadcasting it also
+    /// goes to the other panes (`mirror: false` for what the terminal
+    /// answers on its own).
+    func input(_ data: Data, mirror: Bool = true) {
+        guard write(data) else { return }
+        if mirror { onMirror?(self, .bytes(data)) }
+    }
+
+    /// Something typed in another pane while broadcasting.
+    func receiveMirrored(_ m: MirroredInput) {
+        switch m {
+        case .bytes(let data): write(data)
+        case .paste(let text): pasteHere(text)
+        case .run(let command): runHere(command)
+        }
+    }
+
+    /// Sends to this terminal only. `false`: nothing was sent (not
+    /// connected or read-only).
+    @discardableResult
+    private func write(_ data: Data) -> Bool {
+        guard state == .connected else { return false }
         // Read-only in a shared session: nothing is sent.
         guard canWrite else {
             readOnlyHint()
-            return
+            return false
         }
         trackLine(data)
         send(data)
         // Suggestions come when the shell shows what was typed (if it does not,
         // like a password, nothing is suggested).
-        guard suggestionMode != .off else { return }
+        guard suggestionMode != .off else { return true }
         suggestAfterEcho = true
         awaitingEcho = true
         // While the new ones arrive, the ones that still fit stay.
@@ -309,6 +349,7 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         } else {
             suggestions = []
         }
+        return true
     }
 
     /// Gestures button: one finger switches from scrolling to moving the cursor (or back).
@@ -323,9 +364,37 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         input(Data(s.insert.utf8))
     }
 
+    /// The program turned on bracketed paste: the shell does not run pasted
+    /// lines until Enter is pressed.
+    var bracketedPaste: Bool { view.getTerminal().bracketedPasteMode }
+
+    /// Pastes the clipboard (paste key, the bar's button, ⌘V, the edit
+    /// menu). Several lines ask first (Settings), unless bracketed paste is on.
+    func pasteClipboard() {
+        guard let text = UIPasteboard.general.string, !text.isEmpty else { return }
+        if state == .connected, canWrite, let ask = onConfirmPaste,
+           PasteCheck.needsConfirmation(text, confirm: settings.confirmMultilinePaste, bracketed: bracketedPaste) {
+            ask(self, text)
+        } else {
+            paste(text)
+        }
+    }
+
     func paste(_ text: String) {
-        let normalized = text.replacingOccurrences(of: "\r\n", with: "\r").replacingOccurrences(of: "\n", with: "\r")
-        input(Data(normalized.utf8))
+        guard pasteHere(text) else { return }
+        onMirror?(self, .paste(text))
+    }
+
+    /// Pastes in this terminal only, bracketed if its program asked for it.
+    @discardableResult
+    func pasteHere(_ text: String) -> Bool {
+        var normalized = text.replacingOccurrences(of: "\r\n", with: "\r").replacingOccurrences(of: "\n", with: "\r")
+        if bracketedPaste {
+            // The text cannot end the bracket early.
+            normalized = normalized.replacingOccurrences(of: "\u{1b}[201~", with: "")
+            normalized = "\u{1b}[200~" + normalized + "\u{1b}[201~"
+        }
+        return write(Data(normalized.utf8))
     }
 
     func typeText(_ text: String) {
@@ -336,18 +405,26 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     /// in one go, without waiting for the echo, so it is saved in the history
     /// directly (we know what it is) and the line starts over.
     func run(_ command: String) {
-        guard state == .connected else { return }
+        guard runHere(command) else { return }
+        onMirror?(self, .run(command))
+    }
+
+    /// Runs a command in this terminal only. `false`: it could not be sent.
+    @discardableResult
+    func runHere(_ command: String) -> Bool {
+        guard state == .connected else { return false }
         guard canWrite else {
             readOnlyHint()
-            return
+            return false
         }
         let normalized = command.replacingOccurrences(of: "\r\n", with: "\r").replacingOccurrences(of: "\n", with: "\r")
         send(Data((normalized + "\r").utf8))
         line.reset()
         suggestions = []
-        guard let hostId, !command.contains("\n") else { return }
+        guard let hostId, !command.contains("\n") else { return true }
         let core = core
         Task.detached { _ = try? core.recordCommand(hostId: hostId, command: command) }
+        return true
     }
 
     /// A key from the bar or the panel.
@@ -360,7 +437,7 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
             alt.toggle()
             view.metaModifier = alt
         case .paste:
-            if let t = UIPasteboard.general.string { paste(t) }
+            pasteClipboard()
             releaseModifiers()
         case .steps([.special(.right)]) where suggestionMode == .cursor && !ctrl && !alt && !suggestions.isEmpty:
             // → accepts the suggestion, like on the desktop.
@@ -398,7 +475,9 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     }
 
     fileprivate func receive(_ data: Data) {
+        feeding.value = true
         view.feed(byteArray: [UInt8](data)[...])
+        feeding.value = false
         if awaitingEcho { awaitingEcho = false }
         if suggestAfterEcho {
             suggestAfterEcho = false
@@ -495,7 +574,10 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
 
     nonisolated func send(source: TerminalView, data: ArraySlice<UInt8>) {
         let bytes = Data(data)
-        Task { @MainActor in self.input(bytes) }
+        // Answers to the program's queries and focus or mouse reports are
+        // not typed: they are not broadcast to the other panes.
+        let reply = feeding.value || TerminalReport.isReport(bytes)
+        Task { @MainActor in self.input(bytes, mirror: !reply) }
     }
 
     nonisolated func sizeChanged(source: TerminalView, newCols: Int, newRows: Int) {
@@ -1137,6 +1219,25 @@ final class Sessions: ObservableObject {
     }
     /// Your running server sessions (the notice on the home screen).
     @Published private(set) var onServer: [ServerSession] = []
+    /// A paste of several lines waiting to be confirmed.
+    @Published var pasteRequest: PasteRequest?
+
+    // ----- Split view (iPad) -----
+
+    /// Terminals shown side by side (2–4, in order); empty: one terminal.
+    @Published private(set) var panes: [UUID] = []
+    /// Focus mode: the focused pane big, the others small.
+    @Published var focusMode = false
+    /// What is typed in the focused pane also goes to the other panes.
+    @Published var broadcasting = false
+    /// Panes that do not take part in the broadcast.
+    @Published private(set) var broadcastExcluded: Set<UUID> = []
+    /// The screen is wide enough for several panes (iPad, regular width);
+    /// otherwise it shows only the focused one and keeps the others.
+    @Published var splitAvailable = false
+    /// The next terminal opened goes next to the focused one ("New terminal"
+    /// in the split menu, ⌘D with nothing else open).
+    var splitOnNextOpen = false
     /// Toasts about shared sessions over any screen.
     let notices: ShareNotices
 
@@ -1163,6 +1264,116 @@ final class Sessions: ObservableObject {
         open.first(where: { $0.id == activeId }) ?? open.last(where: { !$0.asleep }) ?? open.last
     }
 
+    /// Several panes on screen.
+    var splitActive: Bool { splitAvailable && panes.count >= 2 }
+    /// The terminals of the panes, in order.
+    var paneSessions: [TerminalSession] { panes.compactMap { id in open.first(where: { $0.id == id }) } }
+    var broadcastActive: Bool { splitActive && broadcasting }
+    /// Terminals that receive what is typed while broadcasting (the focused one too).
+    var broadcastCount: Int { panes.filter { !broadcastExcluded.contains($0) }.count }
+
+    /// Panes that get what is typed in `source`: the other panes that are not
+    /// excluded. Nothing when not broadcasting or when `source` is not a pane.
+    func broadcastTargets(from source: TerminalSession) -> [TerminalSession] {
+        guard broadcastActive, panes.contains(source.id), !broadcastExcluded.contains(source.id) else { return [] }
+        return paneSessions.filter { $0.id != source.id && !broadcastExcluded.contains($0.id) }
+    }
+
+    func receivesBroadcast(_ s: TerminalSession) -> Bool {
+        broadcastActive && panes.contains(s.id) && !broadcastExcluded.contains(s.id)
+    }
+
+    /// Focuses a terminal (a pane in the split view). The keyboard follows
+    /// if the previous one had it.
+    func focus(_ id: UUID) {
+        guard id != activeId, let s = open.first(where: { $0.id == id }) else { return }
+        let keyboard = current?.view.isFirstResponder ?? false
+        activeId = id
+        wake(s)
+        if keyboard { _ = s.view.becomeFirstResponder() }
+    }
+
+    /// Adds a terminal to the split view: `id` or else the next open one that
+    /// is not on screen. `false` if there is nothing to add or no room.
+    @discardableResult
+    func addPane(_ id: UUID? = nil) -> Bool {
+        guard let cur = current else { return false }
+        var list = panes.count >= 2 ? panes : [cur.id]
+        guard list.count < PaneLayout.maxPanes else { return false }
+        let candidate = id
+            ?? open.first(where: { !list.contains($0.id) && !$0.asleep })?.id
+            ?? open.first(where: { !list.contains($0.id) })?.id
+        guard let new = candidate, !list.contains(new), open.contains(where: { $0.id == new }) else { return false }
+        list.append(new)
+        panes = list
+        focus(new)
+        return true
+    }
+
+    /// Takes a terminal out of the split view (it stays open as a tab).
+    func removePane(_ id: UUID) {
+        guard let i = panes.firstIndex(of: id) else { return }
+        let focused = activeId.flatMap { panes.firstIndex(of: $0) } ?? i
+        var list = panes
+        list.remove(at: i)
+        let next = PaneLayout.focusAfterClose(panes.count, focused: focused, closed: i).map { list[$0] }
+        broadcastExcluded.remove(id)
+        if list.count < 2 {
+            exitSplit()
+        } else {
+            panes = list
+        }
+        if let next { focus(next) }
+    }
+
+    /// Back to one terminal (the focused one).
+    func exitSplit() {
+        panes = []
+        focusMode = false
+        broadcasting = false
+        broadcastExcluded = []
+    }
+
+    /// ⌘⌥ + arrow: the focus goes to the pane in that direction.
+    func moveFocus(_ dir: PaneLayout.Direction) {
+        guard splitActive, let cur = activeId, let i = panes.firstIndex(of: cur) else { return }
+        let next = focusMode ? PaneLayout.neighborInFocusMode(panes.count, from: i, dir)
+                             : PaneLayout.neighbor(panes.count, from: i, dir)
+        if let next { focus(panes[next]) }
+    }
+
+    func toggleFocusMode() {
+        guard splitActive else { return }
+        focusMode.toggle()
+    }
+
+    func toggleBroadcast() {
+        guard splitActive else { return }
+        broadcasting.toggle()
+    }
+
+    /// A pane stops (or starts again) taking part in the broadcast.
+    func toggleExcluded(_ id: UUID) {
+        if broadcastExcluded.contains(id) { broadcastExcluded.remove(id) } else { broadcastExcluded.insert(id) }
+    }
+
+    /// Something typed in `source` goes to the other panes while broadcasting.
+    private func mirror(_ m: MirroredInput, from source: TerminalSession) {
+        for target in broadcastTargets(from: source) { target.receiveMirrored(m) }
+    }
+
+    /// A snippet (or anything) in every open terminal that can take it.
+    /// Returns in how many it went.
+    @discardableResult
+    func sendToAll(_ text: String, run: Bool) -> Int {
+        var sent = 0
+        for s in open where !s.asleep {
+            let ok = run ? s.runHere(text) : s.pasteHere(text)
+            if ok { sent += 1 }
+        }
+        return sent
+    }
+
     /// The copilot conversation of a tab (created the first time).
     func copilot(for s: TerminalSession) -> Copilot {
         if let c = copilots[s.id] { return c }
@@ -1182,6 +1393,13 @@ final class Sessions: ObservableObject {
     /// Shows a tab (if it is asleep, it attaches now).
     func show(_ id: UUID) {
         guard let s = open.first(where: { $0.id == id }) else { return }
+        splitOnNextOpen = false
+        // Split view: the tab takes the place of the focused pane.
+        if panes.count >= 2, !panes.contains(id) {
+            let slot = activeId.flatMap { panes.firstIndex(of: $0) } ?? panes.count - 1
+            broadcastExcluded.remove(panes[slot])
+            panes[slot] = id
+        }
         activeId = id
         showing = true
         wake(s)
@@ -1195,6 +1413,38 @@ final class Sessions: ObservableObject {
 
     func openLocal(_ host: SshHost) {
         add(LocalTerminal(core: core, host: host, settings: settings))
+    }
+
+    /// Opens a terminal to each host (several selected in the list). On an
+    /// iPad, up to four of them go side by side.
+    func openLocal(_ hosts: [SshHost]) {
+        let new = openInBackground(hosts)
+        guard let first = new.first else { return }
+        activeId = first.id
+        showing = true
+    }
+
+    /// Opens a terminal to each host without showing them (to run a snippet
+    /// on several servers). On an iPad, up to four of them go side by side
+    /// when they are shown.
+    @discardableResult
+    func openInBackground(_ hosts: [SshHost]) -> [TerminalSession] {
+        let new: [TerminalSession] = hosts.map { LocalTerminal(core: core, host: $0, settings: settings) }
+        guard !new.isEmpty else { return [] }
+        splitOnNextOpen = false
+        for s in new {
+            prepare(s)
+            open.append(s)
+        }
+        if UIDevice.current.userInterfaceIdiom == .pad && new.count >= 2 {
+            panes = new.prefix(PaneLayout.maxPanes).map(\.id)
+            focusMode = false
+            broadcasting = false
+            broadcastExcluded = []
+        }
+        activeId = new[0].id
+        new.forEach { $0.start() }
+        return new
     }
 
     func openOnServer(_ host: SshHost) {
@@ -1238,8 +1488,22 @@ final class Sessions: ObservableObject {
     }
 
     private func add(_ s: TerminalSession) {
+        let previous = current?.id
         prepare(s)
         open.append(s)
+        // Split view: a new terminal is one more pane (or takes the focused
+        // one's place when there are already four).
+        if splitOnNextOpen, panes.count < 2, let previous {
+            panes = [previous, s.id]
+        } else if panes.count >= 2 {
+            if panes.count < PaneLayout.maxPanes {
+                panes.append(s.id)
+            } else if let slot = activeId.flatMap({ panes.firstIndex(of: $0) }) {
+                broadcastExcluded.remove(panes[slot])
+                panes[slot] = s.id
+            }
+        }
+        splitOnNextOpen = false
         activeId = s.id
         showing = true
         s.start()
@@ -1247,6 +1511,10 @@ final class Sessions: ObservableObject {
 
     private func prepare(_ s: TerminalSession) {
         s.onOpenPanel = { [weak self] in self?.quickPanelOpen = true }
+        s.onMirror = { [weak self] source, m in self?.mirror(m, from: source) }
+        s.onConfirmPaste = { [weak self] source, text in
+            self?.pasteRequest = PasteRequest(session: source, text: text)
+        }
         s.notices = notices
         if let local = s as? LocalTerminal {
             // When it connects, the host's automatic tunnels start.
@@ -1258,6 +1526,8 @@ final class Sessions: ObservableObject {
 
     func close(_ id: UUID) {
         guard let i = open.firstIndex(where: { $0.id == id }) else { return }
+        // A pane: the focus goes to a neighbouring pane.
+        if panes.contains(id) { removePane(id) }
         open[i].disconnect()
         open.remove(at: i)
         copilots[id] = nil
@@ -1267,6 +1537,7 @@ final class Sessions: ObservableObject {
     }
 
     func closeAll() {
+        exitSplit()
         open.forEach { $0.disconnect() }
         open = []
         copilots = [:]

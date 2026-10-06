@@ -83,6 +83,12 @@ struct SettingsView: View {
                     Text("settings.terminal.footer")
                 }
 
+                Section {
+                    Toggle("settings.confirm_multiline_paste", isOn: $settings.confirmMultilinePaste)
+                } footer: {
+                    Text("settings.confirm_multiline_paste.footer")
+                }
+
                 Section("settings.appearance") {
                     Picker("common.theme", selection: $settings.appTheme) {
                         ForEach(AppTheme.allCases) { Text($0.title).tag($0) }

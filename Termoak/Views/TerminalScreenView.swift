@@ -3,20 +3,31 @@ import SwiftTerm
 import SwiftUI
 import UIKit
 
-/// Open terminals in full screen, with tabs.
+/// Open terminals in full screen, with tabs. On an iPad with room (regular
+/// width) several of them can be side by side (`PaneArea`); in a narrow
+/// window only the focused one is shown.
 struct TerminalScreenView: View {
     @EnvironmentObject private var sessions: Sessions
     @EnvironmentObject private var settings: AppSettings
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
+    private var splitAvailable: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad && sizeClass == .regular
+    }
 
     var body: some View {
-        if let session = sessions.current {
-            TerminalContent(session: session)
-                .id(session.id)
-                .onAppear { UIApplication.shared.isIdleTimerDisabled = settings.keepScreenOn }
-                .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
-        } else {
-            Color.clear.onAppear { sessions.showing = false }
+        Group {
+            if let session = sessions.current {
+                // Not rebuilt when the focus changes: the panes stay where they are.
+                TerminalContent(session: session)
+                    .onAppear { UIApplication.shared.isIdleTimerDisabled = settings.keepScreenOn }
+                    .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
+            } else {
+                Color.clear.onAppear { sessions.showing = false }
+            }
         }
+        .onAppear { sessions.splitAvailable = splitAvailable }
+        .onChange(of: splitAvailable) { sessions.splitAvailable = $0 }
     }
 }
 
@@ -40,9 +51,6 @@ private struct TerminalContent: View {
     @State private var tunnelsHost: SshHost?
     /// Height of the keyboard with the bar: the panel takes the same (no jumps).
     @AppStorage("alto_teclado") private var keyboardHeight: Double = 320
-    /// Connection steps (like Termius' connection screen).
-    @State private var steps: [String] = []
-    @State private var didConnect = false
     /// Rightward drag of the copilot (to close it).
     @State private var copilotDrag: CGFloat = 0
     /// The keyboard on screen came up with the phone copilot open (its box
@@ -51,7 +59,7 @@ private struct TerminalContent: View {
 
     /// On a tablet (or a big phone in landscape) the panel goes on the side.
     private var side: Bool { sizeClass == .regular }
-    private var theme: TerminalTheme { settings.terminalTheme }
+    private var theme: TerminalTheme { session.theme }
     /// The keyboard goes over the terminal instead of shrinking it: on a
     /// phone, while the copilot covers it (and until the copilot's keyboard
     /// has gone, so closing it does not resize the terminal twice).
@@ -77,6 +85,7 @@ private struct TerminalContent: View {
         .background(theme.backgroundColor.ignoresSafeArea())
         .background((sessions.quickPanelOpen && !side ? theme.barColor : theme.backgroundColor).ignoresSafeArea())
         .overlay(alignment: .top) { ShareToasts(notices: sessions.notices) }
+        .background(SplitShortcuts())
         .preferredColorScheme(theme.isLight ? .light : .dark)
         .animation(.easeOut(duration: 0.2), value: sessions.quickPanelOpen)
         .animation(.easeOut(duration: 0.2), value: settings.sidePanel)
@@ -111,9 +120,13 @@ private struct TerminalContent: View {
             TunnelsView(host: e.host).environmentObject(model)
         }
         .sheet(item: $filling) { e in
-            SnippetVariablesForm(snippet: e.snippet, run: e.run) { text in
-                if e.run { session.run(text) } else { session.paste(text) }
+            SnippetVariablesForm(snippet: e.snippet, run: e.action.run) { text in
+                use(text, e.action)
             }
+        }
+        .sheet(item: $sessions.pasteRequest) { r in
+            PasteConfirmView(request: r, broadcastCount: sessions.receivesBroadcast(r.session) ? sessions.broadcastCount : 0)
+                .environmentObject(settings)
         }
         .confirmationDialog("common.terminate_session.title", isPresented: $terminating, titleVisibility: .visible) {
             Button("common.terminate", role: .destructive) {
@@ -155,8 +168,19 @@ private struct TerminalContent: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             copilotKeyboard = false
         }
-        .onAppear { record(session.state) }
-        .onChange(of: session.state) { record($0) }
+    }
+
+    /// A snippet from the quick panel: here (and in the panes while
+    /// broadcasting) or in every open terminal.
+    private func use(_ text: String, _ action: SnippetAction) {
+        if action.everywhere {
+            let n = sessions.sendToAll(text, run: action.run)
+            session.showFlash(String(localized: "snippets.sent_to_open \(n)"))
+        } else if action.run {
+            session.run(text)
+        } else {
+            session.paste(text)
+        }
     }
 
     /// The terminal with its bars, and the quick panel or the copilot on the
@@ -166,25 +190,13 @@ private struct TerminalContent: View {
             VStack(spacing: 0) {
                 topBar
                 tabs
-                ZStack(alignment: .topLeading) {
-                    SwiftTermView(viewport: session.viewport)
-                    CursorSuggestions(session: session)
-                    ShareBanners(session: session, background: theme.barColor) { showingPeople = true }
-                    notice.frame(maxWidth: .infinity, maxHeight: .infinity)
-                    if let p = session.cursorPad {
-                        CursorPadView(pad: p, accent: SwiftUI.Color(hex: theme.accent)).padding(16)
-                    }
-                    if session.gestureMode == .button && session.cursorByButton {
-                        // So you know what mode one finger is in.
-                        Label("terminal.cursor_mode_badge", systemImage: "hand.draw.fill")
-                            .font(.caption2.weight(.medium))
-                            .padding(.horizontal, 10).padding(.vertical, 5)
-                            .background(.ultraThinMaterial, in: Capsule())
-                            .foregroundColor(SwiftUI.Color(hex: theme.accent))
-                            .padding(8)
-                            .frame(maxWidth: .infinity, alignment: .topTrailing)
-                            .allowsHitTesting(false)
-                    }
+                if sessions.broadcastActive {
+                    BroadcastBanner()
+                }
+                // One terminal, or several side by side on an iPad.
+                PaneArea(focused: session) { s in
+                    sessions.focus(s.id)
+                    showingPeople = true
                 }
                 if sessions.quickPanelOpen && !side {
                     GeometryReader { geo in
@@ -212,6 +224,8 @@ private struct TerminalContent: View {
         CopilotPanel(copilot: sessions.copilot(for: session), session: session) {
             sessions.copilotOpen = false
         }
+        // A new conversation view for each tab (as before the split view).
+        .id(session.id)
     }
 
     /// On a phone the copilot slides in from the right (85 % of the width) and
@@ -258,8 +272,10 @@ private struct TerminalContent: View {
                 _ = session.view.becomeFirstResponder()
             },
             onCustomize: { customizing = true },
-            onFill: { sn, run in filling = SnippetChoice(snippet: sn, run: run) }
+            onFill: { sn, action in filling = SnippetChoice(snippet: sn, action: action) },
+            onSendAll: { text, run in use(text, SnippetAction(run: run, everywhere: true)) }
         )
+        .id(session.id)
     }
 
     /// Grid button: opens or closes the panel.
@@ -288,10 +304,13 @@ private struct TerminalContent: View {
                 Text(subtitle).font(.caption2).foregroundColor(.secondary).lineLimit(1)
             }
             Spacer()
-            Button { if let t = UIPasteboard.general.string { session.paste(t) } } label: {
+            Button { session.pasteClipboard() } label: {
                 Image(systemName: "doc.on.clipboard").frame(width: 36, height: 40)
             }
             .accessibilityLabel("common.paste")
+            if sessions.splitAvailable {
+                SplitMenu(session: session, accent: SwiftUI.Color(hex: theme.accent))
+            }
             if !side {
                 Button { toggleKeyboard() } label: { Image(systemName: "keyboard").frame(width: 36, height: 40) }
                     .accessibilityLabel("terminal.keyboard")
@@ -390,6 +409,7 @@ private struct TerminalContent: View {
             HStack(spacing: 6) {
                 ForEach(sessions.open) { s in
                     TabChip(session: s, selected: s.id == session.id,
+                            inPane: sessions.splitActive && sessions.panes.contains(s.id),
                             onTap: { sessions.show(s.id) }, onClose: { sessions.close(s.id) })
                 }
                 Button { sessions.showing = false } label: {
@@ -400,18 +420,6 @@ private struct TerminalContent: View {
             .padding(.horizontal, 8).padding(.vertical, 4)
         }
         .background(theme.barColor)
-    }
-
-    @ViewBuilder private var notice: some View {
-        if session.asleep {
-            asleepCard
-        } else if let room = session.waiting {
-            WaitingRoomCard(session: session, room: room, background: theme.barColor) { sessions.close(session.id) }
-        } else if let end = session.ended {
-            SessionEndedCard(end: end, background: theme.barColor) { sessions.close(session.id) }
-        } else {
-            connectionNotice
-        }
     }
 
     // ----- Live sharing -----
@@ -455,65 +463,6 @@ private struct TerminalContent: View {
         return nil
     }
 
-    /// Tab of a server session that has not been attached yet.
-    private var asleepCard: some View {
-        VStack(spacing: 12) {
-            HostTile(name: session.label, os: host?.os, size: 64)
-            Text(session.title ?? session.label).font(.title3.weight(.semibold))
-            Label("terminal.asleep.label", systemImage: "icloud")
-                .font(.subheadline).foregroundColor(.secondary)
-            HStack {
-                Button { sessions.wake(session) } label: { Label("common.connect", systemImage: "arrow.right.circle") }
-                    .buttonStyle(.borderedProminent)
-                Button("common.close") { sessions.close(session.id) }.buttonStyle(.bordered)
-            }
-            .padding(.top, 8)
-        }
-        .padding(24)
-        .background(theme.barColor, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .padding(24)
-    }
-
-    @ViewBuilder private var connectionNotice: some View {
-        switch session.state {
-        case .connecting:
-            connectionPanel(error: nil)
-        case .closed(let reason):
-            if !didConnect {
-                connectionPanel(error: reason)
-            } else {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("terminal.disconnected").font(.headline)
-                    Text(reason).font(.callout).foregroundColor(.secondary)
-                    HStack {
-                        Button { steps = []; session.reconnect() } label: { Label("common.reconnect", systemImage: "arrow.clockwise") }
-                            .buttonStyle(.borderedProminent)
-                        Button("common.close") { sessions.close(session.id) }.buttonStyle(.bordered)
-                    }
-                    .padding(.top, 4)
-                }
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(theme.barColor, in: RoundedRectangle(cornerRadius: 16))
-                .padding(12)
-                .frame(maxHeight: .infinity, alignment: .bottom)
-            }
-        case .connected:
-            EmptyView()
-        }
-    }
-
-    private func record(_ state: TerminalState) {
-        switch state {
-        case .connecting(let m):
-            if m != TerminalState.connectingMessage && steps.last != m { steps.append(m) }
-        case .connected:
-            didConnect = true
-        case .closed:
-            break
-        }
-    }
-
     /// SFTP over this terminal's connection, or from the server if the
     /// session lives there.
     private var filesSource: FileBrowser.Source? {
@@ -524,47 +473,6 @@ private struct TerminalContent: View {
 
     private var host: SshHost? {
         session.hostId.flatMap { try? model.core.getHost(id: $0) }
-    }
-
-    /// The host, the progress and the steps (or the error, if it never connected).
-    private func connectionPanel(error: String?) -> some View {
-        VStack(spacing: 12) {
-            HostTile(name: session.label, os: host?.os, size: 64)
-            Text(session.label).font(.title3.weight(.semibold))
-            Text(host.map { h in (h.settings.username.map { u in "\(u)@" } ?? "") + h.address }
-                 ?? (session.persistent ? String(localized: "terminal.server_session_lower") : ""))
-                .font(.subheadline).foregroundColor(.secondary)
-            if error == nil { ProgressView().progressViewStyle(.linear).padding(.top, 4) }
-            VStack(alignment: .leading, spacing: 6) {
-                ForEach(Array(steps.enumerated()), id: \.offset) { i, step in
-                    HStack(spacing: 10) {
-                        if i == steps.count - 1 && error == nil {
-                            ProgressView().scaleEffect(0.6).frame(width: 14, height: 14)
-                        } else {
-                            Image(systemName: "checkmark").font(.caption).foregroundColor(Brand.green).frame(width: 14)
-                        }
-                        Text(step).font(.footnote).foregroundColor(i == steps.count - 1 ? .primary : .secondary)
-                    }
-                }
-                if let error {
-                    HStack(alignment: .top, spacing: 10) {
-                        Image(systemName: "exclamationmark.circle").foregroundColor(Brand.red)
-                        Text(error).font(.callout)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            if error != nil {
-                HStack {
-                    Button("common.retry") { steps = []; session.reconnect() }.buttonStyle(.borderedProminent)
-                    Button("common.close") { sessions.close(session.id) }.buttonStyle(.bordered)
-                }
-                .padding(.top, 8)
-            }
-        }
-        .padding(24)
-        .background(theme.barColor, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .padding(24)
     }
 
     private func toggleKeyboard() {
@@ -582,11 +490,14 @@ private struct TerminalContent: View {
 private struct TabChip: View {
     @ObservedObject var session: TerminalSession
     let selected: Bool
+    /// On screen in the split view.
+    var inPane = false
     let onTap: () -> Void
     let onClose: () -> Void
 
     var body: some View {
         HStack(spacing: 6) {
+            if inPane { Image(systemName: "rectangle.split.2x1").font(.caption2).foregroundColor(.secondary) }
             if session.persistent { Image(systemName: "icloud").font(.caption2).foregroundColor(.secondary) }
             if !session.others.isEmpty { Image(systemName: "person.2.fill").font(.caption2).foregroundColor(.secondary) }
             Circle().fill(session.asleep ? SwiftUI.Color.secondary : color).frame(width: 7, height: 7)
@@ -610,14 +521,20 @@ private struct TabChip: View {
     }
 }
 
-/// The SwiftTerm view of the active session.
 /// The terminal of a session, in its viewport (which zooms it when a
-/// read-only guest keeps the owner's size).
-private struct SwiftTermView: UIViewRepresentable {
+/// read-only guest keeps the owner's size). A tap focuses it (split view).
+struct SwiftTermView: UIViewRepresentable {
     let viewport: TerminalViewport
+    var onTap: (() -> Void)?
 
-    func makeUIView(context: Context) -> TerminalViewport { viewport }
-    func updateUIView(_ uiView: TerminalViewport, context: Context) {}
+    func makeUIView(context: Context) -> TerminalViewport {
+        viewport.onTap = onTap
+        return viewport
+    }
+
+    func updateUIView(_ uiView: TerminalViewport, context: Context) {
+        uiView.onTap = onTap
+    }
 }
 
 /// Values for a snippet's variables (`{{name}}`) before using it.
@@ -654,7 +571,7 @@ private struct SnippetVariablesForm: View {
 
 private struct SnippetChoice: Identifiable {
     let snippet: Snippet
-    let run: Bool
+    let action: SnippetAction
     var id: String { snippet.id }
 }
 

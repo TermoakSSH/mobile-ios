@@ -195,11 +195,15 @@ struct ImportKeyView: View {
     }
 }
 
+/// Snippets: tap to edit; hold or swipe to run one on several servers or
+/// in every open terminal.
 struct SnippetsView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Account
+    @EnvironmentObject private var sessions: Sessions
     @State private var list: [Snippet] = []
     @State private var editing: SnippetEdit?
+    @State private var sending: SnippetSendItem?
 
     var body: some View {
         List {
@@ -221,11 +225,26 @@ struct SnippetsView: View {
                     }
                 }
                 .swipeActions {
-                    Button("common.delete", role: .destructive) {
-                        try? model.core.deleteSnippet(id: sn.id)
-                        load()
-                        account.sync()
+                    Button("common.delete", role: .destructive) { delete(sn) }
+                }
+                .swipeActions(edge: .leading) {
+                    Button { sending = SnippetSendItem(snippet: sn, target: .servers) } label: {
+                        Label("snippets.send.servers", systemImage: "paperplane")
                     }
+                    .tint(Brand.blue)
+                }
+                .contextMenu {
+                    Button { sending = SnippetSendItem(snippet: sn, target: .servers) } label: {
+                        Label("snippets.send.servers", systemImage: "paperplane")
+                    }
+                    if !sessions.open.isEmpty {
+                        Button { sending = SnippetSendItem(snippet: sn, target: .openTerminals) } label: {
+                            Label("snippets.send.open", systemImage: "rectangle.stack")
+                        }
+                    }
+                    Divider()
+                    Button { editing = SnippetEdit(snippet: sn) } label: { Label("common.edit", systemImage: "pencil") }
+                    Button(role: .destructive) { delete(sn) } label: { Label("common.delete", systemImage: "trash") }
                 }
             }
         }
@@ -236,7 +255,18 @@ struct SnippetsView: View {
             }
         }
         .sheet(item: $editing, onDismiss: load) { e in SnippetEditor(original: e.snippet).environmentObject(model).environmentObject(account) }
+        .sheet(item: $sending) { e in
+            SnippetSendView(snippet: e.snippet, initialTarget: e.target)
+                .environmentObject(model)
+                .environmentObject(sessions)
+        }
         .onAppear(perform: load)
+    }
+
+    private func delete(_ sn: Snippet) {
+        try? model.core.deleteSnippet(id: sn.id)
+        load()
+        account.sync()
     }
 
     private func load() {

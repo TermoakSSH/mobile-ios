@@ -37,6 +37,19 @@ struct TerminalTheme: Identifiable, Hashable {
 
     static func byId(_ id: String) -> TerminalTheme { all.first { $0.id == id } ?? all[0] }
 
+    /// Theme of a host's terminal. `dark` and `light` (what the desktop's host
+    /// editor saves) keep the app's theme if it is of that kind and otherwise
+    /// use Termoak's; the id of one of these themes uses it; anything else
+    /// (or nothing) follows the app.
+    static func forHost(_ value: String?, app: TerminalTheme) -> TerminalTheme {
+        guard let v = value?.trimmingCharacters(in: .whitespaces).lowercased(), !v.isEmpty else { return app }
+        switch v {
+        case "dark": return app.isLight ? byId("termoak") : app
+        case "light": return app.isLight ? app : byId("claro")
+        default: return all.first { $0.id == v } ?? app
+        }
+    }
+
     // Palettes published by their authors (MIT or similar licenses).
     // The ids are stored in the settings: keep them.
     static let all: [TerminalTheme] = [

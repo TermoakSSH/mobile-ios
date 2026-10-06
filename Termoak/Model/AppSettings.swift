@@ -66,6 +66,9 @@ final class AppSettings: ObservableObject {
     @Published var suggestionMode: SuggestionMode { didSet { d.set(suggestionMode.rawValue, forKey: "modo_sugerencias") } }
     /// On tablets: side panel in view.
     @Published var sidePanel: Bool { didSet { d.set(sidePanel, forKey: "panel_lateral") } }
+    /// Ask before pasting several lines (unless the program turned on
+    /// bracketed paste, which keeps the shell from running them).
+    @Published var confirmMultilinePaste: Bool { didSet { d.set(confirmMultilinePaste, forKey: "confirm_multiline_paste") } }
 
     var lastServer: String? {
         get { d.string(forKey: "ultimo_servidor") }
@@ -91,6 +94,7 @@ final class AppSettings: ObservableObject {
         keyboard = d.data(forKey: "teclado").flatMap { try? JSONDecoder().decode(KeyboardLayout.self, from: $0) } ?? .standard
         quickPanelTab = d.string(forKey: "pestana_panel") ?? "teclas"
         sidePanel = d.object(forKey: "panel_lateral") as? Bool ?? true
+        confirmMultilinePaste = d.object(forKey: "confirm_multiline_paste") as? Bool ?? true
         gestureMode = GestureMode(rawValue: d.string(forKey: "modo_gestos") ?? "") ?? .hold
         suggestionMode = SuggestionMode(rawValue: d.string(forKey: "modo_sugerencias") ?? "") ?? .cursor
     }

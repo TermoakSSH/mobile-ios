@@ -4,9 +4,10 @@ import UniformTypeIdentifiers
 
 /// Hosts in the style of Termius: search, groups as rows above the hosts and
 /// each host with its colored avatar. Tapping a host connects; holding it or
-/// swiping shows its actions. With `groupId`, the contents of a group. With
-/// `shortcuts` (the root of the vault on the phone), the other sections of
-/// the vault go as tiles at the top.
+/// swiping shows its actions. "Select" picks several to connect to them at
+/// once, move them to a group or delete them. With `groupId`, the contents
+/// of a group. With `shortcuts` (the root of the vault on the phone), the
+/// other sections of the vault go as tiles at the top.
 struct HostsView: View {
     let groupId: String?
     var shortcuts = false
@@ -29,6 +30,22 @@ struct HostsView: View {
     @State private var importingKey = false
     @State private var importingConfig = false
     @State private var notice: Notice?
+    /// Selecting several hosts.
+    @State private var editMode: EditMode = .inactive
+    @State private var selection: Set<String> = []
+    @State private var deletingSelection = false
+
+    private var selecting: Bool { editMode.isEditing }
+
+    /// The list selects only while selecting.
+    private var selectionBinding: Binding<Set<String>>? {
+        selecting ? $selection : nil
+    }
+
+    /// The selected hosts, in the order of the list.
+    private var selectedHosts: [SshHost] {
+        hosts.filter { selection.contains($0.id) }.sorted(by: listOrder)
+    }
 
     private var group: HostGroup? { groups.first { $0.id == groupId } }
 
@@ -43,10 +60,13 @@ struct HostsView: View {
             }
             return h.groupId == groupId || (groupId == nil && !groups.contains { $0.id == h.groupId })
         }
-        .sorted { a, b in
-            if a.favorite != b.favorite { return a.favorite }
-            return a.label.localizedCaseInsensitiveCompare(b.label) == .orderedAscending
-        }
+        .sorted(by: listOrder)
+    }
+
+    /// Favorites first, then by name.
+    private func listOrder(_ a: SshHost, _ b: SshHost) -> Bool {
+        if a.favorite != b.favorite { return a.favorite }
+        return a.label.localizedCaseInsensitiveCompare(b.label) == .orderedAscending
     }
 
     private var subgroups: [HostGroup] {
@@ -66,17 +86,19 @@ struct HostsView: View {
     }
 
     var body: some View {
-        List {
-            if shortcuts && !searching {
+        // Selection only while selecting: otherwise a tap connects (or opens
+        // the group), also on an iPad.
+        List(selection: selectionBinding) {
+            if shortcuts && !searching && !selecting {
                 Section { shortcutTiles }
             }
-            if groupId == nil && !searching && !sessions.onServer.isEmpty {
+            if groupId == nil && !searching && !selecting && !sessions.onServer.isEmpty {
                 Section { serverNotice }
             }
             if hosts.isEmpty && groups.isEmpty && !searching {
                 Section { emptyState }
             }
-            if !subgroups.isEmpty {
+            if !subgroups.isEmpty && !selecting {
                 Section("hosts.groups") {
                     ForEach(subgroups, id: \.id) { g in
                         NavigationLink { HostsView(groupId: g.id) } label: { GroupRow(group: g, total: totalIn(g)) }
@@ -92,7 +114,7 @@ struct HostsView: View {
             if !visible.isEmpty {
                 Section(searching ? String(localized: "hosts.results") : String(localized: "nav.hosts")) {
                     ForEach(visible, id: \.id) { host in
-                        HostRow(host: host) { connect(host, onServer: false) }
+                        HostRow(host: host, selecting: selecting) { connect(host, onServer: false) }
                             .contextMenu { menu(host) }
                             .swipeActions(edge: .trailing) {
                                 Button(role: .destructive) { deleting = host } label: { Label("common.delete", systemImage: "trash") }
@@ -114,6 +136,7 @@ struct HostsView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .environment(\.editMode, $editMode)
         .overlay {
             if searching && visible.isEmpty {
                 Text("hosts.search.no_results \(query)")
@@ -127,20 +150,41 @@ struct HostsView: View {
             if account.loggedIn == true { account.sync() }
             load()
         }
-        .navigationTitle(title)
+        .navigationTitle(selecting ? selectionTitle : title)
         .toolbar {
-            ToolbarItemGroup(placement: .primaryAction) {
-                if account.syncing {
-                    ProgressView()
-                } else if account.loggedIn == true && groupId == nil {
-                    Button { account.sync() } label: { Image(systemName: "arrow.triangle.2.circlepath") }
-                        .accessibilityLabel("settings.sync")
+            if selecting {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(selection.count == visible.count && !visible.isEmpty
+                           ? String(localized: "hosts.select.none") : String(localized: "hosts.select.all")) {
+                        if selection.count == visible.count { selection = [] } else { selection = Set(visible.map(\.id)) }
+                    }
                 }
-                addMenu
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("common.done") { endSelection() }
+                }
+                ToolbarItemGroup(placement: .bottomBar) { selectionActions }
+            } else {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    if account.syncing {
+                        ProgressView()
+                    } else if account.loggedIn == true && groupId == nil {
+                        Button { account.sync() } label: { Image(systemName: "arrow.triangle.2.circlepath") }
+                            .accessibilityLabel("settings.sync")
+                    }
+                    if !hosts.isEmpty {
+                        Button { startSelection(nil) } label: { Image(systemName: "checkmark.circle") }
+                            .accessibilityLabel("hosts.select")
+                    }
+                    addMenu
+                }
             }
         }
         .sheet(item: $editing, onDismiss: load) { e in
-            HostEditor(original: e.host, initialGroup: groupId).environmentObject(model).environmentObject(account)
+            HostEditor(original: e.host, initialGroup: groupId) { saved in
+                // After the sheet has gone, the terminal comes up.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { sessions.openLocal(saved) }
+            }
+            .environmentObject(model).environmentObject(account)
         }
         .sheet(item: $editedGroup, onDismiss: load) { e in
             GroupEditor(original: e.group).environmentObject(model).environmentObject(account)
@@ -173,6 +217,10 @@ struct HostsView: View {
                 if let g = deletingGroup { try? model.core.deleteGroup(id: g.id); load(); account.sync() }
             }
         } message: { Text("hosts.group.delete.message") }
+        .confirmationDialog(Text("hosts.select.delete.title \(selectedHosts.count)"), isPresented: $deletingSelection,
+                            titleVisibility: .visible) {
+            Button("common.delete", role: .destructive) { deleteSelection() }
+        } message: { Text("hosts.delete.message") }
         .alert(notice?.title ?? "", isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } })) {
             Button("common.ok", role: .cancel) {}
         } message: { Text(notice?.message ?? "") }
@@ -188,6 +236,78 @@ struct HostsView: View {
             guard groupId == nil, kind == "session" || kind == "lagged" else { return }
             Task { await sessions.refreshServer() }
         }
+    }
+
+    private var selectionTitle: String {
+        selection.isEmpty ? String(localized: "hosts.select.title") : String(localized: "hosts.select.count \(selectedHosts.count)")
+    }
+
+    /// Bottom bar while selecting: connect to all, move them, delete them.
+    @ViewBuilder private var selectionActions: some View {
+        let chosen = selectedHosts
+        Button { connectSelection() } label: {
+            Label(String(localized: "hosts.select.connect \(chosen.count)"), systemImage: "terminal")
+                .labelStyle(.titleAndIcon)
+        }
+        .disabled(chosen.isEmpty)
+        Spacer()
+        Menu {
+            Button { move(chosen, to: nil) } label: { Label("host_editor.no_group", systemImage: "tray") }
+            ForEach(groups, id: \.id) { g in
+                Button { move(chosen, to: g.id) } label: { Label(g.name, systemImage: "folder") }
+            }
+        } label: {
+            Label("hosts.select.move", systemImage: "folder")
+        }
+        .disabled(chosen.isEmpty)
+        Spacer()
+        Button(role: .destructive) { deletingSelection = true } label: {
+            Label("common.delete", systemImage: "trash")
+        }
+        .disabled(chosen.isEmpty)
+    }
+
+    private func startSelection(_ host: SshHost?) {
+        selection = host.map { Set([$0.id]) } ?? []
+        withAnimation { editMode = .active }
+    }
+
+    private func endSelection() {
+        withAnimation { editMode = .inactive }
+        selection = []
+    }
+
+    /// A terminal to each selected host (side by side on an iPad).
+    private func connectSelection() {
+        let chosen = selectedHosts
+        guard !chosen.isEmpty else { return }
+        endSelection()
+        if chosen.count == 1 { sessions.openLocal(chosen[0]) } else { sessions.openLocal(chosen) }
+    }
+
+    private func move(_ chosen: [SshHost], to group: String?) {
+        do {
+            for var h in chosen where h.groupId != group {
+                h.groupId = group
+                _ = try model.core.saveHost(host: h, password: .keep)
+            }
+        } catch {
+            show(error)
+        }
+        endSelection()
+        load()
+        account.sync()
+    }
+
+    private func deleteSelection() {
+        do {
+            for h in selectedHosts { try model.core.deleteHost(id: h.id) }
+        } catch {
+            show(error)
+        }
+        endSelection()
+        load()
+        account.sync()
     }
 
     /// "+": new host or group, a new key and the imports.
@@ -271,6 +391,7 @@ struct HostsView: View {
         Button { tunnelsHost = host } label: { Label("common.tunnels", systemImage: "arrow.left.arrow.right") }
         Divider()
         Button { editing = HostEdit(host: host) } label: { Label("common.edit", systemImage: "pencil") }
+        Button { startSelection(host) } label: { Label("hosts.select", systemImage: "checkmark.circle") }
         Button { toggleFavorite(host) } label: {
             if host.favorite {
                 Label("hosts.menu.unfavorite", systemImage: "star.slash")
@@ -441,39 +562,47 @@ private struct GroupRow: View {
     }
 }
 
-/// A host: avatar, name, "ssh, user" and its tags. Tapping it connects.
+/// A host: avatar, name, "ssh, user" and its tags. Tapping it connects
+/// (while selecting, it selects it).
 private struct HostRow: View {
     let host: SshHost
+    var selecting = false
     let onConnect: () -> Void
 
     var body: some View {
-        Button(action: onConnect) {
-            HStack(spacing: 14) {
-                HostIcon(host: host, size: 42)
-                VStack(alignment: .leading, spacing: 3) {
-                    HStack(spacing: 6) {
-                        Text(host.label.isEmpty ? host.address : host.label)
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                            .lineLimit(1)
-                        if host.favorite { Image(systemName: "star.fill").font(.caption2).foregroundColor(Brand.amber) }
-                    }
-                    Text(hostSubtitle(host)).font(.subheadline).foregroundColor(.secondary).lineLimit(1)
-                    if !host.tags.isEmpty {
-                        HStack(spacing: 4) {
-                            ForEach(Array(host.tags.prefix(3).enumerated()), id: \.offset) { _, tag in
-                                TagChip(text: tag)
-                            }
-                            if host.tags.count > 3 { TagChip(text: "+\(host.tags.count - 3)") }
+        if selecting {
+            content
+        } else {
+            Button(action: onConnect) { content }
+                .buttonStyle(.plain)
+        }
+    }
+
+    private var content: some View {
+        HStack(spacing: 14) {
+            HostIcon(host: host, size: 42)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 6) {
+                    Text(host.label.isEmpty ? host.address : host.label)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                    if host.favorite { Image(systemName: "star.fill").font(.caption2).foregroundColor(Brand.amber) }
+                }
+                Text(hostSubtitle(host)).font(.subheadline).foregroundColor(.secondary).lineLimit(1)
+                if !host.tags.isEmpty {
+                    HStack(spacing: 4) {
+                        ForEach(Array(host.tags.prefix(3).enumerated()), id: \.offset) { _, tag in
+                            TagChip(text: tag)
                         }
+                        if host.tags.count > 3 { TagChip(text: "+\(host.tags.count - 3)") }
                     }
                 }
-                Spacer(minLength: 0)
             }
-            .padding(.vertical, 2)
-            .contentShape(Rectangle())
+            Spacer(minLength: 0)
         }
-        .buttonStyle(.plain)
+        .padding(.vertical, 2)
+        .contentShape(Rectangle())
     }
 }
 

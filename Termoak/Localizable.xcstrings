@@ -1137,6 +1137,22 @@
         }
       }
     },
+    "common.none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ninguno"
+          }
+        }
+      }
+    },
     "common.off": {
       "localizations": {
         "en": {
@@ -2609,6 +2625,70 @@
         }
       }
     },
+    "host_editor.address.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can type user@host:port: the user and the port are filled in for you."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Puedes escribir usuario@host:puerto: el usuario y el puerto se rellenan solos."
+          }
+        }
+      }
+    },
+    "host_editor.advanced": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Advanced"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avanzado"
+          }
+        }
+      }
+    },
+    "host_editor.advanced.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jump hosts, proxy, agent forwarding, keep-alive, startup snippet, environment and terminal theme."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saltos, proxy, reenvío del agente, keep-alive, snippet de inicio, entorno y tema del terminal."
+          }
+        }
+      }
+    },
+    "host_editor.agent_forwarding": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agent forwarding"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reenvío del agente"
+          }
+        }
+      }
+    },
     "host_editor.clear_password": {
       "localizations": {
         "en": {
@@ -2641,6 +2721,86 @@
         }
       }
     },
+    "host_editor.color": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color"
+          }
+        }
+      }
+    },
+    "host_editor.color.auto": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic color"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color automático"
+          }
+        }
+      }
+    },
+    "host_editor.color.option %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color %lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color %lld"
+          }
+        }
+      }
+    },
+    "host_editor.connection": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connection"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conexión"
+          }
+        }
+      }
+    },
+    "host_editor.connection.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agent forwarding lets the server use your keys to connect further; turn it on only for servers you trust. Keep-alive sends a signal every so many seconds so idle connections are not cut (0: off). Recording applies to the sessions on the server."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El reenvío del agente deja que el servidor use tus claves para conectarse a otros; actívalo solo en servidores de confianza. El keep-alive envía una señal cada tantos segundos para que no se corten las conexiones inactivas (0: desactivado). La grabación se aplica a las sesiones en el servidor."
+          }
+        }
+      }
+    },
     "host_editor.credentials": {
       "localizations": {
         "en": {
@@ -2653,6 +2813,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Credenciales"
+          }
+        }
+      }
+    },
+    "host_editor.credentials.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With a key or an identity of the keychain no password is needed. Without any, it is asked for when connecting."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con una clave o una identidad del llavero no hace falta contraseña. Sin ninguna, se pide al conectar."
+          }
+        }
+      }
+    },
+    "host_editor.delete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar host"
           }
         }
       }
@@ -2673,6 +2865,22 @@
         }
       }
     },
+    "host_editor.deleted_snippet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(deleted snippet)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(snippet borrado)"
+          }
+        }
+      }
+    },
     "host_editor.edit_title": {
       "localizations": {
         "en": {
@@ -2685,6 +2893,150 @@
           "stringUnit": {
             "state": "translated",
             "value": "Editar host"
+          }
+        }
+      }
+    },
+    "host_editor.env": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Environment variables"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variables de entorno"
+          }
+        }
+      }
+    },
+    "host_editor.env.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One per line, KEY=value. The server must accept them (AcceptEnv)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una por línea, CLAVE=valor. El servidor tiene que aceptarlas (AcceptEnv)."
+          }
+        }
+      }
+    },
+    "host_editor.error.address": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type the server's address."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribe la dirección del servidor."
+          }
+        }
+      }
+    },
+    "host_editor.error.address_spaces": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The address cannot have spaces."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La dirección no puede tener espacios."
+          }
+        }
+      }
+    },
+    "host_editor.error.env %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” is not KEY=value."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%@» no es CLAVE=valor."
+          }
+        }
+      }
+    },
+    "host_editor.error.keepalive": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seconds, as a whole number (0: off)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segundos, en número entero (0: desactivado)."
+          }
+        }
+      }
+    },
+    "host_editor.error.port": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The port is a number from 1 to 65535."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El puerto es un número del 1 al 65535."
+          }
+        }
+      }
+    },
+    "host_editor.error.proxy_address": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type the proxy's address."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribe la dirección del proxy."
+          }
+        }
+      }
+    },
+    "host_editor.error.proxy_port": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The proxy port is a number from 1 to 65535."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El puerto del proxy es un número del 1 al 65535."
           }
         }
       }
@@ -2781,6 +3133,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sin saltos: se conecta directamente. Añade hosts por los que pasar antes de llegar (ProxyJump)."
+          }
+        }
+      }
+    },
+    "host_editor.keepalive": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep-alive (s)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep-alive (s)"
           }
         }
       }
@@ -2929,6 +3297,22 @@
         }
       }
     },
+    "host_editor.organize": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Organize"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Organizar"
+          }
+        }
+      }
+    },
     "host_editor.port": {
       "localizations": {
         "en": {
@@ -3025,6 +3409,38 @@
         }
       }
     },
+    "host_editor.record_sessions": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record sessions"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grabar las sesiones"
+          }
+        }
+      }
+    },
+    "host_editor.save_connect": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save and connect"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardar y conectar"
+          }
+        }
+      }
+    },
     "host_editor.save_failed": {
       "localizations": {
         "en": {
@@ -3041,6 +3457,38 @@
         }
       }
     },
+    "host_editor.startup_snippet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Startup snippet"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snippet de inicio"
+          }
+        }
+      }
+    },
+    "host_editor.startup_snippet.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Runs when a terminal to this host opens."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se ejecuta al abrir un terminal a este host."
+          }
+        }
+      }
+    },
     "host_editor.tags": {
       "localizations": {
         "en": {
@@ -3053,6 +3501,118 @@
           "stringUnit": {
             "state": "translated",
             "value": "Etiquetas (prod, web)"
+          }
+        }
+      }
+    },
+    "host_editor.term": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminal type"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipo de terminal"
+          }
+        }
+      }
+    },
+    "host_editor.theme": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminal theme"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tema del terminal"
+          }
+        }
+      }
+    },
+    "host_editor.theme.dark": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dark"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oscuro"
+          }
+        }
+      }
+    },
+    "host_editor.theme.follow": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Like the app"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Como la app"
+          }
+        }
+      }
+    },
+    "host_editor.theme.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dark and light also apply on the desktop app; a specific theme only on iPhone and iPad."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oscuro y claro también valen en la app de escritorio; un tema concreto solo en iPhone e iPad."
+          }
+        }
+      }
+    },
+    "host_editor.theme.light": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Light"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claro"
+          }
+        }
+      }
+    },
+    "host_editor.username": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Username (e.g. root)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usuario (p. ej. root)"
           }
         }
       }
@@ -3461,6 +4021,182 @@
           "stringUnit": {
             "state": "translated",
             "value": "Buscar hosts"
+          }
+        }
+      }
+    },
+    "hosts.select": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seleccionar"
+          }
+        }
+      }
+    },
+    "hosts.select.all": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select all"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seleccionar todo"
+          }
+        }
+      }
+    },
+    "hosts.select.connect %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect (%lld)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectar (%lld)"
+          }
+        }
+      }
+    },
+    "hosts.select.count %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld selected"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld selected"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld seleccionado"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld seleccionados"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "hosts.select.delete.title %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Delete %lld host?"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Delete %lld hosts?"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "¿Borrar %lld host?"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "¿Borrar %lld hosts?"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "hosts.select.move": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move to group"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mover a grupo"
+          }
+        }
+      }
+    },
+    "hosts.select.none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deselect all"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar selección"
+          }
+        }
+      }
+    },
+    "hosts.select.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select hosts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seleccionar hosts"
           }
         }
       }
@@ -5336,6 +6072,150 @@
         }
       }
     },
+    "paste.confirm.broadcast %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Broadcasting: it goes to %lld terminal, and each line is run as soon as it arrives."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Broadcasting: it goes to %lld terminals, and each line is run as soon as it arrives."
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Difusión activa: va a %lld terminal y cada línea se ejecuta en cuanto llega."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Difusión activa: va a %lld terminales y cada línea se ejecuta en cuanto llega."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "paste.confirm.dont_ask": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Don't ask again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No volver a preguntar"
+          }
+        }
+      }
+    },
+    "paste.confirm.dont_ask.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can turn it back on in Profile → Settings."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Puedes volver a activarlo en Perfil → Ajustes."
+          }
+        }
+      }
+    },
+    "paste.confirm.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each line is run as soon as it arrives, as if you pressed Enter."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada línea se ejecuta en cuanto llega, como si pulsaras Intro."
+          }
+        }
+      }
+    },
+    "paste.confirm.lines %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld line"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld lines"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld línea"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld líneas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "paste.confirm.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paste several lines?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Pegar varias líneas?"
+          }
+        }
+      }
+    },
     "port_forwarding.choose_host": {
       "localizations": {
         "en": {
@@ -6348,6 +7228,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sugerencias de comandos"
+          }
+        }
+      }
+    },
+    "settings.confirm_multiline_paste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm pasting several lines"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmar al pegar varias líneas"
+          }
+        }
+      }
+    },
+    "settings.confirm_multiline_paste.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shows what will be pasted before sending several lines, which the shell would run one by one. Not asked when the program uses bracketed paste."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muestra lo que se va a pegar antes de enviar varias líneas, que la shell ejecutaría una a una. No se pregunta si el programa usa el pegado delimitado (bracketed paste)."
           }
         }
       }
@@ -9004,6 +9916,886 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sin snippets"
+          }
+        }
+      }
+    },
+    "snippets.paste_all_open": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paste in all open terminals"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pegar en todos los terminales abiertos"
+          }
+        }
+      }
+    },
+    "snippets.run_all_open": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run in all open terminals"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ejecutar en todos los terminales abiertos"
+          }
+        }
+      }
+    },
+    "snippets.send.command": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Command"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comando"
+          }
+        }
+      }
+    },
+    "snippets.send.mode": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cómo"
+          }
+        }
+      }
+    },
+    "snippets.send.mode.paste_footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It is pasted without pressing Enter: you check it and run it in each terminal."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se pega sin pulsar Intro: lo revisas y lo ejecutas en cada terminal."
+          }
+        }
+      }
+    },
+    "snippets.send.mode.run_footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It is typed and run (with Enter) in each terminal."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se escribe y se ejecuta (con Intro) en cada terminal."
+          }
+        }
+      }
+    },
+    "snippets.send.no_hosts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There are no hosts yet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía no hay hosts."
+          }
+        }
+      }
+    },
+    "snippets.send.no_open": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There are no open terminals."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay terminales abiertos."
+          }
+        }
+      }
+    },
+    "snippets.send.open": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send to all open terminals…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviar a todos los terminales abiertos…"
+          }
+        }
+      }
+    },
+    "snippets.send.open.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only connected terminals where you can type."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo los terminales conectados en los que puedes escribir."
+          }
+        }
+      }
+    },
+    "snippets.send.paste_count %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paste on %lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pegar en %lld"
+          }
+        }
+      }
+    },
+    "snippets.send.run_count %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run on %lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ejecutar en %lld"
+          }
+        }
+      }
+    },
+    "snippets.send.servers": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run on several servers…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ejecutar en varios servidores…"
+          }
+        }
+      }
+    },
+    "snippets.send.servers.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A terminal opens to each server and the snippet goes as soon as it is connected. Picking a group picks all its hosts."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se abre un terminal a cada servidor y el snippet va en cuanto se conecta. Elegir un grupo elige todos sus hosts."
+          }
+        }
+      }
+    },
+    "snippets.send.show_terminals": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show the terminals"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver los terminales"
+          }
+        }
+      }
+    },
+    "snippets.send.status.not_connected": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not connected"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin conectar"
+          }
+        }
+      }
+    },
+    "snippets.send.status.pasted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasted"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pegado"
+          }
+        }
+      }
+    },
+    "snippets.send.status.ran": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sent and run"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviado y ejecutado"
+          }
+        }
+      }
+    },
+    "snippets.send.status.read_only": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read-only"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo lectura"
+          }
+        }
+      }
+    },
+    "snippets.send.status.waiting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for you in its terminal"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Te espera en su terminal"
+          }
+        }
+      }
+    },
+    "snippets.send.summary.needs_you": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some terminals are waiting for a password or a fingerprint: open them to answer."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algunos terminales esperan una contraseña o una huella: ábrelos para responder."
+          }
+        }
+      }
+    },
+    "snippets.send.summary.paste %lld %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasted on %1$lld of %2$lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pegado en %1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "snippets.send.summary.run %lld %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run on %1$lld of %2$lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ejecutado en %1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "snippets.send.target": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dónde"
+          }
+        }
+      }
+    },
+    "snippets.send.target.open": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open terminals"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminales abiertos"
+          }
+        }
+      }
+    },
+    "snippets.send.target.servers": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Servers"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Servidores"
+          }
+        }
+      }
+    },
+    "snippets.send.variables": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variables"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variables"
+          }
+        }
+      }
+    },
+    "snippets.sent_to_open %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Sent to %lld terminal"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Sent to %lld terminals"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Enviado a %lld terminal"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Enviado a %lld terminales"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "split.add_pane": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add pane"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir panel"
+          }
+        }
+      }
+    },
+    "split.broadcast": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Broadcast input"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Difundir la escritura"
+          }
+        }
+      }
+    },
+    "split.broadcast.banner %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Broadcasting input to %lld terminal"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Broadcasting input to %lld terminals"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Difundiendo la escritura a %lld terminal"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Difundiendo la escritura a %lld terminales"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "split.broadcast.exclude": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave out of the broadcast"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Excluir de la difusión"
+          }
+        }
+      }
+    },
+    "split.broadcast.excluded": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left out of the broadcast"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Excluido de la difusión"
+          }
+        }
+      }
+    },
+    "split.broadcast.include": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Include in the broadcast"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Incluir en la difusión"
+          }
+        }
+      }
+    },
+    "split.broadcast.off": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop broadcasting"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dejar de difundir"
+          }
+        }
+      }
+    },
+    "split.broadcast.on": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Broadcast input to all panes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Difundir la escritura a todos los paneles"
+          }
+        }
+      }
+    },
+    "split.broadcast.receives": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receives the broadcast"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recibe la difusión"
+          }
+        }
+      }
+    },
+    "split.broadcast.stop": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parar"
+          }
+        }
+      }
+    },
+    "split.focus_mode": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus mode"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modo foco"
+          }
+        }
+      }
+    },
+    "split.focus_mode.off": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exit focus mode"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salir del modo foco"
+          }
+        }
+      }
+    },
+    "split.new_terminal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New terminal…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuevo terminal…"
+          }
+        }
+      }
+    },
+    "split.pane.actions": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pane actions"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acciones del panel"
+          }
+        }
+      }
+    },
+    "split.pane.focus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enfocar"
+          }
+        }
+      }
+    },
+    "split.pane.needs_answer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for your answer"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espera tu respuesta"
+          }
+        }
+      }
+    },
+    "split.remove_pane": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove from split view"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar de la vista dividida"
+          }
+        }
+      }
+    },
+    "split.shortcut.down": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus pane below"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enfocar el panel de abajo"
+          }
+        }
+      }
+    },
+    "split.shortcut.left": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus pane on the left"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enfocar el panel de la izquierda"
+          }
+        }
+      }
+    },
+    "split.shortcut.right": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus pane on the right"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enfocar el panel de la derecha"
+          }
+        }
+      }
+    },
+    "split.shortcut.up": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus pane above"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enfocar el panel de arriba"
+          }
+        }
+      }
+    },
+    "split.single": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One terminal"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un solo terminal"
+          }
+        }
+      }
+    },
+    "split.split_with": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Split with"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dividir con"
+          }
+        }
+      }
+    },
+    "split.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Split view"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vista dividida"
           }
         }
       }

@@ -27,6 +27,14 @@ enum QuickPanelTab: String, CaseIterable, Identifiable {
     }
 }
 
+/// How a snippet is used from the quick panel.
+struct SnippetAction {
+    /// Typed with Enter (otherwise only pasted).
+    var run: Bool
+    /// In every open terminal, not only this one.
+    var everywhere = false
+}
+
 /// Quick access panel: keys, snippets, command history and appearance one
 /// tap away. On the phone it takes the place of the keyboard (with the tabs
 /// at the bottom and a button to go back to the keyboard); on the tablet it
@@ -38,7 +46,9 @@ struct QuickPanel: View {
     let onKeyboard: () -> Void
     let onCustomize: () -> Void
     /// Snippet with variables: they have to be asked for before using it.
-    let onFill: (Snippet, Bool) -> Void
+    let onFill: (Snippet, SnippetAction) -> Void
+    /// A snippet for every open terminal (pasted or run).
+    let onSendAll: (String, Bool) -> Void
 
     @EnvironmentObject private var settings: AppSettings
 
@@ -51,7 +61,7 @@ struct QuickPanel: View {
             Group {
                 switch tab {
                 case .keys: KeysTab(session: session, onCustomize: onCustomize)
-                case .snippets: SnippetsTab(session: session, onFill: onFill)
+                case .snippets: SnippetsTab(session: session, onFill: onFill, onSendAll: onSendAll)
                 case .history: HistoryTab(session: session)
                 case .appearance: AppearanceTab()
                 }
@@ -206,8 +216,10 @@ struct KeyButton: View {
 
 private struct SnippetsTab: View {
     @ObservedObject var session: TerminalSession
-    let onFill: (Snippet, Bool) -> Void
+    let onFill: (Snippet, SnippetAction) -> Void
+    let onSendAll: (String, Bool) -> Void
     @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var sessions: Sessions
     @EnvironmentObject private var settings: AppSettings
     @State private var list: [Snippet] = []
     @State private var search = ""
@@ -280,7 +292,7 @@ private struct SnippetsTab: View {
 
     private func row(_ sn: Snippet) -> some View {
         HStack(spacing: 10) {
-            Button { use(sn, run: false) } label: {
+            Button { use(sn, SnippetAction(run: false)) } label: {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(sn.name).font(.subheadline.weight(.medium)).lineLimit(1)
                     Text(sn.script).font(.system(.caption, design: .monospaced)).opacity(0.6).lineLimit(1)
@@ -289,7 +301,7 @@ private struct SnippetsTab: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            Button { use(sn, run: true) } label: {
+            Button { use(sn, SnippetAction(run: true)) } label: {
                 Image(systemName: "play.fill").font(.caption)
                     .frame(width: 34, height: 30)
                     .foregroundColor(SwiftUI.Color(hex: settings.terminalTheme.accent))
@@ -299,14 +311,34 @@ private struct SnippetsTab: View {
             .accessibilityLabel(Text("quick_panel.run \(sn.name)"))
         }
         .padding(.horizontal, 12).padding(.vertical, 6)
+        .contentShape(Rectangle())
+        .contextMenu {
+            Button { use(sn, SnippetAction(run: false)) } label: { Label("common.paste", systemImage: "doc.on.clipboard") }
+            Button { use(sn, SnippetAction(run: true)) } label: { Label("common.run", systemImage: "play") }
+            if sessions.open.count > 1 {
+                Divider()
+                Button { use(sn, SnippetAction(run: false, everywhere: true)) } label: {
+                    Label("snippets.paste_all_open", systemImage: "doc.on.clipboard")
+                }
+                Button { use(sn, SnippetAction(run: true, everywhere: true)) } label: {
+                    Label("snippets.run_all_open", systemImage: "play.rectangle.on.rectangle")
+                }
+            }
+        }
     }
 
-    private func use(_ sn: Snippet, run: Bool) {
+    private func use(_ sn: Snippet, _ action: SnippetAction) {
         guard snippetVariables(script: sn.script).isEmpty else {
-            onFill(sn, run)
+            onFill(sn, action)
             return
         }
-        if run { session.run(sn.script) } else { session.paste(sn.script) }
+        if action.everywhere {
+            onSendAll(sn.script, action.run)
+        } else if action.run {
+            session.run(sn.script)
+        } else {
+            session.paste(sn.script)
+        }
     }
 }
 

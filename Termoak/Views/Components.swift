@@ -76,7 +76,7 @@ struct HostTile: View {
 }
 
 /// Colors a host can be given (the same as the desktop's host editor).
-private let hostPalette: [UInt32] = [0x4F7CFF, 0x30A46C, 0xF5A524, 0xE5484D, 0x8E4EC6, 0x0EA5E9, 0xD6409F, 0x12A594]
+let hostPalette: [UInt32] = [0x4F7CFF, 0x30A46C, 0xF5A524, 0xE5484D, 0x8E4EC6, 0x0EA5E9, 0xD6409F, 0x12A594]
 
 /// `#rrggbb` (or `rrggbb`) as a color; `nil` if it is not one.
 func hexColor(_ hex: String?) -> Color? {
