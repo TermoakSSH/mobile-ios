@@ -872,21 +872,30 @@ struct HostsView: View {
 // MARK: - Desktop layout
 
 private extension HostsView {
-    /// The grid, and the host editor on its right while it is open.
+    /// The grid, and the host editor on its right while it is open (over
+    /// the whole grid when the window is narrow).
     var desktopContent: some View {
-        HStack(spacing: 0) {
-            hostGrid
-            if let e = editing {
-                Divider()
-                HostEditor(original: e.host, initialGroup: targetGroup?.id ?? groupId, initialPlace: newPlace,
-                           onConnect: { saved in connect(saved, onServer: false) },
-                           onClose: {
-                               editing = nil
-                               load()
-                           })
-                    .frame(width: 400)
+        GeometryReader { geo in
+            let width = geo.size.width
+            let beside = width >= 720
+            let panel = beside ? min(420, width * 0.45) : width
+            ZStack(alignment: .trailing) {
+                hostGrid
+                    .padding(.trailing, beside && editing != nil ? panel : 0)
+                if let e = editing {
+                    HStack(spacing: 0) {
+                        Divider()
+                        HostEditor(original: e.host, initialGroup: targetGroup?.id ?? groupId, initialPlace: newPlace,
+                                   onConnect: { saved in connect(saved, onServer: false) },
+                                   onClose: {
+                                       editing = nil
+                                       load()
+                                   })
+                    }
+                    .frame(width: panel)
                     .id(e.id)
                     .transition(.move(edge: .trailing))
+                }
             }
         }
         .animation(.easeOut(duration: 0.2), value: editing?.id)

@@ -38,7 +38,7 @@ struct TerminalScreenView: View {
 struct DesktopTerminalContext {
     /// A sheet of the window covers the terminal (its shortcuts go off).
     var covered = false
-    /// ⌘⇧H: the Home tab.
+    /// ⌃⌘H: the Home tab.
     let onHome: () -> Void
     /// ⌘,: Settings, in the Home tab.
     let onSettings: () -> Void

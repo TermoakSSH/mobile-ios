@@ -42,8 +42,9 @@ struct ShortcutLayer<Content: View>: View {
 /// Shortcuts of the terminal screen: ⌘T / ⌘K connect to a host in a new
 /// tab, ⌘W closes the tab, ⌘⇧] / ⌘⇧[ and Ctrl+Tab / Ctrl+⇧Tab change tabs,
 /// ⌘1…⌘9 pick one, ⌘F finds, ⌘+ / ⌘- / ⌘0 zoom, ⌘. sends Esc and ⌘,
-/// opens Settings. In the desktop layout (`onHome`) also ⌘⇧H for the Home
-/// tab and Ctrl+⇧PgUp / Ctrl+⇧PgDn to move the tab.
+/// opens Settings. In the desktop layout (`onHome`) also ⌃⌘H for the Home
+/// tab (⌘H and ⌘⇧H are the system's) and Ctrl+⇧PgUp / Ctrl+⇧PgDn to move
+/// the tab.
 struct TerminalShortcuts: View {
     let session: TerminalSession
     let enabled: Bool
@@ -72,7 +73,7 @@ struct TerminalShortcuts: View {
     }
 
     @ViewBuilder private func desktopShortcuts(_ onHome: @escaping () -> Void) -> some View {
-        ShortcutButton(title: String(localized: "desktop.home"), key: "h", modifiers: [.command, .shift], action: onHome)
+        ShortcutButton(title: String(localized: "desktop.home"), key: "h", modifiers: [.command, .control], action: onHome)
         ShortcutButton(title: String(localized: "desktop.tab.move_left"), key: .pageUp, modifiers: [.control, .shift]) {
             sessions.moveTab(session.id, by: -1)
         }
