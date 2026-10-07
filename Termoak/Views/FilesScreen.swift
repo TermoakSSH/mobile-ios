@@ -146,7 +146,7 @@ struct FilesScreen: View {
 
     /// ↑/↓ choose, Return or → opens (a folder goes in), ← goes up, Space
     /// previews (Quick Look), Delete deletes after asking, Esc closes.
-    private func handleKey(_ key: NavKey, _ modifiers: KeyModifiers) -> Bool {
+    private func handleKey(_ key: NavKey, _ modifiers: ModifierKeys) -> Bool {
         switch key {
         case .up, .down, .home, .end, .pageUp, .pageDown:
             cursor = moveHighlight(cursor, in: filtered.map(\.path), key)
@@ -318,7 +318,7 @@ struct FilesKeyboard: View {
 
     let active: Bool
     let shortcuts: Bool
-    let onKey: (NavKey, KeyModifiers) -> Bool
+    let onKey: (NavKey, ModifierKeys) -> Bool
     let onCommand: (Command) -> Void
     @Environment(\.isSearching) private var isSearching
 

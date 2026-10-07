@@ -18,12 +18,12 @@ import Foundation
 //   the app's and the system's shortcuts.
 
 /// Modifier keys held down.
-struct KeyModifiers: OptionSet, Hashable {
+struct ModifierKeys: OptionSet, Hashable {
     let rawValue: Int
-    static let shift = KeyModifiers(rawValue: 1 << 0)
-    static let control = KeyModifiers(rawValue: 1 << 1)
-    static let option = KeyModifiers(rawValue: 1 << 2)
-    static let command = KeyModifiers(rawValue: 1 << 3)
+    static let shift = ModifierKeys(rawValue: 1 << 0)
+    static let control = ModifierKeys(rawValue: 1 << 1)
+    static let option = ModifierKeys(rawValue: 1 << 2)
+    static let command = ModifierKeys(rawValue: 1 << 3)
 }
 
 /// A key of a hardware keyboard.
@@ -121,7 +121,7 @@ enum HardwareKeyResult: Equatable {
 enum HardwareKeyMap {
     static let esc: UInt8 = 0x1B
 
-    static func result(for key: HardwareKey, modifiers: KeyModifiers,
+    static func result(for key: HardwareKey, modifiers: ModifierKeys,
                        options: KeyEncodingOptions = KeyEncodingOptions()) -> HardwareKeyResult {
         if modifiers.contains(.command) {
             // ⌘. is Esc on keyboards without it (the iPad's Magic Keyboard).
@@ -140,7 +140,7 @@ enum HardwareKeyMap {
 
     // MARK: Special keys
 
-    private static func specialKey(_ key: SpecialKey, modifiers: KeyModifiers, options: KeyEncodingOptions) -> HardwareKeyResult {
+    private static func specialKey(_ key: SpecialKey, modifiers: ModifierKeys, options: KeyEncodingOptions) -> HardwareKeyResult {
         let shift = modifiers.contains(.shift)
         let ctrl = modifiers.contains(.control) || options.stickyControl
         // Option has no characters to type on these keys: it is always Alt.
@@ -177,7 +177,7 @@ enum HardwareKeyMap {
     // MARK: Characters
 
     private static func character(typed: String, unmodified: String, usKey: Character?,
-                                  modifiers: KeyModifiers, options: KeyEncodingOptions) -> HardwareKeyResult {
+                                  modifiers: ModifierKeys, options: KeyEncodingOptions) -> HardwareKeyResult {
         let shift = modifiers.contains(.shift)
         let option = modifiers.contains(.option)
         let meta = option && options.optionAsMeta

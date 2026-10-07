@@ -26,7 +26,7 @@ final class HardwareKeysTests: XCTestCase {
     }
 
     private func send(_ usage: Int, _ typed: String = "", _ unmodified: String? = nil,
-                      _ modifiers: KeyModifiers = [], _ options: KeyEncodingOptions = KeyEncodingOptions()) -> HardwareKeyResult {
+                      _ modifiers: ModifierKeys = [], _ options: KeyEncodingOptions = KeyEncodingOptions()) -> HardwareKeyResult {
         HardwareKeyMap.result(for: key(usage, typed, unmodified), modifiers: modifiers, options: options)
     }
 

@@ -12,7 +12,7 @@ import UIKit
 /// to `onKey`, which returns whether it used them.
 struct KeyCatcher: UIViewRepresentable {
     var active: Bool
-    var onKey: (NavKey, KeyModifiers) -> Bool
+    var onKey: (NavKey, ModifierKeys) -> Bool
 
     func makeUIView(context: Context) -> KeyCatcherView {
         let view = KeyCatcherView()
@@ -28,7 +28,7 @@ struct KeyCatcher: UIViewRepresentable {
 }
 
 final class KeyCatcherView: UIView {
-    var onKey: ((NavKey, KeyModifiers) -> Bool)?
+    var onKey: ((NavKey, ModifierKeys) -> Bool)?
     private var active = false
 
     override var canBecomeFirstResponder: Bool { active }
@@ -62,7 +62,7 @@ final class KeyCatcherView: UIView {
         var rest = Set<UIPress>()
         for press in presses {
             if let key = press.key, let nav = NavKey(hidUsage: key.keyCode.rawValue),
-               onKey?(nav, KeyModifiers(key.modifierFlags)) == true {
+               onKey?(nav, ModifierKeys(key.modifierFlags)) == true {
                 continue
             }
             rest.insert(press)

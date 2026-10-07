@@ -364,7 +364,7 @@ struct HostsView: View {
 
     /// ↑/↓ choose a host, Return (or Space) connects, Delete deletes it after
     /// asking, Esc lets go of it.
-    private func handleKey(_ key: NavKey, _ modifiers: KeyModifiers) -> Bool {
+    private func handleKey(_ key: NavKey, _ modifiers: ModifierKeys) -> Bool {
         let list = sections.flatMap(\.hosts)
         let host = list.first { $0.key == cursor }
         switch key {
@@ -998,7 +998,7 @@ struct SelectedHost: Identifiable {
 private struct HostsKeyboard: View {
     let active: Bool
     let newHost: (() -> Void)?
-    let onKey: (NavKey, KeyModifiers) -> Bool
+    let onKey: (NavKey, ModifierKeys) -> Bool
     @Environment(\.isSearching) private var isSearching
 
     var body: some View {

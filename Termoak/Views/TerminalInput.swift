@@ -2,9 +2,9 @@ import GameController
 import SwiftTerm
 import UIKit
 
-extension KeyModifiers {
+extension ModifierKeys {
     init(_ flags: UIKeyModifierFlags) {
-        var m: KeyModifiers = []
+        var m: ModifierKeys = []
         if flags.contains(.shift) { m.insert(.shift) }
         if flags.contains(.control) { m.insert(.control) }
         if flags.contains(.alternate) { m.insert(.option) }
@@ -62,7 +62,7 @@ final class TermoakTerminalView: TerminalView {
             }
             let options = KeyEncodingOptions(applicationCursor: terminal.applicationCursor, optionAsMeta: optionAsMeta,
                                              stickyControl: controlModifier, stickyAlt: metaModifier)
-            switch HardwareKeyMap.result(for: hardwareKey, modifiers: KeyModifiers(key.modifierFlags), options: options) {
+            switch HardwareKeyMap.result(for: hardwareKey, modifiers: ModifierKeys(key.modifierFlags), options: options) {
             case .system:
                 toSystem.insert(press)
             case .ignore:
