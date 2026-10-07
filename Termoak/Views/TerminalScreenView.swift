@@ -5,8 +5,11 @@ import UIKit
 
 /// Open terminals in full screen, with tabs. On an iPad with room (regular
 /// width) several of them can be side by side (`PaneArea`); in a narrow
-/// window only the focused one is shown.
+/// window only the focused one is shown. In the desktop layout it is the
+/// content of a terminal tab (`desktop`): the tabs are the window's and the
+/// bar is the desktop app's toolbar.
 struct TerminalScreenView: View {
+    var desktop: DesktopTerminalContext? = nil
     @EnvironmentObject private var sessions: Sessions
     @EnvironmentObject private var settings: AppSettings
     @Environment(\.horizontalSizeClass) private var sizeClass
@@ -19,7 +22,7 @@ struct TerminalScreenView: View {
         Group {
             if let session = sessions.current {
                 // Not rebuilt when the focus changes: the panes stay where they are.
-                TerminalContent(session: session)
+                TerminalContent(session: session, desktop: desktop)
                     .onAppear { UIApplication.shared.isIdleTimerDisabled = settings.keepScreenOn }
                     .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
             } else {
@@ -31,8 +34,21 @@ struct TerminalScreenView: View {
     }
 }
 
+/// What the desktop layout gives the terminal it shows in a tab.
+struct DesktopTerminalContext {
+    /// A sheet of the window covers the terminal (its shortcuts go off).
+    var covered = false
+    /// ⌘⇧H: the Home tab.
+    let onHome: () -> Void
+    /// ⌘,: Settings, in the Home tab.
+    let onSettings: () -> Void
+    /// ⌘T / ⌘K: the window's quick connect.
+    let onQuickConnect: () -> Void
+}
+
 private struct TerminalContent: View {
     @ObservedObject var session: TerminalSession
+    let desktop: DesktopTerminalContext?
     @EnvironmentObject private var sessions: Sessions
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var model: AppModel
@@ -65,6 +81,8 @@ private struct TerminalContent: View {
 
     /// On a tablet (or a big phone in landscape) the panel goes on the side.
     private var side: Bool { sizeClass == .regular }
+    /// In a tab of the desktop layout.
+    private var embedded: Bool { desktop != nil }
     private var theme: TerminalTheme { session.theme }
     /// The keyboard goes over the terminal instead of shrinking it: on a
     /// phone, while the copilot covers it (and until the copilot's keyboard
@@ -90,13 +108,15 @@ private struct TerminalContent: View {
         }
         .background(theme.backgroundColor.ignoresSafeArea())
         .background((sessions.quickPanelOpen && !side ? theme.barColor : theme.backgroundColor).ignoresSafeArea())
-        .overlay(alignment: .top) { ShareToasts(notices: sessions.notices) }
+        // The desktop layout shows them over the whole window.
+        .overlay(alignment: .top) { if !embedded { ShareToasts(notices: sessions.notices) } }
         .background(SplitShortcuts(enabled: shortcutsEnabled))
         .background(TerminalShortcuts(session: session, enabled: shortcutsEnabled,
-                                      onQuickConnect: { quickConnect = true },
+                                      onQuickConnect: desktop?.onQuickConnect ?? { quickConnect = true },
                                       onFind: { finding = true },
-                                      onSettings: { showingSettings = true }))
-        .preferredColorScheme(theme.isLight ? .light : .dark)
+                                      onSettings: desktop?.onSettings ?? { showingSettings = true },
+                                      onHome: desktop?.onHome))
+        .modifier(TerminalColorScheme(light: theme.isLight, embedded: embedded))
         .animation(.easeOut(duration: 0.2), value: sessions.quickPanelOpen)
         .animation(.easeOut(duration: 0.2), value: settings.sidePanel)
         .animation(.easeOut(duration: 0.22), value: sessions.copilotOpen)
@@ -203,6 +223,7 @@ private struct TerminalContent: View {
         let covered: [Bool] = [
             session.prompt != nil, customizing, showingPeople, sharing, showingActivity, showingFiles,
             tunnelsHost != nil, filling != nil, sessions.pasteRequest != nil, terminating, quickConnect, showingSettings,
+            desktop?.covered ?? false,
         ]
         return !covered.contains(true)
     }
@@ -225,8 +246,12 @@ private struct TerminalContent: View {
     private var terminalArea: some View {
         HStack(spacing: 0) {
             VStack(spacing: 0) {
-                topBar
-                tabs
+                if embedded {
+                    desktopBar
+                } else {
+                    topBar
+                    tabs
+                }
                 if finding {
                     TerminalFindBar(session: session) { finding = false }
                         .id(session.id)
@@ -345,10 +370,7 @@ private struct TerminalContent: View {
                 Text(subtitle).font(.caption2).foregroundColor(.secondary).lineLimit(1)
             }
             Spacer()
-            Button { session.pasteClipboard() } label: {
-                Image(systemName: "doc.on.clipboard").frame(width: 36, height: 40).contentShape(Rectangle()).hoverEffect()
-            }
-            .accessibilityLabel("common.paste")
+            pasteButton
             if sessions.splitAvailable {
                 SplitMenu(session: session, accent: SwiftUI.Color(hex: theme.accent))
             }
@@ -356,73 +378,176 @@ private struct TerminalContent: View {
                 Button { toggleKeyboard() } label: { Image(systemName: "keyboard").frame(width: 36, height: 40).contentShape(Rectangle()).hoverEffect() }
                     .accessibilityLabel("terminal.keyboard")
             }
-            if session.gestureMode == .button {
-                Button { session.toggleGestures() } label: {
-                    Image(systemName: session.cursorByButton ? "hand.draw.fill" : "hand.draw")
-                        .frame(width: 36, height: 40).contentShape(Rectangle()).hoverEffect()
-                        .foregroundColor(session.cursorByButton ? SwiftUI.Color(hex: theme.accent) : .accentColor)
-                }
-                .accessibilityLabel("common.move_cursor")
-                .accessibilityValue(session.cursorByButton ? Text("common.on") : Text("common.off"))
-            }
-            if showsPeopleButton {
-                Button { showingPeople = true } label: {
-                    peopleIcon.frame(width: 40, height: 40).contentShape(Rectangle()).hoverEffect()
-                }
-                .accessibilityLabel("share.participants.title")
-            }
-            Button { toggleCopilot() } label: {
-                Image(systemName: "sparkles")
-                    .frame(width: 36, height: 40).contentShape(Rectangle()).hoverEffect()
-                    .foregroundColor(sessions.copilotOpen ? SwiftUI.Color(hex: theme.accent) : .accentColor)
-            }
-            .keyboardShortcut("i", modifiers: .command)
-            .accessibilityLabel("copilot.title")
-            Button { togglePanel() } label: {
-                Image(systemName: side ? "sidebar.trailing" : "square.grid.2x2")
-                    .frame(width: 36, height: 40).contentShape(Rectangle()).hoverEffect()
-                    .foregroundColor((side ? settings.sidePanel && !sessions.copilotOpen : sessions.quickPanelOpen) ? SwiftUI.Color(hex: theme.accent) : .accentColor)
-            }
-            .accessibilityLabel("common.quick_panel")
-            Menu {
-                Button { UIPasteboard.general.string = session.screenText() } label: {
-                    Label("terminal.menu.copy_screen", systemImage: "doc.on.doc")
-                }
-                Button { settings.changeFontSize(1) } label: { Label("common.font_larger", systemImage: "textformat.size.larger") }
-                Button { settings.changeFontSize(-1) } label: { Label("common.font_smaller", systemImage: "textformat.size.smaller") }
-                if canShare {
-                    Button { sharing = true } label: { Label("share.menu.share", systemImage: "person.badge.plus") }
-                }
-                if showsPeopleButton {
-                    Button { showingPeople = true } label: { Label("share.participants.title", systemImage: "person.2") }
-                }
-                if activitySessionId != nil {
-                    Button { showingActivity = true } label: { Label("activity.menu", systemImage: "clock.arrow.circlepath") }
-                }
-                Divider()
-                if filesSource != nil {
-                    Button { showingFiles = true } label: { Label("common.files_sftp", systemImage: "folder") }
-                }
-                if let h = host {
-                    Button { tunnelsHost = h } label: { Label("common.tunnels", systemImage: "point.3.connected.trianglepath.dotted") }
-                }
-                Divider()
-                Button { session.reconnect() } label: { Label("common.reconnect", systemImage: "arrow.clockwise") }
-                if session is ServerTerminal && session.isOwner {
-                    Button(role: .destructive) { terminating = true } label: {
-                        Label("terminal.menu.terminate_server", systemImage: "power")
-                    }
-                }
-                Button { sessions.close(session.id) } label: {
-                    Label(session.persistent ? String(localized: "terminal.menu.close_tab_persistent") : String(localized: "common.close"),
-                          systemImage: "xmark")
-                }
-            } label: { Image(systemName: "ellipsis.circle").frame(width: 40, height: 40).contentShape(Rectangle()).hoverEffect() }
-            .accessibilityLabel("terminal.more")
-            .accessibilityIdentifier("terminal-menu")
+            gestureButton
+            if showsPeopleButton { peopleButton }
+            copilotButton
+            panelButton
+            moreMenu
         }
         .padding(.horizontal, 4)
         .background(theme.barColor)
+    }
+
+    /// The desktop app's toolbar: the host and where the session runs, then
+    /// SFTP, copy and paste, the split view, sharing, the copilot, the quick
+    /// panel and the rest of the actions.
+    private var desktopBar: some View {
+        HStack(spacing: 4) {
+            Circle().fill(stateColor).frame(width: 8, height: 8).padding(.leading, 10)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(session.title ?? session.label).font(.subheadline.weight(.semibold)).lineLimit(1)
+                Text(subtitle).font(.caption2).foregroundColor(.secondary).lineLimit(1)
+            }
+            .padding(.leading, 4)
+            placeBadge
+            Spacer(minLength: 8)
+            if filesSource != nil {
+                Button { showingFiles = true } label: { barIcon("folder") }
+                    .accessibilityLabel("common.files_sftp")
+            }
+            Button { copySelection() } label: { barIcon("doc.on.doc") }
+                .accessibilityLabel("terminal.copy")
+            pasteButton
+            if sessions.splitAvailable {
+                SplitMenu(session: session, accent: SwiftUI.Color(hex: theme.accent))
+            }
+            gestureButton
+            if showsPeopleButton { peopleButton }
+            if canShare {
+                Button { sharing = true } label: { barIcon("person.badge.plus") }
+                    .accessibilityLabel("share.menu.share")
+            }
+            copilotButton
+            panelButton
+            moreMenu
+        }
+        .padding(.horizontal, 4)
+        .frame(minHeight: 44)
+        .background(theme.barColor)
+    }
+
+    private func barIcon(_ symbol: String) -> some View {
+        Image(systemName: symbol).frame(width: 36, height: 40).contentShape(Rectangle()).hoverEffect()
+    }
+
+    /// "Local", "Server" or "Shared", like the desktop's badge.
+    private var placeBadge: some View {
+        let (text, symbol): (String, String) = !session.isOwner
+            ? (String(localized: "terminal.badge.shared"), "person.2")
+            : session.persistent ? (String(localized: "terminal.badge.server"), "icloud")
+            : (String(localized: "terminal.badge.local"), "laptopcomputer")
+        return Label(text, systemImage: symbol)
+            .labelStyle(.titleAndIcon)
+            .font(.caption2.weight(.semibold))
+            .lineLimit(1)
+            .padding(.horizontal, 7).padding(.vertical, 3)
+            .foregroundColor(SwiftUI.Color(hex: theme.accent))
+            .background(SwiftUI.Color(hex: theme.accent).opacity(0.16), in: Capsule())
+            .fixedSize()
+    }
+
+    private var stateColor: SwiftUI.Color {
+        if session.asleep { return .secondary }
+        switch session.state {
+        case .connected: return Brand.green
+        case .connecting: return Brand.amber
+        case .closed: return Brand.red
+        }
+    }
+
+    /// The selected text, or the whole screen when nothing is selected.
+    private func copySelection() {
+        if let text = session.view.getSelection(), !text.isEmpty {
+            UIPasteboard.general.string = text
+            session.showFlash(String(localized: "terminal.copied_selection"))
+        } else {
+            UIPasteboard.general.string = session.screenText()
+            session.showFlash(String(localized: "terminal.copied_screen"))
+        }
+    }
+
+    private var pasteButton: some View {
+        Button { session.pasteClipboard() } label: {
+            Image(systemName: "doc.on.clipboard").frame(width: 36, height: 40).contentShape(Rectangle()).hoverEffect()
+        }
+        .accessibilityLabel("common.paste")
+    }
+
+    @ViewBuilder private var gestureButton: some View {
+        if session.gestureMode == .button {
+            Button { session.toggleGestures() } label: {
+                Image(systemName: session.cursorByButton ? "hand.draw.fill" : "hand.draw")
+                    .frame(width: 36, height: 40).contentShape(Rectangle()).hoverEffect()
+                    .foregroundColor(session.cursorByButton ? SwiftUI.Color(hex: theme.accent) : .accentColor)
+            }
+            .accessibilityLabel("common.move_cursor")
+            .accessibilityValue(session.cursorByButton ? Text("common.on") : Text("common.off"))
+        }
+    }
+
+    private var peopleButton: some View {
+        Button { showingPeople = true } label: {
+            peopleIcon.frame(width: 40, height: 40).contentShape(Rectangle()).hoverEffect()
+        }
+        .accessibilityLabel("share.participants.title")
+    }
+
+    private var copilotButton: some View {
+        Button { toggleCopilot() } label: {
+            Image(systemName: "sparkles")
+                .frame(width: 36, height: 40).contentShape(Rectangle()).hoverEffect()
+                .foregroundColor(sessions.copilotOpen ? SwiftUI.Color(hex: theme.accent) : .accentColor)
+        }
+        .keyboardShortcut("i", modifiers: .command)
+        .accessibilityLabel("copilot.title")
+    }
+
+    private var panelButton: some View {
+        Button { togglePanel() } label: {
+            Image(systemName: side ? "sidebar.trailing" : "square.grid.2x2")
+                .frame(width: 36, height: 40).contentShape(Rectangle()).hoverEffect()
+                .foregroundColor((side ? settings.sidePanel && !sessions.copilotOpen : sessions.quickPanelOpen) ? SwiftUI.Color(hex: theme.accent) : .accentColor)
+        }
+        .accessibilityLabel("common.quick_panel")
+    }
+
+    private var moreMenu: some View {
+        Menu {
+            Button { UIPasteboard.general.string = session.screenText() } label: {
+                Label("terminal.menu.copy_screen", systemImage: "doc.on.doc")
+            }
+            Button { settings.changeFontSize(1) } label: { Label("common.font_larger", systemImage: "textformat.size.larger") }
+            Button { settings.changeFontSize(-1) } label: { Label("common.font_smaller", systemImage: "textformat.size.smaller") }
+            if canShare {
+                Button { sharing = true } label: { Label("share.menu.share", systemImage: "person.badge.plus") }
+            }
+            if showsPeopleButton {
+                Button { showingPeople = true } label: { Label("share.participants.title", systemImage: "person.2") }
+            }
+            if activitySessionId != nil {
+                Button { showingActivity = true } label: { Label("activity.menu", systemImage: "clock.arrow.circlepath") }
+            }
+            Divider()
+            if filesSource != nil {
+                Button { showingFiles = true } label: { Label("common.files_sftp", systemImage: "folder") }
+            }
+            if let h = host {
+                Button { tunnelsHost = h } label: { Label("common.tunnels", systemImage: "point.3.connected.trianglepath.dotted") }
+            }
+            Divider()
+            Button { session.reconnect() } label: { Label("common.reconnect", systemImage: "arrow.clockwise") }
+            if session is ServerTerminal && session.isOwner {
+                Button(role: .destructive) { terminating = true } label: {
+                    Label("terminal.menu.terminate_server", systemImage: "power")
+                }
+            }
+            Button { sessions.close(session.id) } label: {
+                Label(session.persistent ? String(localized: "terminal.menu.close_tab_persistent") : String(localized: "common.close"),
+                      systemImage: "xmark")
+            }
+        } label: { Image(systemName: "ellipsis.circle").frame(width: 40, height: 40).contentShape(Rectangle()).hoverEffect() }
+        .accessibilityLabel("terminal.more")
+        .accessibilityIdentifier("terminal-menu")
     }
 
     /// Your session on the server (not a relay of a terminal of this
@@ -708,5 +833,21 @@ struct AuthPromptView: View {
     private func respond(_ value: [String]?) {
         prompt.respond(value)
         onClose()
+    }
+}
+
+/// The terminal's light or dark look: for the whole screen it covers, or
+/// only for itself in a tab of the desktop layout (the window keeps the
+/// app's look).
+private struct TerminalColorScheme: ViewModifier {
+    let light: Bool
+    let embedded: Bool
+
+    func body(content: Content) -> some View {
+        if embedded {
+            content.environment(\.colorScheme, light ? .light : .dark)
+        } else {
+            content.preferredColorScheme(light ? .light : .dark)
+        }
     }
 }

@@ -42,13 +42,15 @@ struct ShortcutLayer<Content: View>: View {
 /// Shortcuts of the terminal screen: ⌘T / ⌘K connect to a host in a new
 /// tab, ⌘W closes the tab, ⌘⇧] / ⌘⇧[ and Ctrl+Tab / Ctrl+⇧Tab change tabs,
 /// ⌘1…⌘9 pick one, ⌘F finds, ⌘+ / ⌘- / ⌘0 zoom, ⌘. sends Esc and ⌘,
-/// opens Settings.
+/// opens Settings. In the desktop layout (`onHome`) also ⌘⇧H for the Home
+/// tab and Ctrl+⇧PgUp / Ctrl+⇧PgDn to move the tab.
 struct TerminalShortcuts: View {
     let session: TerminalSession
     let enabled: Bool
     let onQuickConnect: () -> Void
     let onFind: () -> Void
     let onSettings: () -> Void
+    var onHome: (() -> Void)? = nil
     @EnvironmentObject private var sessions: Sessions
     @EnvironmentObject private var settings: AppSettings
 
@@ -56,8 +58,9 @@ struct TerminalShortcuts: View {
         if enabled {
             ShortcutLayer {
                 tabShortcuts
-                tabNumbers
+                TabSwitchShortcuts()
                 otherShortcuts
+                if let onHome { desktopShortcuts(onHome) }
             }
         }
     }
@@ -66,17 +69,15 @@ struct TerminalShortcuts: View {
         ShortcutButton(title: String(localized: "shortcut.new_terminal"), key: "t", action: onQuickConnect)
         ShortcutButton(title: String(localized: "shortcut.quick_connect"), key: "k", action: onQuickConnect)
         ShortcutButton(title: String(localized: "shortcut.close_tab"), key: "w") { sessions.close(session.id) }
-        ShortcutButton(title: String(localized: "shortcut.next_tab"), key: "]", modifiers: [.command, .shift]) {
-            sessions.showAdjacent(1)
+    }
+
+    @ViewBuilder private func desktopShortcuts(_ onHome: @escaping () -> Void) -> some View {
+        ShortcutButton(title: String(localized: "desktop.home"), key: "h", modifiers: [.command, .shift], action: onHome)
+        ShortcutButton(title: String(localized: "desktop.tab.move_left"), key: .pageUp, modifiers: [.control, .shift]) {
+            sessions.moveTab(session.id, by: -1)
         }
-        ShortcutButton(title: String(localized: "shortcut.previous_tab"), key: "[", modifiers: [.command, .shift]) {
-            sessions.showAdjacent(-1)
-        }
-        ShortcutButton(title: String(localized: "shortcut.next_tab"), key: .tab, modifiers: .control) {
-            sessions.showAdjacent(1)
-        }
-        ShortcutButton(title: String(localized: "shortcut.previous_tab"), key: .tab, modifiers: [.control, .shift]) {
-            sessions.showAdjacent(-1)
+        ShortcutButton(title: String(localized: "desktop.tab.move_right"), key: .pageDown, modifiers: [.control, .shift]) {
+            sessions.moveTab(session.id, by: 1)
         }
     }
 
@@ -95,8 +96,27 @@ struct TerminalShortcuts: View {
         ShortcutButton(title: String(localized: "shortcut.settings"), key: ",", action: onSettings)
     }
 
-    /// ⌘1…⌘8 the tab in that place and ⌘9 the last one, with their names.
-    @ViewBuilder private var tabNumbers: some View {
+}
+
+/// ⌘⇧] / ⌘⇧[ and Ctrl+Tab / Ctrl+⇧Tab: the next or previous tab; ⌘1…⌘8 the
+/// tab in that place and ⌘9 the last one, with their names. In the terminal,
+/// and in the Home tab of the desktop layout.
+struct TabSwitchShortcuts: View {
+    @EnvironmentObject private var sessions: Sessions
+
+    var body: some View {
+        ShortcutButton(title: String(localized: "shortcut.next_tab"), key: "]", modifiers: [.command, .shift]) {
+            sessions.showAdjacent(1)
+        }
+        ShortcutButton(title: String(localized: "shortcut.previous_tab"), key: "[", modifiers: [.command, .shift]) {
+            sessions.showAdjacent(-1)
+        }
+        ShortcutButton(title: String(localized: "shortcut.next_tab"), key: .tab, modifiers: .control) {
+            sessions.showAdjacent(1)
+        }
+        ShortcutButton(title: String(localized: "shortcut.previous_tab"), key: .tab, modifiers: [.control, .shift]) {
+            sessions.showAdjacent(-1)
+        }
         let tabs = Array(sessions.open.prefix(8).enumerated())
         ForEach(tabs, id: \.element.id) { i, s in
             ShortcutButton(title: s.title ?? s.label, key: KeyEquivalent(Character("\(i + 1)"))) {
@@ -197,6 +217,29 @@ struct HomeShortcuts: View {
                 ShortcutButton(title: String(localized: "nav.connections"), key: "2") { router.tab = .connections }
                 ShortcutButton(title: String(localized: "nav.profile"), key: "3") { router.tab = .profile }
                 ShortcutButton(title: String(localized: "shortcut.settings"), key: ",") { router.tab = .profile }
+            }
+        }
+    }
+}
+
+/// Shortcuts of the Home tab of the desktop layout: ⌘K / ⌘T connect to a
+/// host, the tab shortcuts of the terminal (⌘1…⌘9, ⌘⇧] / ⌘⇧[, Ctrl+Tab),
+/// ⌘, Settings and ⌃⌘S shows or hides the sidebar.
+struct DesktopHomeShortcuts: View {
+    let enabled: Bool
+    let onQuickConnect: () -> Void
+    let onSettings: () -> Void
+    let onToggleSidebar: () -> Void
+
+    var body: some View {
+        if enabled {
+            ShortcutLayer {
+                ShortcutButton(title: String(localized: "shortcut.quick_connect"), key: "k", action: onQuickConnect)
+                ShortcutButton(title: String(localized: "shortcut.new_terminal"), key: "t", action: onQuickConnect)
+                TabSwitchShortcuts()
+                ShortcutButton(title: String(localized: "shortcut.settings"), key: ",", action: onSettings)
+                ShortcutButton(title: String(localized: "desktop.sidebar.toggle"), key: "s", modifiers: [.command, .control],
+                               action: onToggleSidebar)
             }
         }
     }
