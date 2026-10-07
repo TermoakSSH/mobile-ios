@@ -102,6 +102,8 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     private let line = LineTracker()
     private(set) var keyBar: KeyBar!
     private var gesture: CursorGesture?
+    /// Trackpad and mouse: scroll wheel, drag to select, secondary click.
+    private var pointer: TerminalPointer?
     private var observers: [NSObjectProtocol] = []
     /// Requested by the key bar (grid button).
     var onOpenPanel: (() -> Void)?
@@ -154,6 +156,7 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         keyBar.applyTheme(theme)
         view.inputAccessoryView = keyBar
         gesture = CursorGesture(session: self)
+        pointer = TerminalPointer(view: view)
         gestureMode = settings.gestureMode
         gesture?.configure(gestureMode, cursorByButton: cursorByButton)
         #if DEBUG

@@ -11028,6 +11028,22 @@
         }
       }
     },
+    "shortcut.show_tab": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar"
+          }
+        }
+      }
+    },
     "snippets.editor.command": {
       "localizations": {
         "en": {

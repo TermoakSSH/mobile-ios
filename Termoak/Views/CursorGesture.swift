@@ -77,6 +77,10 @@ final class CursorGesture: NSObject, UIGestureRecognizerDelegate {
         twoFingers.minimumNumberOfTouches = 2
         twoFingers.maximumNumberOfTouches = 2
         twoFingers.delegate = self
+        // Fingers only: a trackpad or mouse drag selects text (TerminalPointer).
+        for g in [hold, swipe, twoFingers] as [UIGestureRecognizer] {
+            g.allowedTouchTypes = TerminalPointer.directTouches
+        }
         view.addGestureRecognizer(hold)
         view.addGestureRecognizer(swipe)
         view.addGestureRecognizer(twoFingers)

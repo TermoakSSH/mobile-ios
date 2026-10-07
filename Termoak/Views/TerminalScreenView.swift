@@ -297,7 +297,7 @@ private struct TerminalContent: View {
     private var topBar: some View {
         HStack(spacing: 4) {
             Button { sessions.showing = false } label: {
-                Image(systemName: "chevron.down").font(.headline).frame(width: 40, height: 40)
+                Image(systemName: "chevron.down").font(.headline).frame(width: 40, height: 40).contentShape(Rectangle()).hoverEffect()
             }
             VStack(alignment: .leading, spacing: 1) {
                 Text(session.title ?? session.label).font(.subheadline.weight(.semibold)).lineLimit(1)
@@ -305,20 +305,20 @@ private struct TerminalContent: View {
             }
             Spacer()
             Button { session.pasteClipboard() } label: {
-                Image(systemName: "doc.on.clipboard").frame(width: 36, height: 40)
+                Image(systemName: "doc.on.clipboard").frame(width: 36, height: 40).contentShape(Rectangle()).hoverEffect()
             }
             .accessibilityLabel("common.paste")
             if sessions.splitAvailable {
                 SplitMenu(session: session, accent: SwiftUI.Color(hex: theme.accent))
             }
             if !side {
-                Button { toggleKeyboard() } label: { Image(systemName: "keyboard").frame(width: 36, height: 40) }
+                Button { toggleKeyboard() } label: { Image(systemName: "keyboard").frame(width: 36, height: 40).contentShape(Rectangle()).hoverEffect() }
                     .accessibilityLabel("terminal.keyboard")
             }
             if session.gestureMode == .button {
                 Button { session.toggleGestures() } label: {
                     Image(systemName: session.cursorByButton ? "hand.draw.fill" : "hand.draw")
-                        .frame(width: 36, height: 40)
+                        .frame(width: 36, height: 40).contentShape(Rectangle()).hoverEffect()
                         .foregroundColor(session.cursorByButton ? SwiftUI.Color(hex: theme.accent) : .accentColor)
                 }
                 .accessibilityLabel("common.move_cursor")
@@ -326,20 +326,20 @@ private struct TerminalContent: View {
             }
             if showsPeopleButton {
                 Button { showingPeople = true } label: {
-                    peopleIcon.frame(width: 40, height: 40)
+                    peopleIcon.frame(width: 40, height: 40).contentShape(Rectangle()).hoverEffect()
                 }
                 .accessibilityLabel("share.participants.title")
             }
             Button { toggleCopilot() } label: {
                 Image(systemName: "sparkles")
-                    .frame(width: 36, height: 40)
+                    .frame(width: 36, height: 40).contentShape(Rectangle()).hoverEffect()
                     .foregroundColor(sessions.copilotOpen ? SwiftUI.Color(hex: theme.accent) : .accentColor)
             }
             .keyboardShortcut("i", modifiers: .command)
             .accessibilityLabel("copilot.title")
             Button { togglePanel() } label: {
                 Image(systemName: side ? "sidebar.trailing" : "square.grid.2x2")
-                    .frame(width: 36, height: 40)
+                    .frame(width: 36, height: 40).contentShape(Rectangle()).hoverEffect()
                     .foregroundColor((side ? settings.sidePanel && !sessions.copilotOpen : sessions.quickPanelOpen) ? SwiftUI.Color(hex: theme.accent) : .accentColor)
             }
             .accessibilityLabel("common.quick_panel")
@@ -376,7 +376,7 @@ private struct TerminalContent: View {
                     Label(session.persistent ? String(localized: "terminal.menu.close_tab_persistent") : String(localized: "common.close"),
                           systemImage: "xmark")
                 }
-            } label: { Image(systemName: "ellipsis.circle").frame(width: 40, height: 40) }
+            } label: { Image(systemName: "ellipsis.circle").frame(width: 40, height: 40).contentShape(Rectangle()).hoverEffect() }
             .accessibilityLabel("terminal.more")
             .accessibilityIdentifier("terminal-menu")
         }
@@ -413,7 +413,7 @@ private struct TerminalContent: View {
                             onTap: { sessions.show(s.id) }, onClose: { sessions.close(s.id) })
                 }
                 Button { sessions.showing = false } label: {
-                    Image(systemName: "plus").frame(width: 32, height: 30)
+                    Image(systemName: "plus").frame(width: 32, height: 30).contentShape(Rectangle()).hoverEffect()
                 }
                 .accessibilityLabel("terminal.open_another")
             }
@@ -508,8 +508,17 @@ private struct TabChip: View {
         }
         .padding(.horizontal, 10).frame(height: 30)
         .background(selected ? Color.white.opacity(0.1) : Color.clear, in: RoundedRectangle(cornerRadius: 8))
-        .contentShape(Rectangle())
+        .contentShape(RoundedRectangle(cornerRadius: 8))
+        .hoverEffect(.highlight)
         .onTapGesture(perform: onTap)
+        // Secondary click (trackpad, mouse) or a long press.
+        .contextMenu {
+            Button(action: onTap) { Label("shortcut.show_tab", systemImage: "terminal") }
+            Button(role: .destructive, action: onClose) {
+                Label(session.persistent ? String(localized: "terminal.menu.close_tab_persistent") : String(localized: "common.close"),
+                      systemImage: "xmark")
+            }
+        }
     }
 
     private var color: SwiftUI.Color {

@@ -100,6 +100,7 @@ private struct PaneView: View {
         .frame(height: 28)
         .background(theme.barColor)
         .contentShape(Rectangle())
+        .hoverEffect(.highlight)
         .onTapGesture { sessions.focus(session.id) }
     }
 
