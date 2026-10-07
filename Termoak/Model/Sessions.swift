@@ -1,4 +1,5 @@
 import TermoakKit
+import Combine
 import CoreText
 import SwiftTerm
 import SwiftUI
@@ -143,7 +144,7 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         let host = hostId.flatMap { try? core.getHost(id: $0, accountId: accountId) }
         os = host?.os
         hostTheme = host?.settings.theme
-        let terminal = PasteAwareTerminalView(frame: CGRect(x: 0, y: 0, width: 400, height: 600))
+        let terminal = TermoakTerminalView(frame: CGRect(x: 0, y: 0, width: 400, height: 600))
         view = terminal
         super.init()
         terminal.onPaste = { [weak self] in self?.pasteClipboard() }
@@ -300,6 +301,7 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         let theme = TerminalTheme.forHost(hostTheme, app: settings.terminalTheme)
         theme.apply(to: view)
         keyBar?.applyTheme(theme)
+        (view as? TermoakTerminalView)?.optionAsMeta = settings.optionAsMeta
         suggestionMode = settings.suggestionMode
         suggestions = []
         gestureMode = settings.gestureMode
@@ -354,6 +356,15 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
             suggestions = []
         }
         return true
+    }
+
+    /// The key bar above the keyboard: hidden with a hardware keyboard
+    /// attached (unless Settings keeps it).
+    func showKeyBar(_ show: Bool) {
+        let bar: UIView? = show ? keyBar : nil
+        guard view.inputAccessoryView !== bar else { return }
+        view.inputAccessoryView = bar
+        if view.isFirstResponder { view.reloadInputViews() }
     }
 
     /// Gestures button: one finger switches from scrolling to moving the cursor (or back).
@@ -1263,6 +1274,7 @@ final class Sessions: ObservableObject {
     private let settings: AppSettings
     private let tunnels: Tunnels
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
+    private var subscriptions: Set<AnyCancellable> = []
 
     init(core: TermoakCore, settings: AppSettings, tunnels: Tunnels) {
         self.core = core
@@ -1273,6 +1285,20 @@ final class Sessions: ObservableObject {
         tunnels.terminalConnection = { [weak self] hostId in
             self?.open.lazy.compactMap { ($0 as? LocalTerminal)?.connection(for: hostId) }.first
         }
+        // A hardware keyboard attached or detached, or the setting changed.
+        HardwareKeyboard.shared.$connected.removeDuplicates()
+            .combineLatest(settings.$keyBarWithHardwareKeyboard.removeDuplicates())
+            .receive(on: RunLoop.main)
+            .sink { [weak self] connected, keep in
+                guard let self else { return }
+                self.open.forEach { $0.showKeyBar(!connected || keep) }
+            }
+            .store(in: &subscriptions)
+    }
+
+    /// The key bar shows (no hardware keyboard, or Settings keeps it).
+    private var keyBarVisible: Bool {
+        !HardwareKeyboard.shared.connected || settings.keyBarWithHardwareKeyboard
     }
 
     var current: TerminalSession? {
@@ -1544,6 +1570,7 @@ final class Sessions: ObservableObject {
     }
 
     private func prepare(_ s: TerminalSession) {
+        s.showKeyBar(keyBarVisible)
         s.onOpenPanel = { [weak self] in self?.quickPanelOpen = true }
         s.onMirror = { [weak self] source, m in self?.mirror(m, from: source) }
         s.onConfirmPaste = { [weak self] source, text in

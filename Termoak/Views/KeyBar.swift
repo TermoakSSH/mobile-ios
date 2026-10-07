@@ -80,12 +80,14 @@ final class KeyBar: UIInputView {
 
         panelButton.setImage(UIImage(systemName: "square.grid.2x2", withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)), for: .normal)
         panelButton.layer.cornerRadius = 8
+        panelButton.isPointerInteractionEnabled = true
         panelButton.accessibilityLabel = String(localized: "common.quick_panel")
         panelButton.translatesAutoresizingMaskIntoConstraints = false
         panelButton.addAction(UIAction { [weak self] _ in self?.session?.onOpenPanel?() }, for: .touchUpInside)
 
         gestureButton.setImage(UIImage(systemName: "hand.draw", withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)), for: .normal)
         gestureButton.layer.cornerRadius = 8
+        gestureButton.isPointerInteractionEnabled = true
         gestureButton.accessibilityLabel = String(localized: "common.move_cursor")
         gestureButton.translatesAutoresizingMaskIntoConstraints = false
         gestureButton.addAction(UIAction { [weak self] _ in self?.session?.toggleGestures() }, for: .touchUpInside)
@@ -162,6 +164,8 @@ final class KeyBar: UIInputView {
             b.titleLabel?.font = .systemFont(ofSize: 15, weight: .medium)
         }
         b.layer.cornerRadius = 8
+        // Pointer (trackpad, mouse): the key lifts under it.
+        b.isPointerInteractionEnabled = true
         b.contentEdgeInsets = UIEdgeInsets(top: 0, left: 11, bottom: 0, right: 11)
         b.widthAnchor.constraint(greaterThanOrEqualToConstant: 38).isActive = true
         b.heightAnchor.constraint(equalToConstant: height - 10).isActive = true
@@ -208,6 +212,7 @@ final class KeyBar: UIInputView {
         b.layer.cornerRadius = 8
         b.layer.borderWidth = 1
         b.layer.borderColor = accent.withAlphaComponent(0.45).cgColor
+        b.isPointerInteractionEnabled = true
         b.heightAnchor.constraint(equalToConstant: height - 10).isActive = true
         b.widthAnchor.constraint(lessThanOrEqualToConstant: 240).isActive = true
         b.accessibilityLabel = String(localized: "suggestions.accessibility \(s.text)")

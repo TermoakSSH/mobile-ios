@@ -19,7 +19,9 @@ packages:
     path: core/bindings/swift
   SwiftTerm:
     url: https://github.com/migueldeicaza/SwiftTerm
-    from: 1.9.0
+    # 1.20: `pressesBegan` is `open` (hardware keys, TerminalInput.swift),
+    # the search API (⌘F) and `showStandardContextMenu` (secondary click).
+    from: 1.20.0
 
 settings:
   base:

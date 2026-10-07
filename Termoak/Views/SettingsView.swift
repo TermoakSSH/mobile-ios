@@ -102,6 +102,15 @@ struct SettingsView: View {
                     Text("settings.confirm_multiline_paste.footer")
                 }
 
+                Section {
+                    Toggle("settings.option_as_meta", isOn: $settings.optionAsMeta)
+                    Toggle("settings.key_bar_hardware_keyboard", isOn: $settings.keyBarWithHardwareKeyboard)
+                } header: {
+                    Text("settings.hardware_keyboard")
+                } footer: {
+                    Text("settings.hardware_keyboard.footer")
+                }
+
                 Section("settings.appearance") {
                     Picker("common.theme", selection: $settings.appTheme) {
                         ForEach(AppTheme.allCases) { Text($0.title).tag($0) }
@@ -153,6 +162,7 @@ struct SettingsView: View {
         .onChange(of: settings.fontId) { _ in sessions.applyAppearance() }
         .onChange(of: settings.suggestionMode) { _ in sessions.applyAppearance() }
         .onChange(of: settings.gestureMode) { _ in sessions.applyAppearance() }
+        .onChange(of: settings.optionAsMeta) { _ in sessions.applyAppearance() }
         .onChange(of: settings.keyboard) { _ in sessions.applyKeyboard() }
         .sheet(isPresented: $customizing) { KeyboardEditor().environmentObject(settings) }
     }

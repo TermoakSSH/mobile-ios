@@ -127,8 +127,13 @@ final class TerminalViewport: UIScrollView, UIScrollViewDelegate {
 
     /// Size of a cell with the terminal's font, as SwiftTerm measures it.
     private func cellSize() -> CGSize {
+        TerminalViewport.cellSize(of: terminal)
+    }
+
+    /// Size of a cell of `terminal`, as SwiftTerm measures it.
+    static func cellSize(of terminal: TerminalView) -> CGSize {
         let font = terminal.font
-        let scale = window?.screen.scale ?? UIScreen.main.scale
+        let scale = terminal.window?.screen.scale ?? UIScreen.main.scale
         let ct = font as CTFont
         let height = ceil(ceil(CTFontGetAscent(ct) + CTFontGetDescent(ct) + CTFontGetLeading(ct)) * scale) / scale
         let width = ("W" as NSString).size(withAttributes: [.font: font]).width
@@ -143,6 +148,20 @@ final class TerminalViewport: UIScrollView, UIScrollViewDelegate {
         // Centered when it is narrower than the screen.
         let dx = max(0, (bounds.width - contentSize.width) / 2)
         terminal.center = CGPoint(x: contentSize.width / 2 + dx, y: contentSize.height / 2)
+    }
+
+    // MARK: Hardware keyboard
+
+    // SwiftTerm's view passes key releases up the responder chain (its
+    // `pressesEnded` cannot be overridden): they stop the key repeat.
+    override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        (terminal as? TermoakTerminalView)?.keysReleased()
+        super.pressesEnded(presses, with: event)
+    }
+
+    override func pressesCancelled(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        (terminal as? TermoakTerminalView)?.keysReleased()
+        super.pressesCancelled(presses, with: event)
     }
 
     // MARK: UIScrollViewDelegate

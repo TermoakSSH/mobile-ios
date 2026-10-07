@@ -45,6 +45,7 @@ enum SuggestionMode: String, CaseIterable, Identifiable {
 final class AppSettings: ObservableObject {
     static let minFontSize: Double = 8
     static let maxFontSize: Double = 24
+    static let defaultFontSize: Double = 13
     private let d = UserDefaults.standard
 
     @Published var fontSize: Double { didSet { d.set(fontSize, forKey: "tamano_letra") } }
@@ -69,6 +70,15 @@ final class AppSettings: ObservableObject {
     /// Ask before pasting several lines (unless the program turned on
     /// bracketed paste, which keeps the shell from running them).
     @Published var confirmMultilinePaste: Bool { didSet { d.set(confirmMultilinePaste, forKey: "confirm_multiline_paste") } }
+    /// Hardware keyboard: Option sends Esc + the key (Meta, for emacs, bash
+    /// and zsh shortcuts) instead of typing the layout's characters. On by
+    /// default with an English system language; off otherwise, where Option
+    /// types @ # [ ] { } \ | ~ (Spanish layout and others).
+    @Published var optionAsMeta: Bool { didSet { d.set(optionAsMeta, forKey: "option_as_meta") } }
+    /// Keep the key bar above the keyboard with a hardware keyboard attached.
+    @Published var keyBarWithHardwareKeyboard: Bool {
+        didSet { d.set(keyBarWithHardwareKeyboard, forKey: "key_bar_hardware_keyboard") }
+    }
 
     /// The user already chose to use the app without a server: do not show the welcome again.
     var noServer: Bool {
@@ -81,7 +91,7 @@ final class AppSettings: ObservableObject {
         d.removeObject(forKey: "ultimo_servidor")
         d.removeObject(forKey: "ultimo_email")
         let size = d.double(forKey: "tamano_letra")
-        fontSize = size == 0 ? 13 : size
+        fontSize = size == 0 ? AppSettings.defaultFontSize : size
         appTheme = AppTheme(rawValue: d.string(forKey: "tema") ?? "") ?? .dark
         keepScreenOn = d.object(forKey: "pantalla_encendida") as? Bool ?? true
         terminalThemeId = d.string(forKey: "tema_terminal") ?? TerminalTheme.all[0].id
@@ -90,6 +100,9 @@ final class AppSettings: ObservableObject {
         quickPanelTab = d.string(forKey: "pestana_panel") ?? "teclas"
         sidePanel = d.object(forKey: "panel_lateral") as? Bool ?? true
         confirmMultilinePaste = d.object(forKey: "confirm_multiline_paste") as? Bool ?? true
+        optionAsMeta = d.object(forKey: "option_as_meta") as? Bool
+            ?? (Locale.preferredLanguages.first.map { $0.hasPrefix("en") } ?? true)
+        keyBarWithHardwareKeyboard = d.object(forKey: "key_bar_hardware_keyboard") as? Bool ?? false
         gestureMode = GestureMode(rawValue: d.string(forKey: "modo_gestos") ?? "") ?? .hold
         suggestionMode = SuggestionMode(rawValue: d.string(forKey: "modo_sugerencias") ?? "") ?? .cursor
     }

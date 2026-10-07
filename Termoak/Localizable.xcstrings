@@ -8500,6 +8500,38 @@
         }
       }
     },
+    "settings.hardware_keyboard": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hardware keyboard"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teclado físico"
+          }
+        }
+      }
+    },
+    "settings.hardware_keyboard.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With Option as Meta, Option + a key sends Esc and the key (the Alt shortcuts of bash, zsh and emacs); turn it off to type your layout's characters with Option (@ # € [ ] { } \\ | ~). ⌘. and Ctrl+[ send Esc. The key bar hides while a keyboard is attached unless you keep it. Hold ⌘ to see the shortcuts."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con Opción como Meta, Opción + una tecla envía Esc y la tecla (los atajos con Alt de bash, zsh y emacs); desactívalo para escribir con Opción los caracteres de tu distribución (@ # € [ ] { } \\ | ~). ⌘. y Ctrl+[ envían Esc. La barra de teclas se oculta mientras hay un teclado conectado, salvo que la mantengas. Mantén pulsado ⌘ para ver los atajos."
+          }
+        }
+      }
+    },
     "settings.keep_screen_on": {
       "localizations": {
         "en": {
@@ -8512,6 +8544,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pantalla siempre encendida"
+          }
+        }
+      }
+    },
+    "settings.key_bar_hardware_keyboard": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep the key bar"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantener la barra de teclas"
           }
         }
       }
@@ -8576,6 +8624,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sin sincronizar todavía"
+          }
+        }
+      }
+    },
+    "settings.option_as_meta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Option as Meta key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opción como tecla Meta"
           }
         }
       }

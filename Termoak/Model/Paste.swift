@@ -54,20 +54,6 @@ enum MirroredInput {
     case run(String)
 }
 
-/// SwiftTerm's view with its paste (edit menu, ⌘V) going through the
-/// session, which may ask before pasting several lines.
-final class PasteAwareTerminalView: TerminalView {
-    var onPaste: (() -> Void)?
-
-    override func paste(_ sender: Any?) {
-        if let onPaste {
-            onPaste()
-        } else {
-            super.paste(sender)
-        }
-    }
-}
-
 /// Set while the terminal interprets output: what it sends back meanwhile
 /// (answers to the program's queries) was not typed. Read from the
 /// terminal delegate, which SwiftTerm calls on the main thread.
