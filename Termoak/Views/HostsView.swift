@@ -8,12 +8,17 @@ import UniformTypeIdentifiers
 /// once, move them to a group or a vault, or delete them. With `groupId`,
 /// the contents of a group. With `shortcuts` (the root of the vault on the
 /// phone), the other sections of the vault go as tiles at the top. At the
-/// root, the account switcher and the vault chips.
+/// root, the account switcher and the vault chips. With `desktop` (iPad,
+/// regular width) it is the desktop app's Hosts view instead: a header with
+/// the search and the buttons, group chips and the hosts as cards in a grid,
+/// and the host editor in a panel on the right.
 struct HostsView: View {
     let groupId: String?
     /// Account of the group (`nil`: This device, or the root).
     var groupAccountId: String? = nil
     var shortcuts = false
+    /// The desktop layout's grid (only at the root).
+    var desktop = false
 
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Accounts
@@ -48,6 +53,11 @@ struct HostsView: View {
     /// Host highlighted with a hardware keyboard (by `SshHost.key`).
     @State private var cursor: String?
     @ObservedObject private var keyboard = HardwareKeyboard.shared
+    /// Desktop layout: the chip chosen above the grid.
+    @State private var chip: HostChip = .all
+    /// Desktop layout: cards per row (for ↑/↓).
+    @State private var gridColumns = 1
+    @FocusState private var searchFocused: Bool
 
     private var selecting: Bool { editMode.isEditing }
     private var isRoot: Bool { groupId == nil }
@@ -128,11 +138,7 @@ struct HostsView: View {
     }
 
     var body: some View {
-        ScrollViewReader { proxy in
-            hostList.onChange(of: cursor) { key in
-                if let key { withAnimation { proxy.scrollTo(key) } }
-            }
-        }
+        content
         .toolbar {
             if selecting {
                 ToolbarItem(placement: .cancellationAction) {
@@ -165,7 +171,8 @@ struct HostsView: View {
                 }
             }
         }
-        .sheet(item: $editing, onDismiss: load) { e in
+        // In the desktop layout the editor is a panel on the right.
+        .sheet(item: Binding(get: { desktop ? nil : editing }, set: { editing = $0 }), onDismiss: load) { e in
             HostEditor(original: e.host, initialGroup: groupId, initialPlace: newPlace) { saved in
                 // After the sheet has gone, the terminal comes up.
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { connect(saved, onServer: false) }
@@ -243,6 +250,18 @@ struct HostsView: View {
         .onReceive(account.changes) { kind in
             guard isRoot, kind == "session" || kind == "lagged" else { return }
             Task { await sessions.refreshServer(accounts: activeAccounts) }
+        }
+    }
+
+    @ViewBuilder private var content: some View {
+        if desktop {
+            desktopContent
+        } else {
+            ScrollViewReader { proxy in
+                hostList.onChange(of: cursor) { key in
+                    if let key { withAnimation { proxy.scrollTo(key) } }
+                }
+            }
         }
     }
 
@@ -334,7 +353,7 @@ struct HostsView: View {
                     .padding()
             }
         }
-        .background(HostsKeyboard(active: keysActive, newHost: newHostShortcut, onKey: handleKey))
+        .background(HostsKeyboard(active: keysActive, newHost: newHostShortcut, find: nil, onKey: handleKey))
         .searchable(text: $query, prompt: Text("hosts.search.prompt"))
         .refreshable {
             account.sync()
@@ -356,8 +375,9 @@ struct HostsView: View {
         return shown.contains(true)
     }
 
-    /// ↑/↓ and Return work in the list.
-    private var keysActive: Bool { keyboard.connected && !covered && !selecting }
+    /// ↑/↓ and Return work in the list (in the grid, also when the search
+    /// field lets go of the keyboard).
+    private var keysActive: Bool { keyboard.connected && !covered && !selecting && !(desktop && searchFocused) }
 
     /// ⌘N: a new host (at the root of the vault).
     private var newHostShortcut: (() -> Void)? {
@@ -368,10 +388,17 @@ struct HostsView: View {
     /// ↑/↓ choose a host, Return (or Space) connects, Delete deletes it after
     /// asking, Esc lets go of it.
     private func handleKey(_ key: NavKey, _ modifiers: ModifierKeys) -> Bool {
-        let list = sections.flatMap(\.hosts)
+        let grid = desktop ? gridSections : []
+        let list = desktop ? grid.flatMap(\.hosts) : sections.flatMap(\.hosts)
         let host = list.first { $0.key == cursor }
         switch key {
-        case .up, .down, .home, .end, .pageUp, .pageDown:
+        case .up, .down, .left, .right, .home, .end, .pageUp, .pageDown:
+            // The grid moves in two dimensions; the list only up and down.
+            if desktop {
+                cursor = moveInGrid(cursor, in: grid.map { $0.hosts.map(\.key) }, columns: gridColumns, key)
+                return true
+            }
+            guard key != .left && key != .right else { return false }
             cursor = moveHighlight(cursor, in: list.map(\.key), key)
             return true
         case .enter, .space:
@@ -392,12 +419,19 @@ struct HostsView: View {
     }
 
     private var selectAllTitle: String {
-        !visible.isEmpty && selection.count == visible.count
+        let list = selectable
+        return !list.isEmpty && selection.count == list.count
             ? String(localized: "hosts.select.none") : String(localized: "hosts.select.all")
     }
 
     private func toggleSelectAll() {
-        if selection.count == visible.count { selection = [] } else { selection = Set(visible.map(\.key)) }
+        let list = selectable
+        if selection.count == list.count { selection = [] } else { selection = Set(list.map(\.key)) }
+    }
+
+    /// The hosts on screen (in the grid, those of every group shown).
+    private var selectable: [SshHost] {
+        desktop ? gridSections.flatMap(\.hosts) : visible
     }
 
     private var activeAccounts: [String] {
@@ -407,8 +441,15 @@ struct HostsView: View {
     /// Where a new host or group goes: the open group's place, or the
     /// default one.
     private var newPlace: ItemPlace {
-        if let group { return account.place(accountId: group.accountId, vaultId: group.vaultId) }
+        if let group = targetGroup { return account.place(accountId: group.accountId, vaultId: group.vaultId) }
         return account.defaultPlace
+    }
+
+    /// Where new hosts and groups go: the open group, or the group chosen
+    /// in the chips of the grid.
+    private var targetGroup: HostGroup? {
+        if desktop, case .group(let key) = chip { return groups.first { $0.key == key } }
+        return group
     }
 
     private var selectionTitle: String {
@@ -533,10 +574,7 @@ struct HostsView: View {
     private var addMenu: some View {
         Menu {
             Button { editing = HostEdit(host: nil) } label: { Label("common.new_host", systemImage: "server.rack") }
-            Button {
-                let p = newPlace
-                editedGroup = GroupEdit(group: HostGroup(name: "", parentId: groupId, accountId: p.accountId, vaultId: p.vaultId))
-            } label: {
+            Button(action: newGroup) {
                 Label("hosts.group.new", systemImage: "folder.badge.plus")
             }
             Divider()
@@ -551,6 +589,12 @@ struct HostsView: View {
             Image(systemName: "plus")
         }
         .accessibilityLabel("vault.add")
+    }
+
+    private func newGroup() {
+        let p = newPlace
+        editedGroup = GroupEdit(group: HostGroup(name: "", parentId: desktop ? targetGroup?.id : groupId,
+                                                 accountId: p.accountId, vaultId: p.vaultId))
     }
 
     /// Keychain, port forwarding, snippets and known hosts, with how many
@@ -632,6 +676,9 @@ struct HostsView: View {
 
     @ViewBuilder private func menu(_ host: SshHost) -> some View {
         Button { connect(host, onServer: false) } label: { Label("common.connect", systemImage: "terminal") }
+        if desktop && !sessions.open.isEmpty {
+            Button { connectInSplit(host) } label: { Label("hosts.menu.connect_split", systemImage: "rectangle.split.2x1") }
+        }
         if canOpenOnServer(host) {
             Button { connect(host, onServer: true) } label: { Label("hosts.menu.persistent", systemImage: "icloud") }
         }
@@ -657,6 +704,7 @@ struct HostsView: View {
         Button { UIPasteboard.general.string = host.address } label: {
             Label("hosts.menu.copy_address", systemImage: "doc.on.doc")
         }
+        if desktop && host.canEdit { moveToGroupMenu(host) }
         if !account.list.isEmpty {
             let place = account.place(accountId: host.accountId, vaultId: host.vaultId)
             Menu {
@@ -691,6 +739,37 @@ struct HostsView: View {
         host.isUseOnly && account.isStrict(accountId: host.accountId, vaultId: host.vaultId)
     }
 
+    /// Desktop layout: the groups of the host's vault, the current one checked.
+    private func moveToGroupMenu(_ host: SshHost) -> some View {
+        let options = groups.filter { $0.accountId == host.accountId && $0.vaultId == host.vaultId }
+        return Menu {
+            Button { move([host], to: nil) } label: {
+                if !hasGroup(host) {
+                    Label("host_editor.no_group", systemImage: "checkmark")
+                } else {
+                    Text("host_editor.no_group")
+                }
+            }
+            ForEach(options, id: \.key) { g in
+                Button { move([host], to: g.id) } label: {
+                    if host.groupId == g.id {
+                        Label(g.name, systemImage: "checkmark")
+                    } else {
+                        Text(verbatim: g.name)
+                    }
+                }
+            }
+        } label: {
+            Label("hosts.select.move", systemImage: "folder")
+        }
+    }
+
+    /// Desktop layout: the terminal opens next to the one on screen.
+    private func connectInSplit(_ host: SshHost) {
+        sessions.splitOnNextOpen = true
+        connect(host, onServer: false)
+    }
+
     private func connect(_ host: SshHost, onServer: Bool) {
         if onServer {
             sessions.openOnServer(host)
@@ -713,6 +792,7 @@ struct HostsView: View {
         } catch {
             show(error)
         }
+        if case .group(let key) = chip, !groups.contains(where: { $0.key == key }) { chip = .all }
         guard isRoot else { return }
         let core = model.core
         let device = ItemFilter(accountIds: [], vaultIds: nil, includeDevice: true)
@@ -787,6 +867,340 @@ struct HostsView: View {
             show(error)
         }
     }
+}
+
+// MARK: - Desktop layout
+
+private extension HostsView {
+    /// The grid, and the host editor on its right while it is open.
+    var desktopContent: some View {
+        HStack(spacing: 0) {
+            hostGrid
+            if let e = editing {
+                Divider()
+                HostEditor(original: e.host, initialGroup: targetGroup?.id ?? groupId, initialPlace: newPlace,
+                           onConnect: { saved in connect(saved, onServer: false) },
+                           onClose: {
+                               editing = nil
+                               load()
+                           })
+                    .frame(width: 400)
+                    .id(e.id)
+                    .transition(.move(edge: .trailing))
+            }
+        }
+        .animation(.easeOut(duration: 0.2), value: editing?.id)
+        .background(HostsKeyboard(active: keysActive, newHost: newHostShortcut,
+                                  find: covered ? nil : { searchFocused = true }, onKey: handleKey))
+    }
+
+    var hostGrid: some View {
+        GeometryReader { geo in
+            let width = geo.size.width
+            // Cards of at least 270 points, 12 apart, 20 from the edges.
+            let columns = max(1, Int((width - 40 + 12) / (270 + 12)))
+            VStack(spacing: 0) {
+                gridHeader(narrow: width < 760)
+                Divider()
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        gridBody(columns: columns).padding(20)
+                    }
+                    .onChange(of: cursor) { key in
+                        if let key { withAnimation { proxy.scrollTo(key) } }
+                    }
+                }
+                if selecting {
+                    Divider()
+                    HStack { selectionActions }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                }
+            }
+            .onAppear { gridColumns = columns }
+            .onChange(of: columns) { gridColumns = $0 }
+        }
+        .background(Color(.systemGroupedBackground).ignoresSafeArea())
+    }
+
+    /// Title and count, the search and the buttons, and the group chips.
+    func gridHeader(narrow: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center, spacing: 8) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(selecting ? selectionTitle : String(localized: "nav.hosts"))
+                        .font(.title2.weight(.bold))
+                        .lineLimit(1)
+                    Text("desktop.hosts.subtitle \(hosts.count)")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 8)
+                if !narrow { searchField.frame(maxWidth: 280) }
+                headerButtons(narrow: narrow)
+            }
+            if narrow { searchField }
+            if !searching && !selecting && !hosts.isEmpty { chipBar }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 14)
+        .padding(.bottom, 10)
+    }
+
+    var searchField: some View {
+        // Return goes to the first result (Return again connects).
+        DesktopSearchField(prompt: String(localized: "desktop.hosts.search"), text: $query, focused: $searchFocused) {
+            cursor = gridSections.first?.hosts.first?.key
+            searchFocused = false
+        }
+    }
+
+    @ViewBuilder func headerButtons(narrow: Bool) -> some View {
+        if selecting {
+            Button { toggleSelectAll() } label: { HeaderButtonLabel(title: selectAllTitle, symbol: "checklist") }
+                .buttonStyle(.plain)
+            Button { endSelection() } label: { HeaderButtonLabel(title: String(localized: "common.done"), symbol: "checkmark", prominent: true) }
+                .buttonStyle(.plain)
+        } else {
+            if account.syncing {
+                ProgressView().frame(width: 34, height: 34)
+            } else if account.list.contains(where: { $0.status == .active }) {
+                Button { account.sync() } label: {
+                    HeaderButtonLabel(title: String(localized: "settings.sync"), symbol: "arrow.triangle.2.circlepath", iconOnly: true)
+                }
+                .buttonStyle(.plain)
+                .hoverEffect(.highlight)
+            }
+            if !hosts.isEmpty {
+                Button { startSelection(nil) } label: {
+                    HeaderButtonLabel(title: String(localized: "hosts.select"), symbol: "checkmark.circle", iconOnly: true)
+                }
+                .buttonStyle(.plain)
+                .hoverEffect(.highlight)
+            }
+            Menu {
+                Button { importingConfig = true } label: { Label("vault.import.ssh_config", systemImage: "doc.text") }
+                Button { importingKey = true } label: { Label("keychain.import.title", systemImage: "doc.on.clipboard") }
+                Divider()
+                Button { generatingKey = true } label: { Label("vault.new_key", systemImage: "key") }
+            } label: {
+                HeaderButtonLabel(title: String(localized: "vault.import"), symbol: "square.and.arrow.down", iconOnly: narrow)
+            }
+            .hoverEffect(.highlight)
+            Button(action: newGroup) {
+                HeaderButtonLabel(title: String(localized: "desktop.hosts.group"), symbol: "folder.badge.plus", iconOnly: narrow)
+            }
+            .buttonStyle(.plain)
+            .hoverEffect(.highlight)
+            Button { editing = HostEdit(host: nil) } label: {
+                HeaderButtonLabel(title: String(localized: "common.new_host"), symbol: "plus", prominent: true)
+            }
+            .buttonStyle(.plain)
+            .hoverEffect(.highlight)
+        }
+    }
+
+    /// All, Favorites, each group and No group, with how many hosts.
+    var chipBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 4) {
+                FilterChip(title: String(localized: "vaults.filter.all"), count: hosts.count, selected: chip == .all) { chip = .all }
+                let favorites = hosts.filter(\.favorite).count
+                if favorites > 0 {
+                    FilterChip(title: String(localized: "desktop.hosts.favorites"), count: favorites, symbol: "star",
+                               selected: chip == .favorites) { chip = .favorites }
+                }
+                ForEach(groupTree) { node in
+                    FilterChip(title: node.title, count: totalIn(node.group), symbol: "folder",
+                               tint: hexColor(node.group.color) ?? .accentColor,
+                               selected: chip == .group(node.group.key)) { chip = .group(node.group.key) }
+                }
+                let loose = hosts.filter { !hasGroup($0) }.count
+                if !groups.isEmpty && loose > 0 {
+                    FilterChip(title: String(localized: "host_editor.no_group"), count: loose, selected: chip == .noGroup) { chip = .noGroup }
+                }
+            }
+        }
+    }
+
+    func gridBody(columns: Int) -> some View {
+        let layout = Array(repeating: GridItem(.flexible(), spacing: 12, alignment: .top), count: columns)
+        return LazyVStack(alignment: .leading, spacing: 22) {
+            if !searching && !selecting { gridNotices }
+            if hosts.isEmpty && groups.isEmpty && !searching { emptyState }
+            if searching && visible.isEmpty {
+                Text("hosts.search.no_results \(query)")
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 40)
+            }
+            ForEach(gridSections) { section in
+                VStack(alignment: .leading, spacing: 10) {
+                    gridSectionHeader(section)
+                    if section.hosts.isEmpty {
+                        Text("desktop.hosts.group_empty").font(.subheadline).foregroundColor(.secondary)
+                    } else {
+                        LazyVGrid(columns: layout, alignment: .leading, spacing: 12) {
+                            ForEach(section.hosts, id: \.key) { host in
+                                hostCard(host).id(host.key)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder func gridSectionHeader(_ section: HostGridSection) -> some View {
+        if let g = section.group {
+            GridGroupHeader(title: section.title, count: section.hosts.count, color: hexColor(g.color) ?? .accentColor,
+                            account: account.showsAccountBadges ? account.account(g.accountId) : nil,
+                            vault: account.showsVaults ? account.vault(g.accountId, g.vaultId) : nil,
+                            showsMenu: g.canEdit) {
+                groupMenu(g)
+            }
+        } else if !section.title.isEmpty {
+            HStack(spacing: 8) {
+                Image(systemName: section.symbol).foregroundColor(.secondary)
+                Text(verbatim: section.title).font(.headline)
+                Text("hosts.group.count \(section.hosts.count)").font(.caption).foregroundColor(.secondary)
+            }
+        }
+    }
+
+    func hostCard(_ host: SshHost) -> some View {
+        HostCard(host: host, highlighted: cursor == host.key, selecting: selecting, selected: selection.contains(host.key),
+                 account: account.showsAccountBadges ? account.account(host.accountId) : nil,
+                 vault: account.showsVaults ? account.vault(host.accountId, host.vaultId) : nil,
+                 showVault: account.showsVaults || (host.accountId == nil && !account.scoped.isEmpty),
+                 onTap: { tapCard(host) }) {
+            menu(host)
+        }
+    }
+
+    /// Connects (and it stays highlighted), or selects while selecting.
+    func tapCard(_ host: SshHost) {
+        if selecting {
+            if selection.contains(host.key) { selection.remove(host.key) } else { selection.insert(host.key) }
+        } else {
+            cursor = host.key
+            connect(host, onServer: false)
+        }
+    }
+
+    /// "Sign in again" and the running server sessions, as cards.
+    @ViewBuilder var gridNotices: some View {
+        let card = RoundedRectangle(cornerRadius: 12, style: .continuous)
+        if let pending = account.scoped.first(where: { $0.status == .needsSignIn || $0.status == .unverified }) {
+            signInAgainBanner(pending)
+                .buttonStyle(.plain)
+                .padding(12)
+                .background(Color(.secondarySystemGroupedBackground), in: card)
+        }
+        if !sessions.onServer.isEmpty {
+            serverNotice
+                .buttonStyle(.plain)
+                .padding(12)
+                .background(Color(.secondarySystemGroupedBackground), in: card)
+        }
+    }
+
+    /// The sections of the grid: the results of the search, the favorites,
+    /// or each group (in tree order) and the hosts without one.
+    var gridSections: [HostGridSection] {
+        if searching {
+            let list = visible
+            return list.isEmpty ? [] : [HostGridSection(id: "results", title: String(localized: "hosts.results"),
+                                                       symbol: "magnifyingglass", group: nil, hosts: list)]
+        }
+        let all = hosts.sorted(by: listOrder)
+        if chip == .favorites {
+            let favorites = all.filter(\.favorite)
+            return favorites.isEmpty ? [] : [HostGridSection(id: "favorites", title: String(localized: "desktop.hosts.favorites"),
+                                                            symbol: "star", group: nil, hosts: favorites)]
+        }
+        var out: [HostGridSection] = []
+        if chip != .noGroup {
+            var nodes = groupTree
+            if case .group(let key) = chip {
+                let inside = groupAndDescendants(key)
+                nodes = nodes.filter { inside.contains($0.group.key) }
+            }
+            for node in nodes {
+                let g = node.group
+                let mine = all.filter { $0.groupId == g.id && $0.accountId == g.accountId }
+                // An empty group shows only when it is the chosen one.
+                if !mine.isEmpty || chip == .group(g.key) {
+                    out.append(HostGridSection(id: g.key, title: node.title, symbol: "folder", group: g, hosts: mine))
+                }
+            }
+        }
+        if chip == .all || chip == .noGroup {
+            let loose = all.filter { !hasGroup($0) }
+            if !loose.isEmpty {
+                // Without any group, no title at all.
+                out.append(HostGridSection(id: "no-group", title: groups.isEmpty ? "" : String(localized: "host_editor.no_group"),
+                                           symbol: "tray", group: nil, hosts: loose))
+            }
+        }
+        return out
+    }
+
+    /// The groups, each one after its parent ("Parent › Child").
+    var groupTree: [GroupNode] {
+        var out: [GroupNode] = []
+        var seen: Set<String> = []
+        func visit(_ g: HostGroup, _ prefix: String) {
+            guard seen.insert(g.key).inserted else { return }
+            let title = prefix.isEmpty ? g.name : "\(prefix) › \(g.name)"
+            out.append(GroupNode(group: g, title: title))
+            for child in groups where child.parentId == g.id && child.accountId == g.accountId {
+                visit(child, title)
+            }
+        }
+        for g in groups where g.parentId == nil || !groups.contains(where: { $0.id == g.parentId && $0.accountId == g.accountId }) {
+            visit(g, "")
+        }
+        return out
+    }
+
+    /// A group and the groups inside it (by `HostGroup.key`).
+    func groupAndDescendants(_ key: String) -> Set<String> {
+        guard let root = groups.first(where: { $0.key == key }) else { return [] }
+        var out: Set<String> = [root.key]
+        var pending = [root]
+        while let g = pending.popLast() {
+            for child in groups where child.parentId == g.id && child.accountId == g.accountId && !out.contains(child.key) {
+                out.insert(child.key)
+                pending.append(child)
+            }
+        }
+        return out
+    }
+}
+
+/// The chip chosen above the hosts grid.
+private enum HostChip: Hashable {
+    case all, favorites, noGroup
+    /// A group (by `HostGroup.key`) and the ones inside it.
+    case group(String)
+}
+
+/// A group of cards in the grid.
+private struct HostGridSection: Identifiable {
+    let id: String
+    let title: String
+    let symbol: String
+    let group: HostGroup?
+    let hosts: [SshHost]
+}
+
+/// A group with its path, in tree order.
+private struct GroupNode: Identifiable {
+    let group: HostGroup
+    let title: String
+    var id: String { group.key }
 }
 
 struct HostEdit: Identifiable {
@@ -1001,6 +1415,8 @@ struct SelectedHost: Identifiable {
 private struct HostsKeyboard: View {
     let active: Bool
     let newHost: (() -> Void)?
+    /// ⌘F: to the search field (desktop layout).
+    let find: (() -> Void)?
     let onKey: (NavKey, ModifierKeys) -> Bool
     @Environment(\.isSearching) private var isSearching
 
@@ -1011,6 +1427,9 @@ private struct HostsKeyboard: View {
             if let newHost {
                 ShortcutLayer {
                     ShortcutButton(title: String(localized: "common.new_host"), key: "n", action: newHost)
+                    if let find {
+                        ShortcutButton(title: String(localized: "shortcut.find"), key: "f", action: find)
+                    }
                 }
             }
         }

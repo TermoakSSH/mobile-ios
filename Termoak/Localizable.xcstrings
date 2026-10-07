@@ -1413,6 +1413,22 @@
         }
       }
     },
+    "common.clear": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar el texto"
+          }
+        }
+      }
+    },
     "common.close": {
       "localizations": {
         "en": {
@@ -2657,6 +2673,110 @@
           "stringUnit": {
             "state": "translated",
             "value": "Copiloto"
+          }
+        }
+      }
+    },
+    "desktop.hosts.favorites": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favorites"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favoritos"
+          }
+        }
+      }
+    },
+    "desktop.hosts.group": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Group"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grupo"
+          }
+        }
+      }
+    },
+    "desktop.hosts.group_empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This group has no hosts."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este grupo no tiene hosts."
+          }
+        }
+      }
+    },
+    "desktop.hosts.search": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search hosts, addresses or tags…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar hosts, direcciones o etiquetas…"
+          }
+        }
+      }
+    },
+    "desktop.hosts.subtitle %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld host · tap to connect"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld hosts · tap to connect"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld host · toca para conectar"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld hosts · toca para conectar"
+                }
+              }
+            }
           }
         }
       }
@@ -4697,6 +4817,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Grupos"
+          }
+        }
+      }
+    },
+    "hosts.menu.connect_split": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect in split view"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectar en vista dividida"
           }
         }
       }
