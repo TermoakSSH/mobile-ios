@@ -200,9 +200,11 @@ private struct TerminalContent: View {
     /// Nothing covers the terminal: its keyboard shortcuts are on (SwiftUI
     /// keeps them active under the sheets it presents).
     private var shortcutsEnabled: Bool {
-        session.prompt == nil && !customizing && !showingPeople && !sharing && !showingActivity && !showingFiles
-            && tunnelsHost == nil && filling == nil && sessions.pasteRequest == nil && !terminating
-            && !quickConnect && !showingSettings
+        let covered: [Bool] = [
+            session.prompt != nil, customizing, showingPeople, sharing, showingActivity, showingFiles,
+            tunnelsHost != nil, filling != nil, sessions.pasteRequest != nil, terminating, quickConnect, showingSettings,
+        ]
+        return !covered.contains(true)
     }
 
     /// A snippet from the quick panel: here (and in the panes while

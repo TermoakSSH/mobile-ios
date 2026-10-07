@@ -347,10 +347,13 @@ struct HostsView: View {
 
     /// Something covers the list (a sheet, an alert, the terminal...).
     private var covered: Bool {
-        sessions.showing || editing != nil || editedGroup != nil || generatingKey || importingKey || importingConfig
-            || transferring != nil || addingAccount || resuming != nil || managingAccounts || showingVaults
-            || filesHost != nil || tunnelsHost != nil || deleting != nil || deletingGroup != nil
-            || deletingSelection || notice != nil
+        // One element at a time (a long || chain is slow to type-check).
+        let shown: [Bool] = [
+            sessions.showing, editing != nil, editedGroup != nil, generatingKey, importingKey, importingConfig,
+            transferring != nil, addingAccount, resuming != nil, managingAccounts, showingVaults,
+            filesHost != nil, tunnelsHost != nil, deleting != nil, deletingGroup != nil, deletingSelection, notice != nil,
+        ]
+        return shown.contains(true)
     }
 
     /// ↑/↓ and Return work in the list.

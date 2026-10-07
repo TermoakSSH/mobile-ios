@@ -138,8 +138,11 @@ struct FilesScreen: View {
 
     /// A sheet, alert or preview covers the list.
     private var covered: Bool {
-        uploading || newFolder || renaming != nil || deleting != nil || changingPermissions != nil
-            || preview != nil || sharing != nil || browser.prompt != nil || browser.error != nil
+        let shown: [Bool] = [
+            uploading, newFolder, renaming != nil, deleting != nil, changingPermissions != nil,
+            preview != nil, sharing != nil, browser.prompt != nil, browser.error != nil,
+        ]
+        return shown.contains(true)
     }
 
     private var highlighted: RemoteFile? { filtered.first { $0.path == cursor } }

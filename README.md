@@ -19,6 +19,11 @@ The same as the Android app:
 - **Live session sharing**: invite by email, team or link; one person types
   at a time, with a waiting room; join with `termoak://join` links.
 - **AI** with approvals, keychain, SFTP files, port forwarding and settings.
+- **Hardware keyboard and trackpad** (iPad and iPhone): Ctrl, Option as Meta
+  (or for your layout's characters), ⌘. as Esc, xterm arrows and function
+  keys; app shortcuts listed when ⌘ is held (⌘T/⌘K, ⌘W, ⌘⇧]/⌘⇧[, Ctrl+Tab,
+  ⌘1…⌘9, ⌘F, ⌘+/⌘-/⌘0, ⌘,); arrow keys in the host list and the files;
+  wheel to programs that take the mouse, drag to select, secondary click.
 
 iOS cuts local connections shortly after you leave the app (the app asks for
 a few minutes of grace time). For long jobs, use server sessions.
@@ -79,6 +84,17 @@ The "official server" button signs in to `https://termoak.com`. To test
 against another server (the staging server, for example), build the engine
 with `TERMOAK_OFFICIAL_SERVER=https://next.termoak.com core/scripts/build-ios.sh`.
 Any server also works through "Use your own server".
+
+### Unit tests
+
+`UnitTests/` checks the pure logic, such as what each key of a hardware
+keyboard sends (`Termoak/Model/HardwareKeys.swift`). The target compiles the
+files it tests, so it needs neither the app nor an sshd:
+
+```sh
+xcodebuild test -project Termoak.xcodeproj -scheme Termoak -only-testing:TermoakTests \
+  -destination 'platform=iOS Simulator,name=iPhone 17' -skipPackagePluginValidation
+```
 
 ### UI tests
 
