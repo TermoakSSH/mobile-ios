@@ -68,8 +68,11 @@ final class HomeRouter: ObservableObject {
 /// phone; on iPadOS 18 the same tabs go at the top on their own.
 struct Home: View {
     @StateObject private var router = HomeRouter()
+    @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var sessions: Sessions
     @EnvironmentObject private var account: Accounts
+    /// ⌘K / ⌘T: connect to a host.
+    @State private var quickConnect = false
 
     var body: some View {
         TabView(selection: $router.tab) {
@@ -85,6 +88,18 @@ struct Home: View {
                 .tag(HomeTab.profile)
         }
         .environmentObject(router)
+        // Off under the terminal (it has its own) and the join sheet.
+        .background(HomeShortcuts(enabled: !sessions.showing && model.joining == nil && !quickConnect) {
+            quickConnect = true
+        }.environmentObject(router))
+        .sheet(isPresented: $quickConnect) {
+            QuickConnectView { host, strict in
+                // After the sheet has gone, the terminal comes up.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { sessions.connect(host, strict: strict) }
+            }
+            .environmentObject(model)
+            .environmentObject(account)
+        }
     }
 }
 

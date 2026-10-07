@@ -45,6 +45,9 @@ struct HostsView: View {
     @State private var editMode: EditMode = .inactive
     @State private var selection: Set<String> = []
     @State private var deletingSelection = false
+    /// Host highlighted with a hardware keyboard (by `SshHost.key`).
+    @State private var cursor: String?
+    @ObservedObject private var keyboard = HardwareKeyboard.shared
 
     private var selecting: Bool { editMode.isEditing }
     private var isRoot: Bool { groupId == nil }
@@ -125,7 +128,11 @@ struct HostsView: View {
     }
 
     var body: some View {
-        hostList
+        ScrollViewReader { proxy in
+            hostList.onChange(of: cursor) { key in
+                if let key { withAnimation { proxy.scrollTo(key) } }
+            }
+        }
         .toolbar {
             if selecting {
                 ToolbarItem(placement: .cancellationAction) {
@@ -292,6 +299,8 @@ struct HostsView: View {
                             connect(host, onServer: false)
                         }
                         .contextMenu { menu(host) }
+                        .listRowBackground(keyboardHighlight(cursor == host.key))
+                        .id(host.key)
                         .swipeActions(edge: .trailing) {
                             if host.canEdit {
                                 Button(role: .destructive) { deleting = host } label: { Label("common.delete", systemImage: "trash") }
@@ -325,12 +334,58 @@ struct HostsView: View {
                     .padding()
             }
         }
+        .background(HostsKeyboard(active: keysActive, newHost: newHostShortcut, onKey: handleKey))
         .searchable(text: $query, prompt: Text("hosts.search.prompt"))
         .refreshable {
             account.sync()
             load()
         }
         .navigationTitle(selecting ? selectionTitle : title)
+    }
+
+    // MARK: Hardware keyboard
+
+    /// Something covers the list (a sheet, an alert, the terminal...).
+    private var covered: Bool {
+        sessions.showing || editing != nil || editedGroup != nil || generatingKey || importingKey || importingConfig
+            || transferring != nil || addingAccount || resuming != nil || managingAccounts || showingVaults
+            || filesHost != nil || tunnelsHost != nil || deleting != nil || deletingGroup != nil
+            || deletingSelection || notice != nil
+    }
+
+    /// ↑/↓ and Return work in the list.
+    private var keysActive: Bool { keyboard.connected && !covered && !selecting }
+
+    /// ⌘N: a new host (at the root of the vault).
+    private var newHostShortcut: (() -> Void)? {
+        guard isRoot, !covered else { return nil }
+        return { editing = HostEdit(host: nil) }
+    }
+
+    /// ↑/↓ choose a host, Return (or Space) connects, Delete deletes it after
+    /// asking, Esc lets go of it.
+    private func handleKey(_ key: NavKey, _ modifiers: KeyModifiers) -> Bool {
+        let list = sections.flatMap(\.hosts)
+        let host = list.first { $0.key == cursor }
+        switch key {
+        case .up, .down, .home, .end, .pageUp, .pageDown:
+            cursor = moveHighlight(cursor, in: list.map(\.key), key)
+            return true
+        case .enter, .space:
+            guard let host else { return false }
+            connect(host, onServer: false)
+            return true
+        case .delete:
+            guard let host, host.canEdit else { return false }
+            deleting = host
+            return true
+        case .escape:
+            guard cursor != nil else { return false }
+            cursor = nil
+            return true
+        default:
+            return false
+        }
     }
 
     private var selectAllTitle: String {
@@ -902,7 +957,7 @@ private struct GroupEditor: View {
             .navigationTitle(original.id.isEmpty ? String(localized: "hosts.group.new") : String(localized: "hosts.group.rename"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.save") {
                         var g = original
@@ -936,4 +991,26 @@ private struct GroupEditor: View {
 struct SelectedHost: Identifiable {
     let host: SshHost
     var id: String { host.key }
+}
+
+/// Hardware keyboard in the hosts list: the keys of `KeyCatcher` (not while
+/// searching: it is inside `.searchable`) and ⌘N.
+private struct HostsKeyboard: View {
+    let active: Bool
+    let newHost: (() -> Void)?
+    let onKey: (NavKey, KeyModifiers) -> Bool
+    @Environment(\.isSearching) private var isSearching
+
+    var body: some View {
+        ZStack {
+            KeyCatcher(active: active && !isSearching, onKey: onKey)
+                .frame(width: 0, height: 0)
+            if let newHost {
+                ShortcutLayer {
+                    ShortcutButton(title: String(localized: "common.new_host"), key: "n", action: newHost)
+                }
+            }
+        }
+        .accessibilityHidden(true)
+    }
 }

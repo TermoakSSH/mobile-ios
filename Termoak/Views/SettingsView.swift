@@ -4,11 +4,14 @@ import SwiftUI
 /// Profile tab: the account (or signing in), the AI keys and every setting
 /// of the app and the terminal.
 struct SettingsView: View {
+    /// In a sheet (⌘, from the terminal): with a Done button.
+    var closable = false
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Accounts
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var sessions: Sessions
     @Environment(\.openURL) private var openURL
+    @Environment(\.dismiss) private var dismiss
     @State private var twoFactor: TwoFactorStatus?
     @State private var loggingIn = false
     @State private var customizing = false
@@ -145,6 +148,13 @@ struct SettingsView: View {
 
             }
             .navigationTitle("nav.profile")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    if closable {
+                        Button("common.done") { dismiss() }.keyboardShortcut(.cancelAction)
+                    }
+                }
+            }
             .sheet(isPresented: $loggingIn) {
                 LoginView(welcome: false) {}.environmentObject(account).environmentObject(settings)
             }

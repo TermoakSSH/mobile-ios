@@ -37,7 +37,7 @@ struct TunnelsView: View {
             .navigationTitle(Text("tunnels.title \(host.label.isEmpty ? host.address : host.label)"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.close") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.close") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .primaryAction) {
                     Button { editing = TunnelEdit(tunnel: nil) } label: { Image(systemName: "plus") }
                         .accessibilityLabel("tunnels.new")
@@ -209,7 +209,7 @@ private struct TunnelEditor: View {
             .navigationTitle(original == nil ? String(localized: "tunnels.new") : String(localized: "tunnels.edit"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) { Button("common.save", action: save) }
             }
             .onAppear(perform: fill)

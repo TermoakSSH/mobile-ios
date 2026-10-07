@@ -69,7 +69,7 @@ struct UploadDeviceItemsView: View {
             .navigationTitle("upload.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("upload.not_now") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("upload.not_now") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(String(localized: "upload.action \(chosen.count)")) { upload() }
                         .disabled(chosen.isEmpty || running)

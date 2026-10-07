@@ -56,6 +56,12 @@ private struct TerminalContent: View {
     /// The keyboard on screen came up with the phone copilot open (its box
     /// or a sheet opened from it), not for the terminal.
     @State private var copilotKeyboard = false
+    /// ⌘F: the find bar.
+    @State private var finding = false
+    /// ⌘K / ⌘T: connect to a host in a new tab.
+    @State private var quickConnect = false
+    /// ⌘,: the settings in a sheet.
+    @State private var showingSettings = false
 
     /// On a tablet (or a big phone in landscape) the panel goes on the side.
     private var side: Bool { sizeClass == .regular }
@@ -85,7 +91,11 @@ private struct TerminalContent: View {
         .background(theme.backgroundColor.ignoresSafeArea())
         .background((sessions.quickPanelOpen && !side ? theme.barColor : theme.backgroundColor).ignoresSafeArea())
         .overlay(alignment: .top) { ShareToasts(notices: sessions.notices) }
-        .background(SplitShortcuts())
+        .background(SplitShortcuts(enabled: shortcutsEnabled))
+        .background(TerminalShortcuts(session: session, enabled: shortcutsEnabled,
+                                      onQuickConnect: { quickConnect = true },
+                                      onFind: { finding = true },
+                                      onSettings: { showingSettings = true }))
         .preferredColorScheme(theme.isLight ? .light : .dark)
         .animation(.easeOut(duration: 0.2), value: sessions.quickPanelOpen)
         .animation(.easeOut(duration: 0.2), value: settings.sidePanel)
@@ -124,6 +134,21 @@ private struct TerminalContent: View {
                 use(text, e.action)
             }
         }
+        .sheet(isPresented: $quickConnect) {
+            QuickConnectView { host, strict in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { sessions.connect(host, strict: strict) }
+            }
+            .environmentObject(model)
+            .environmentObject(account)
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView(closable: true)
+                .environmentObject(model)
+                .environmentObject(account)
+                .environmentObject(sessions)
+                .environmentObject(settings)
+                .environmentObject(model.tunnels)
+        }
         .sheet(item: $sessions.pasteRequest) { r in
             PasteConfirmView(request: r, broadcastCount: sessions.receivesBroadcast(r.session) ? sessions.broadcastCount : 0)
                 .environmentObject(settings)
@@ -140,6 +165,8 @@ private struct TerminalContent: View {
         .onChange(of: settings.terminalThemeId) { _ in sessions.applyAppearance() }
         .onChange(of: settings.fontId) { _ in sessions.applyAppearance() }
         .onChange(of: settings.keyboard) { _ in sessions.applyKeyboard() }
+        .onChange(of: settings.optionAsMeta) { _ in sessions.applyAppearance() }
+        .onChange(of: session.id) { _ in finding = false }
         .onChange(of: sessions.copilotOpen) { open in
             // On a phone it covers the terminal: hide the keyboard and the quick panel.
             guard open, !side else { return }
@@ -170,6 +197,14 @@ private struct TerminalContent: View {
         }
     }
 
+    /// Nothing covers the terminal: its keyboard shortcuts are on (SwiftUI
+    /// keeps them active under the sheets it presents).
+    private var shortcutsEnabled: Bool {
+        session.prompt == nil && !customizing && !showingPeople && !sharing && !showingActivity && !showingFiles
+            && tunnelsHost == nil && filling == nil && sessions.pasteRequest == nil && !terminating
+            && !quickConnect && !showingSettings
+    }
+
     /// A snippet from the quick panel: here (and in the panes while
     /// broadcasting) or in every open terminal.
     private func use(_ text: String, _ action: SnippetAction) {
@@ -190,6 +225,10 @@ private struct TerminalContent: View {
             VStack(spacing: 0) {
                 topBar
                 tabs
+                if finding {
+                    TerminalFindBar(session: session) { finding = false }
+                        .id(session.id)
+                }
                 if sessions.broadcastActive {
                     BroadcastBanner()
                 }
@@ -566,7 +605,7 @@ private struct SnippetVariablesForm: View {
             .navigationTitle(snippet.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(run ? String(localized: "common.run") : String(localized: "common.paste")) {
                         use((try? renderSnippet(script: snippet.script, values: values)) ?? snippet.script)
@@ -598,7 +637,7 @@ struct AuthPromptView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("common.cancel") { respond(nil) }
+                        Button("common.cancel") { respond(nil) }.keyboardShortcut(.cancelAction)
                     }
                     ToolbarItem(placement: .confirmationAction) {
                         Button(isHostKey ? String(localized: "auth.trust") : String(localized: "common.ok")) { respond(answers) }

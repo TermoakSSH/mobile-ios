@@ -242,4 +242,32 @@ final class HardwareKeysTests: XCTestCase {
         XCTAssertNil(HardwareKeyMap.controlCode("ab"))
         XCTAssertNil(HardwareKeyMap.controlCode(""))
     }
+
+    // MARK: Lists (hosts, files)
+
+    func testListKeys() {
+        XCTAssertEqual(NavKey(hidUsage: HID.up), .up)
+        XCTAssertEqual(NavKey(hidUsage: HID.enter), .enter)
+        XCTAssertEqual(NavKey(hidUsage: HID.keypadEnter), .enter)
+        XCTAssertEqual(NavKey(hidUsage: HID.space), .space)
+        XCTAssertEqual(NavKey(hidUsage: HID.backspace), .delete)
+        XCTAssertEqual(NavKey(hidUsage: HID.deleteForward), .delete)
+        XCTAssertEqual(NavKey(hidUsage: HID.esc), .escape)
+        XCTAssertNil(NavKey(hidUsage: HID.a))
+    }
+
+    func testMoveHighlight() {
+        let items = ["a", "b", "c"]
+        XCTAssertEqual(moveHighlight(nil, in: items, .down), "a")
+        XCTAssertEqual(moveHighlight(nil, in: items, .up), "c")
+        XCTAssertEqual(moveHighlight("a", in: items, .down), "b")
+        XCTAssertEqual(moveHighlight("c", in: items, .down), "c")
+        XCTAssertEqual(moveHighlight("a", in: items, .up), "a")
+        XCTAssertEqual(moveHighlight("b", in: items, .home), "a")
+        XCTAssertEqual(moveHighlight("a", in: items, .end), "c")
+        XCTAssertEqual(moveHighlight("a", in: items, .pageDown), "c")
+        XCTAssertEqual(moveHighlight("gone", in: items, .down), "a")
+        XCTAssertNil(moveHighlight("gone", in: items, .enter))
+        XCTAssertNil(moveHighlight("a", in: [String](), .down))
+    }
 }

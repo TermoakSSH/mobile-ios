@@ -132,7 +132,7 @@ struct GenerateKeyView: View {
             .navigationTitle("keychain.generate")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(busy ? String(localized: "keychain.generating") : String(localized: "keychain.generate.action")) {
                         busy = true
@@ -189,7 +189,7 @@ struct ImportKeyView: View {
             .navigationTitle("keychain.import.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("keychain.import.action") {
                         Task {
@@ -338,7 +338,7 @@ private struct SnippetEditor: View {
             .navigationTitle(original.id.isEmpty ? String(localized: "snippets.editor.new") : String(localized: "snippets.editor.edit"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.save") {
                         var sn = original
@@ -469,7 +469,7 @@ private struct IdentityEditor: View {
             .navigationTitle(original.id.isEmpty ? String(localized: "identities.new") : String(localized: "identities.edit"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.save") {
                         var i = original

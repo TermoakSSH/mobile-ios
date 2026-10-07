@@ -541,7 +541,7 @@ struct VaultEditor: View {
             .navigationTitle(original == nil ? String(localized: "vaults.new") : String(localized: "vaults.edit"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(original == nil ? String(localized: "vaults.create") : String(localized: "common.save")) { save() }
                         .disabled(busy || name.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -665,7 +665,7 @@ struct AddVaultMemberView: View {
             .navigationTitle("vaults.member.add")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("vaults.member.add.action") { add() }
                         .disabled(busy || (byTeam ? teamId == nil : !email.contains("@")))
@@ -749,7 +749,7 @@ struct DeleteVaultView: View {
             .navigationTitle("vaults.delete")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
             }
         }
     }

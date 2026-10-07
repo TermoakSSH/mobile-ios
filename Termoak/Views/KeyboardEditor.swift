@@ -49,7 +49,7 @@ struct KeyboardEditor: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { EditButton() }
-                ToolbarItem(placement: .confirmationAction) { Button("common.done") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) { Button("common.done") { dismiss() }.keyboardShortcut(.cancelAction) }
             }
             .sheet(isPresented: $adding) { KeyPicker() }
             .confirmationDialog("keyboard_editor.reset.title", isPresented: $resetting, titleVisibility: .visible) {
@@ -137,7 +137,7 @@ private struct KeyPicker: View {
             }
             .navigationTitle("keyboard_editor.add_to_bar.title")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) } }
             .sheet(isPresented: $creating) {
                 NewKeyView { k in
                     // Custom keys also go into the custom keys group.
@@ -211,7 +211,7 @@ struct NewKeyView: View {
             .navigationTitle("keyboard_editor.new_key")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.save") {
                         guard case .success(let s) = steps else { return }

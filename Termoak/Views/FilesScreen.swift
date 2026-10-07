@@ -17,6 +17,9 @@ struct FilesScreen: View {
     @State private var name = ""
     @State private var preview: URL?
     @State private var sharing: URL?
+    /// File highlighted with a hardware keyboard (by path).
+    @State private var cursor: String?
+    @ObservedObject private var keyboard = HardwareKeyboard.shared
 
     init(core: TermoakCore, title: String, source: FileBrowser.Source) {
         _browser = StateObject(wrappedValue: FileBrowser(core: core, title: title, source: source))
@@ -31,9 +34,20 @@ struct FilesScreen: View {
         NavigationView {
             VStack(spacing: 0) {
                 SearchDismisser(path: browser.path)
+                FilesKeyboard(active: keyboard.connected && !covered, shortcuts: !covered,
+                              onKey: handleKey, onCommand: command)
                 breadcrumbs
-                List {
-                    ForEach(filtered, id: \.path) { f in row(f) }
+                ScrollViewReader { proxy in
+                    List {
+                        ForEach(filtered, id: \.path) { f in
+                            row(f)
+                                .listRowBackground(keyboardHighlight(cursor == f.path))
+                                .id(f.path)
+                        }
+                    }
+                    .onChange(of: cursor) { path in
+                        if let path { withAnimation { proxy.scrollTo(path) } }
+                    }
                 }
                 .listStyle(.plain)
                 .overlay {
@@ -74,7 +88,10 @@ struct FilesScreen: View {
         .navigationViewStyle(.stack)
         .task { await browser.open() }
         // The search belongs to the folder: it is cleared when the folder changes.
-        .onChange(of: browser.path) { _ in search = "" }
+        .onChange(of: browser.path) { _ in
+            search = ""
+            cursor = nil
+        }
         .onDisappear { browser.close() }
         .sheet(item: $browser.prompt) { p in AuthPromptView(prompt: p) { browser.prompt = nil }.interactiveDismissDisabled() }
         .fileImporter(isPresented: $uploading, allowedContentTypes: [.item], allowsMultipleSelection: true) { r in
@@ -115,6 +132,56 @@ struct FilesScreen: View {
         .alert("common.error", isPresented: Binding(get: { browser.error != nil }, set: { if !$0 { browser.error = nil } })) {
             Button("common.ok", role: .cancel) {}
         } message: { Text(browser.error ?? "") }
+    }
+
+    // MARK: Hardware keyboard
+
+    /// A sheet, alert or preview covers the list.
+    private var covered: Bool {
+        uploading || newFolder || renaming != nil || deleting != nil || changingPermissions != nil
+            || preview != nil || sharing != nil || browser.prompt != nil || browser.error != nil
+    }
+
+    private var highlighted: RemoteFile? { filtered.first { $0.path == cursor } }
+
+    /// ↑/↓ choose, Return or → opens (a folder goes in), ← goes up, Space
+    /// previews (Quick Look), Delete deletes after asking, Esc closes.
+    private func handleKey(_ key: NavKey, _ modifiers: KeyModifiers) -> Bool {
+        switch key {
+        case .up, .down, .home, .end, .pageUp, .pageDown:
+            cursor = moveHighlight(cursor, in: filtered.map(\.path), key)
+        case .enter, .right:
+            guard let f = highlighted else { return false }
+            open(f)
+        case .left:
+            guard browser.path != "/" && !browser.path.isEmpty else { return false }
+            Task { await browser.goUp() }
+        case .space:
+            guard let f = highlighted, f.kind != .dir else { return false }
+            Task { preview = await browser.download(f) }
+        case .delete:
+            guard let f = highlighted else { return false }
+            deleting = f
+        case .escape:
+            dismiss()
+        }
+        return true
+    }
+
+    private func command(_ c: FilesKeyboard.Command) {
+        switch c {
+        case .refresh: Task { await browser.reload() }
+        case .up: Task { await browser.goUp() }
+        case .newFolder:
+            guard browser.fileSystem != nil else { return }
+            name = ""
+            newFolder = true
+        case .upload:
+            guard browser.fileSystem != nil else { return }
+            uploading = true
+        case .hidden: browser.showHidden.toggle()
+        case .close: dismiss()
+        }
     }
 
     /// Current path: one button per folder to jump to it.
@@ -244,6 +311,41 @@ struct FilesScreen: View {
     }
 }
 
+/// Hardware keyboard in the files: the keys of `KeyCatcher` (not while
+/// searching: it is inside `.searchable`) and the ⌘ shortcuts.
+struct FilesKeyboard: View {
+    enum Command { case refresh, up, newFolder, upload, hidden, close }
+
+    let active: Bool
+    let shortcuts: Bool
+    let onKey: (NavKey, KeyModifiers) -> Bool
+    let onCommand: (Command) -> Void
+    @Environment(\.isSearching) private var isSearching
+
+    var body: some View {
+        ZStack {
+            KeyCatcher(active: active && !isSearching, onKey: onKey)
+                .frame(width: 0, height: 0)
+            if shortcuts {
+                ShortcutLayer {
+                    ShortcutButton(title: String(localized: "files.shortcut.refresh"), key: "r") { onCommand(.refresh) }
+                    ShortcutButton(title: String(localized: "files.parent_folder"), key: .upArrow) { onCommand(.up) }
+                    ShortcutButton(title: String(localized: "files.new_folder"), key: "n", modifiers: [.command, .shift]) {
+                        onCommand(.newFolder)
+                    }
+                    ShortcutButton(title: String(localized: "files.upload"), key: "u") { onCommand(.upload) }
+                    ShortcutButton(title: String(localized: "files.show_hidden"), key: ".", modifiers: [.command, .shift]) {
+                        onCommand(.hidden)
+                    }
+                    ShortcutButton(title: String(localized: "common.close"), key: "w") { onCommand(.close) }
+                }
+            }
+        }
+        .frame(height: 0)
+        .accessibilityHidden(true)
+    }
+}
+
 /// When the folder changes the search is closed (text and keyboard). It has to
 /// be inside the view with `.searchable` to be able to close it.
 private struct SearchDismisser: View {
@@ -343,7 +445,7 @@ private struct PermissionsEditor: View {
             .navigationTitle(file.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) { Button("common.save") { save(mode); dismiss() } }
             }
         }

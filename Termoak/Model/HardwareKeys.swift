@@ -224,3 +224,45 @@ enum HardwareKeyMap {
         }
     }
 }
+
+// MARK: - Lists
+
+/// Keys that move around a list (hosts, files) outside the terminal.
+enum NavKey: Equatable {
+    case up, down, left, right, enter, space, delete, escape, home, end, pageUp, pageDown
+
+    init?(hidUsage usage: Int) {
+        switch usage {
+        case 0x52: self = .up
+        case 0x51: self = .down
+        case 0x50: self = .left
+        case 0x4F: self = .right
+        case 0x28, 0x58: self = .enter
+        case 0x2C: self = .space
+        case 0x2A, 0x4C: self = .delete
+        case 0x29: self = .escape
+        case 0x4A: self = .home
+        case 0x4D: self = .end
+        case 0x4B: self = .pageUp
+        case 0x4E: self = .pageDown
+        default: return nil
+        }
+    }
+}
+
+/// The item highlighted after `key` (↑/↓, Home/End, PgUp/PgDn by 10) in
+/// `items`; with none highlighted, ↓ starts at the first and ↑ at the last.
+func moveHighlight<ID: Equatable>(_ current: ID?, in items: [ID], _ key: NavKey) -> ID? {
+    guard !items.isEmpty else { return nil }
+    let i = current.flatMap { items.firstIndex(of: $0) }
+    let last = items.count - 1
+    switch key {
+    case .up: return items[i.map { max(0, $0 - 1) } ?? last]
+    case .down: return items[i.map { min(last, $0 + 1) } ?? 0]
+    case .pageUp: return items[i.map { max(0, $0 - 10) } ?? 0]
+    case .pageDown: return items[i.map { min(last, $0 + 10) } ?? last]
+    case .home: return items[0]
+    case .end: return items[last]
+    default: return current.flatMap { items.contains($0) ? $0 : nil }
+    }
+}

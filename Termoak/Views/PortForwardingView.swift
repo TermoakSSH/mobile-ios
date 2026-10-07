@@ -193,7 +193,7 @@ private struct HostPicker: View {
             .navigationTitle("port_forwarding.choose_host")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
             }
         }
         .navigationViewStyle(.stack)

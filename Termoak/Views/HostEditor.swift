@@ -177,7 +177,7 @@ struct HostEditor: View {
             .navigationTitle(original == nil ? String(localized: "common.new_host") : String(localized: "host_editor.edit_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.save") { save(connect: false) }
                         .keyboardShortcut("s", modifiers: .command)

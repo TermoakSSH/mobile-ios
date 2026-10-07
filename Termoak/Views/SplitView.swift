@@ -421,10 +421,12 @@ struct SplitMenu: View {
 /// focus, ⌘D adds a pane, ⌘⇧M focus mode and ⌘B broadcast input. Invisible
 /// buttons, so they also show in the list of shortcuts (holding ⌘).
 struct SplitShortcuts: View {
+    /// Off while a sheet covers the terminal.
+    var enabled = true
     @EnvironmentObject private var sessions: Sessions
 
     var body: some View {
-        if sessions.splitAvailable {
+        if enabled && sessions.splitAvailable {
             ZStack {
                 Button("split.shortcut.left") { sessions.moveFocus(.left) }
                     .keyboardShortcut(.leftArrow, modifiers: [.command, .option])
@@ -494,7 +496,7 @@ struct PasteConfirmView: View {
             .navigationTitle("paste.confirm.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.paste") {
                         if dontAsk { settings.confirmMultilinePaste = false }

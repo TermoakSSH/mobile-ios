@@ -269,7 +269,7 @@ struct NewTaskView: View {
             .navigationTitle("ai.new.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(busy ? String(localized: "ai.new.creating") : String(localized: "ai.new.start"), action: create)
                         .disabled(prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || busy)

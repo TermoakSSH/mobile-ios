@@ -1458,6 +1458,35 @@ final class Sessions: ObservableObject {
         wake(s)
     }
 
+    /// ⌘⇧] / ⌘⇧[ and Ctrl+Tab / Ctrl+Shift+Tab: the next or previous tab
+    /// (round the end).
+    func showAdjacent(_ delta: Int) {
+        guard let cur = current, let i = open.firstIndex(where: { $0.id == cur.id }) else { return }
+        let n = open.count
+        guard n > 1 else { return }
+        showFromKeyboard(open[((i + delta) % n + n) % n].id)
+    }
+
+    /// ⌘1…⌘8: that tab; ⌘9: the last one (like browsers).
+    func showTab(number: Int) {
+        guard !open.isEmpty else { return }
+        let i = number >= 9 ? open.count - 1 : number - 1
+        guard open.indices.contains(i) else { return }
+        showFromKeyboard(open[i].id)
+    }
+
+    /// Shows a tab and the keyboard follows (it is typed in next).
+    private func showFromKeyboard(_ id: UUID) {
+        let keyboard = current?.view.isFirstResponder ?? false
+        show(id)
+        guard keyboard || HardwareKeyboard.shared.connected else { return }
+        // Once the tab is on screen.
+        DispatchQueue.main.async { [weak self] in
+            guard let s = self?.current, s.id == id, s.view.window != nil else { return }
+            _ = s.view.becomeFirstResponder()
+        }
+    }
+
     func wake(_ s: TerminalSession) {
         guard s.asleep else { return }
         s.asleep = false

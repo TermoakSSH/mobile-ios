@@ -103,7 +103,7 @@ struct JoinLinkView: View {
             .navigationTitle("join.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
             }
             .onAppear {
                 if name.isEmpty { name = savedName }

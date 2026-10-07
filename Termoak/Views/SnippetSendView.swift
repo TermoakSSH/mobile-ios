@@ -53,7 +53,7 @@ struct SnippetSendView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if batch == nil {
-                    ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                    ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                     ToolbarItem(placement: .confirmationAction) {
                         Button(sendTitle) { send() }
                             .disabled(chosenCount == 0)

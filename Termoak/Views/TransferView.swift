@@ -110,7 +110,7 @@ struct TransferView: View {
             .navigationTitle(moving ? String(localized: "transfer.move_to") : String(localized: "transfer.copy_to"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(moving ? String(localized: "transfer.move") : String(localized: "transfer.copy")) { run() }
                         .disabled(target == nil || plan == nil || planning || running)
