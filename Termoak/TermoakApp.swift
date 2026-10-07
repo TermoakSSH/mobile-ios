@@ -168,6 +168,8 @@ private struct RootContent: View {
     @EnvironmentObject private var account: Accounts
     @EnvironmentObject private var sessions: Sessions
     @EnvironmentObject private var settings: AppSettings
+    /// Regular on an iPad with room: the desktop layout.
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var welcomeDone = false
     /// The welcome screen is on: it stays until it finishes (an account
     /// waiting for its email code is already in the list).
@@ -181,6 +183,9 @@ private struct RootContent: View {
                         && model.joining == nil && sessions.open.isEmpty {
                 LoginView(welcome: true) { welcomeDone = true }
                     .onAppear { inWelcome = true }
+            } else if usesDesktopLayout(sizeClass) {
+                // iPad with room: like the desktop app (tabs on top, sidebar).
+                DesktopShell()
             } else {
                 Home()
                     .overlay(alignment: .top) { ShareToasts(notices: sessions.notices) }

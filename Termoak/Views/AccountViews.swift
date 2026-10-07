@@ -82,11 +82,14 @@ struct PlacePicker: View {
 
 /// The account switcher at the top of the hosts: each account, All
 /// accounts, This device only, Add account, Manage accounts and Vaults.
+/// `expanded` (the sidebar of the desktop layout): the avatar with the
+/// account's email and server.
 struct AccountSwitcher: View {
     @EnvironmentObject private var account: Accounts
     let onAdd: () -> Void
     let onManage: () -> Void
     let onVaults: () -> Void
+    var expanded = false
 
     var body: some View {
         Menu {
@@ -130,9 +133,56 @@ struct AccountSwitcher: View {
                 }
             }
         } label: {
-            label
+            if expanded {
+                expandedLabel
+            } else {
+                label
+            }
         }
         .accessibilityLabel("accounts.switcher")
+    }
+
+    private var expandedLabel: some View {
+        HStack(spacing: 8) {
+            label
+            VStack(alignment: .leading, spacing: 1) {
+                Text(verbatim: scopeTitle)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+                if let server = scopeServer {
+                    Text(verbatim: server).font(.caption2).foregroundColor(.secondary).lineLimit(1)
+                }
+            }
+            Spacer(minLength: 0)
+            Image(systemName: "chevron.up.chevron.down").font(.caption2).foregroundColor(.secondary)
+        }
+        .padding(.horizontal, 8)
+        .frame(minHeight: 40)
+        .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .accessibilityValue(Text(verbatim: scopeTitle))
+    }
+
+    /// The account shown, All accounts or This device only.
+    private var scopeTitle: String {
+        switch account.scope {
+        case .account(let id):
+            return account.account(id)?.email ?? String(localized: "accounts.switcher")
+        case .all:
+            if account.list.count > 1 { return String(localized: "accounts.all") }
+            return account.list.first?.email ?? String(localized: "accounts.device_only")
+        case .device:
+            return String(localized: "accounts.device_only")
+        }
+    }
+
+    /// The server of the account shown (when it is not the official one).
+    private var scopeServer: String? {
+        switch account.scope {
+        case .account(let id): return account.account(id)?.serverLabel
+        case .all: return account.list.count == 1 ? account.list.first?.serverLabel : nil
+        case .device: return nil
+        }
     }
 
     @ViewBuilder private var label: some View {

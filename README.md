@@ -24,6 +24,12 @@ The same as the Android app:
   keys; app shortcuts listed when ⌘ is held (⌘T/⌘K, ⌘W, ⌘⇧]/⌘⇧[, Ctrl+Tab,
   ⌘1…⌘9, ⌘F, ⌘+/⌘-/⌘0, ⌘,); arrow keys in the host list and the files;
   wheel to programs that take the mouse, drag to select, secondary click.
+- **iPad desktop layout**: in full screen and in big Split View or Stage
+  Manager windows the app looks and works like the desktop app: tabs on
+  top (Home, one per terminal, drag to reorder), a collapsible sidebar
+  (⌃⌘S) with the vault, server and app sections, hosts as cards in a grid
+  with the editor in a side panel, and the desktop's terminal toolbar.
+  Narrow windows keep the phone layout.
 
 iOS cuts local connections shortly after you leave the app (the app asks for
 a few minutes of grace time). For long jobs, use server sessions.
