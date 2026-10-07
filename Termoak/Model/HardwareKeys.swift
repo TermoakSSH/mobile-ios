@@ -266,3 +266,46 @@ func moveHighlight<ID: Equatable>(_ current: ID?, in items: [ID], _ key: NavKey)
     default: return current.flatMap { items.contains($0) ? $0 : nil }
     }
 }
+
+/// The item highlighted after `key` in a grid of cards split in sections
+/// (the hosts of each group), `columns` cards per row: ←/→ go to the
+/// previous or next card, ↑/↓ to the card above or below (into the
+/// previous or next section in the same column; ↓ from a row with nothing
+/// under it goes to the last card of the section). Home/End and PgUp/PgDn
+/// as in a list. With none highlighted, ↓/→ start at the first card and
+/// ↑/← at the last.
+func moveInGrid<ID: Equatable>(_ current: ID?, in sections: [[ID]], columns: Int, _ key: NavKey) -> ID? {
+    let rows = sections.filter { !$0.isEmpty }
+    let flat = rows.flatMap { $0 }
+    guard !flat.isEmpty else { return nil }
+    let c = max(1, columns)
+    guard let current, let s = rows.firstIndex(where: { $0.contains(current) }),
+          let i = rows[s].firstIndex(of: current) else {
+        switch key {
+        case .down, .right: return flat.first
+        case .up, .left: return flat.last
+        default: return moveHighlight(nil, in: flat, key)
+        }
+    }
+    let section = rows[s]
+    switch key {
+    case .left, .right:
+        let at = flat.firstIndex(of: current) ?? 0
+        return flat[max(0, min(flat.count - 1, at + (key == .left ? -1 : 1)))]
+    case .down:
+        if i + c < section.count { return section[i + c] }
+        // A row below that is shorter than this column.
+        if i / c < (section.count - 1) / c { return section[section.count - 1] }
+        guard s + 1 < rows.count else { return current }
+        let next = rows[s + 1]
+        return next[min(i % c, next.count - 1)]
+    case .up:
+        if i - c >= 0 { return section[i - c] }
+        guard s > 0 else { return current }
+        let previous = rows[s - 1]
+        let lastRow = (previous.count - 1) / c * c
+        return previous[min(lastRow + i % c, previous.count - 1)]
+    default:
+        return moveHighlight(current, in: flat, key)
+    }
+}

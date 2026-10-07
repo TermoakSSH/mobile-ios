@@ -270,4 +270,36 @@ final class HardwareKeysTests: XCTestCase {
         XCTAssertNil(moveHighlight("gone", in: items, .enter))
         XCTAssertNil(moveHighlight("a", in: [String](), .down))
     }
+
+    func testMoveInGrid() {
+        // Two sections of cards, three per row:
+        //   a b c      g h
+        //   d e
+        //   (empty section)
+        let sections = [["a", "b", "c", "d", "e"], [], ["g", "h"]]
+        XCTAssertEqual(moveInGrid(nil, in: sections, columns: 3, .down), "a")
+        XCTAssertEqual(moveInGrid(nil, in: sections, columns: 3, .left), "h")
+        XCTAssertEqual(moveInGrid("a", in: sections, columns: 3, .right), "b")
+        XCTAssertEqual(moveInGrid("e", in: sections, columns: 3, .right), "g")
+        XCTAssertEqual(moveInGrid("g", in: sections, columns: 3, .left), "e")
+        XCTAssertEqual(moveInGrid("a", in: sections, columns: 3, .left), "a")
+        XCTAssertEqual(moveInGrid("b", in: sections, columns: 3, .down), "e")
+        // Nothing under c: the last card of its section.
+        XCTAssertEqual(moveInGrid("c", in: sections, columns: 3, .down), "e")
+        // From the last row, into the next section (the empty one is skipped).
+        XCTAssertEqual(moveInGrid("d", in: sections, columns: 3, .down), "g")
+        XCTAssertEqual(moveInGrid("e", in: sections, columns: 3, .down), "h")
+        XCTAssertEqual(moveInGrid("h", in: sections, columns: 3, .down), "h")
+        XCTAssertEqual(moveInGrid("e", in: sections, columns: 3, .up), "b")
+        XCTAssertEqual(moveInGrid("h", in: sections, columns: 3, .up), "e")
+        XCTAssertEqual(moveInGrid("g", in: sections, columns: 3, .up), "d")
+        XCTAssertEqual(moveInGrid("b", in: sections, columns: 3, .up), "b")
+        XCTAssertEqual(moveInGrid("c", in: sections, columns: 3, .end), "h")
+        XCTAssertEqual(moveInGrid("h", in: sections, columns: 3, .home), "a")
+        // One column: a list.
+        XCTAssertEqual(moveInGrid("a", in: sections, columns: 1, .down), "b")
+        XCTAssertEqual(moveInGrid("e", in: sections, columns: 1, .down), "g")
+        XCTAssertNil(moveInGrid("gone", in: sections, columns: 3, .enter))
+        XCTAssertNil(moveInGrid("a", in: [[String]](), columns: 3, .down))
+    }
 }

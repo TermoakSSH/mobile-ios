@@ -1475,6 +1475,22 @@ final class Sessions: ObservableObject {
         showFromKeyboard(open[i].id)
     }
 
+    /// Moves a tab to another place of the bar (dragged, or Move left/right
+    /// in its menu). The panes of the split view keep their own order.
+    func moveTab(_ id: UUID, to index: Int) {
+        guard let from = open.firstIndex(where: { $0.id == id }) else { return }
+        let to = max(0, min(index, open.count - 1))
+        guard from != to else { return }
+        let s = open.remove(at: from)
+        open.insert(s, at: to)
+    }
+
+    /// One place to the left (`-1`) or to the right (`1`).
+    func moveTab(_ id: UUID, by delta: Int) {
+        guard let i = open.firstIndex(where: { $0.id == id }) else { return }
+        moveTab(id, to: i + delta)
+    }
+
     /// Shows a tab and the keyboard follows (it is typed in next).
     private func showFromKeyboard(_ id: UUID) {
         let keyboard = current?.view.isFirstResponder ?? false

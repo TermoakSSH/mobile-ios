@@ -107,6 +107,8 @@ struct HostEditor: View {
     var initialPlace: ItemPlace? = nil
     /// "Connect": called with the saved host after the editor closes.
     var onConnect: ((SshHost) -> Void)? = nil
+    /// In a side panel (iPad, desktop layout) instead of a sheet: closes it.
+    var onClose: (() -> Void)? = nil
 
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Accounts
@@ -177,7 +179,7 @@ struct HostEditor: View {
             .navigationTitle(original == nil ? String(localized: "common.new_host") : String(localized: "host_editor.edit_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { close() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.save") { save(connect: false) }
                         .keyboardShortcut("s", modifiers: .command)
@@ -197,13 +199,20 @@ struct HostEditor: View {
             .sheet(item: $transferring) { r in
                 TransferView(request: r) {
                     // Moved: this copy of the host is no longer where it was.
-                    dismiss()
+                    close()
                 }
                 .environmentObject(model).environmentObject(account)
             }
         }
+        // Also in a side panel of a regular-width window (no columns there).
+        .navigationViewStyle(.stack)
         .onAppear(perform: load)
         .onChange(of: place) { _ in loadReferences() }
+    }
+
+    /// Closes the sheet, or the side panel.
+    private func close() {
+        if let onClose { onClose() } else { dismiss() }
     }
 
     // MARK: Sections
@@ -779,7 +788,7 @@ struct HostEditor: View {
             try model.core.setHostProxyPassword(id: saved.id, password: proxySecret, accountId: saved.accountId)
             if original == nil { account.rememberPlace(place) }
             account.sync()
-            dismiss()
+            close()
             if connect { onConnect?(saved) }
         } catch {
             self.error = userMessage(error)
@@ -791,7 +800,7 @@ struct HostEditor: View {
         do {
             try model.core.deleteHost(id: h.id, accountId: h.accountId)
             account.sync()
-            dismiss()
+            close()
         } catch {
             self.error = userMessage(error)
         }
