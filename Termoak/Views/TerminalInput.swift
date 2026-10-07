@@ -151,7 +151,8 @@ final class HardwareKeyboard: ObservableObject {
     private var observers: [NSObjectProtocol] = []
 
     private init() {
-        connected = GCKeyboard.coalesced != nil
+        connected = false
+        update(GCKeyboard.coalesced != nil)
         let center = NotificationCenter.default
         observers = [
             center.addObserver(forName: .GCKeyboardDidConnect, object: nil, queue: .main) { _ in
@@ -164,6 +165,11 @@ final class HardwareKeyboard: ObservableObject {
     }
 
     private func update(_ value: Bool) {
+        #if DEBUG
+        // The UI tests go through the key bar, also with the Mac's keyboard
+        // connected to the simulator.
+        if ProcessInfo.processInfo.environment["TERMOAK_TEST_HOST"] != nil { return }
+        #endif
         if connected != value { connected = value }
     }
 
