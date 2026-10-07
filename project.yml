@@ -71,6 +71,20 @@ targets:
         # The Rust library is static and carries no bitcode or Swift debug symbols.
         DEBUG_INFORMATION_FORMAT: dwarf
 
+  # Unit tests of the pure logic (no app host, no sshd): they compile the
+  # files they test directly. `xcodebuild test -only-testing:TermoakTests`.
+  TermoakTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: UnitTests
+      - path: Termoak/Model/HardwareKeys.swift
+      - path: Termoak/Model/Keys.swift
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.termoak.tests
+
   # UI tests (only `xcodebuild test`; not in the .ipa). They need a test
   # sshd: see UITests/KeyboardUITests.swift.
   TermoakUITests:
@@ -93,4 +107,5 @@ schemes:
         Termoak: all
     test:
       targets:
+        - TermoakTests
         - TermoakUITests

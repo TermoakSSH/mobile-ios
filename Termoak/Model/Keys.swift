@@ -35,11 +35,12 @@ enum SpecialKey: String, Codable, CaseIterable, Hashable {
 
     var isArrow: Bool { [.up, .down, .left, .right].contains(self) }
 
-    /// Sequence that is sent. `ctrl`/`alt` (from the bar) change the arrows
-    /// and editing keys like a real keyboard would; `appCursor` is the
-    /// application cursor mode (vim, less...).
-    func bytes(ctrl: Bool, alt: Bool, appCursor: Bool) -> [UInt8] {
-        let mod = 1 + (alt ? 2 : 0) + (ctrl ? 4 : 0)
+    /// Sequence that is sent. `ctrl`/`alt` (from the bar) and `shift` (a
+    /// hardware keyboard) change the arrows and editing keys like xterm does
+    /// (`ESC [ 1 ; m X`, `ESC [ n ; m ~`); `appCursor` is the application
+    /// cursor mode (vim, less...).
+    func bytes(ctrl: Bool, alt: Bool, shift: Bool = false, appCursor: Bool) -> [UInt8] {
+        let mod = 1 + (shift ? 1 : 0) + (alt ? 2 : 0) + (ctrl ? 4 : 0)
         func csi(_ s: String) -> [UInt8] { Array("\u{1b}[\(s)".utf8) }
         /// Arrows, home and end: `ESC [ X`, `ESC O X` or `ESC [ 1 ; m X`.
         func cursor(_ letter: Character) -> [UInt8] {
