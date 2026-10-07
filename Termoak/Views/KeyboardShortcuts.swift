@@ -248,7 +248,7 @@ struct QuickConnectView: View {
                         .frame(maxWidth: .infinity, minHeight: 22)
                 }
                 .padding(.horizontal, 12).padding(.vertical, 10)
-                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .background(SwiftUI.Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 .padding(.horizontal, 16).padding(.vertical, 10)
                 list
             }
