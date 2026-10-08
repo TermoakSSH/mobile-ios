@@ -19012,6 +19012,102 @@
         }
       }
     },
+    "terminal.host_key.forget": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forget and connect"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Olvidar y conectar"
+          }
+        }
+      }
+    },
+    "terminal.host_key.forget_button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forget the old key…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Olvidar la clave antigua…"
+          }
+        }
+      }
+    },
+    "terminal.host_key.forget_message %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved key: %1$@\nKey now: %2$@\n\nDo this only if you know why it changed (the server was reinstalled or got a new key). Otherwise someone could be impersonating it. You'll be asked to trust the new fingerprint."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave guardada: %1$@\nClave ahora: %2$@\n\nHazlo solo si sabes por qué ha cambiado (se reinstaló el servidor o tiene una clave nueva). Si no, alguien podría estar suplantándolo. Se te preguntará si confías en la huella nueva."
+          }
+        }
+      }
+    },
+    "terminal.host_key.forget_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forget the old key and connect again?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Olvidar la clave antigua y volver a conectar?"
+          }
+        }
+      }
+    },
+    "terminal.host_key.nothing_to_forget": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The old key is not in Known hosts any more: connect again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave antigua ya no está en Hosts conocidos: vuelve a conectar."
+          }
+        }
+      }
+    },
+    "terminal.host_key.use_only": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The old key is in a vault you can only use: ask one of its editors to forget it in Known hosts."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave antigua está en un vault de solo uso para ti: pide a uno de sus editores que la olvide en Hosts conocidos."
+          }
+        }
+      }
+    },
     "terminal.keyboard": {
       "localizations": {
         "en": {

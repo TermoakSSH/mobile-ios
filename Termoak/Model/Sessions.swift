@@ -5,6 +5,28 @@ import SwiftTerm
 import SwiftUI
 import UIKit
 
+/// A connection refused because the server's key is not the one saved in
+/// Known hosts (`TermoakError.HostKey`, "has CHANGED").
+struct HostKeyChange: Equatable {
+    let host: String
+    let port: UInt32
+    /// Fingerprint saved in Known hosts.
+    let expected: String
+    /// Fingerprint the server presents now.
+    let actual: String
+
+    /// `nil` for any other error.
+    init?(_ error: Error) {
+        guard case .HostKey(let message)? = error as? TermoakError,
+              case .changed(let where_, let expected, let actual)? = HostKeyProblem.parse(message),
+              let hp = HostKeyProblem.hostAndPort(where_) else { return nil }
+        host = hp.host
+        port = hp.port
+        self.expected = expected
+        self.actual = actual
+    }
+}
+
 enum TerminalState: Equatable {
     case connecting(String)
     case connected
@@ -56,6 +78,9 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     /// The tab's name: the one given by hand, the program's title or the host's name.
     var displayTitle: String { TabTitle.display(custom: customTitle, title: title, label: label) }
     @Published var prompt: AuthPrompt?
+    /// The last connection failed because the host's key changed: the
+    /// failure card offers to forget the old key and connect again.
+    @Published var hostKeyChange: HostKeyChange?
     /// Ctrl and Alt of the bar: they stay pressed until the next key.
     @Published private(set) var ctrl = false
     @Published private(set) var alt = false
@@ -762,6 +787,7 @@ final class LocalTerminal: TerminalSession {
             return
         }
         state = .connecting(String(localized: "terminal.state.connecting_to \(address)"))
+        hostKeyChange = nil
         let auth = AuthBridge { [weak self] prompt in
             Task { @MainActor in self?.prompt = prompt }
         }
@@ -787,6 +813,7 @@ final class LocalTerminal: TerminalSession {
                 }
                 _ = view.becomeFirstResponder()
             } catch {
+                hostKeyChange = HostKeyChange(error)
                 state = .closed(userMessage(error))
             }
         }
@@ -1874,6 +1901,30 @@ final class Sessions: ObservableObject {
     func closeTerminals(ofAccount accountId: String) {
         for s in open where s.accountId == accountId { close(s.id) }
         onServer.removeAll { $0.accountId == accountId }
+    }
+
+    /// The host's key changed and you know why (the server was
+    /// reinstalled): the old key leaves Known hosts (every saved entry of
+    /// that host, port and fingerprint you can change) and the terminal
+    /// connects again, asking to trust the new one. Returns why it could
+    /// not, if so.
+    func forgetChangedKey(_ s: TerminalSession) -> String? {
+        guard let change = s.hostKeyChange else { return nil }
+        let all = (try? core.listKnownHosts(filter: ItemFilter(accountIds: nil, vaultIds: nil, includeDevice: true))) ?? []
+        let sameHost = all.filter { $0.host.caseInsensitiveCompare(change.host) == .orderedSame && $0.port == change.port }
+        let old = sameHost.filter { $0.fingerprint == change.expected }
+        let targets = old.isEmpty ? sameHost : old
+        guard !targets.isEmpty else { return String(localized: "terminal.host_key.nothing_to_forget") }
+        guard targets.allSatisfy(\.canForget) else { return String(localized: "terminal.host_key.use_only") }
+        do {
+            for k in targets { try core.deleteKnownHost(id: k.id, accountId: k.accountId) }
+        } catch {
+            return userMessage(error)
+        }
+        onHostChanged?()
+        s.hostKeyChange = nil
+        s.reconnect()
+        return nil
     }
 
     func closeAll() {

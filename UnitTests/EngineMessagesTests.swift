@@ -13,4 +13,13 @@ final class EngineMessagesTests: XCTestCase {
         XCTAssertNil(HostKeyProblem.parse("connection refused"))
         XCTAssertNil(HostKeyProblem.parse("host key rejected by the user ()"))
     }
+
+    func testHostAndPortOfAChangedKey() {
+        XCTAssertTrue(HostKeyProblem.hostAndPort("web.example.com:2222")! == ("web.example.com", 2222))
+        XCTAssertTrue(HostKeyProblem.hostAndPort("2001:db8::1:22")! == ("2001:db8::1", 22))
+        XCTAssertTrue(HostKeyProblem.hostAndPort("[2001:db8::1]:22")! == ("2001:db8::1", 22))
+        XCTAssertNil(HostKeyProblem.hostAndPort("router"))
+        XCTAssertNil(HostKeyProblem.hostAndPort(":22"))
+        XCTAssertNil(HostKeyProblem.hostAndPort("host:99999"))
+    }
 }

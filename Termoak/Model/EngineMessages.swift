@@ -34,6 +34,16 @@ enum HostKeyProblem: Equatable {
         return nil
     }
 
+    /// The engine writes the host as `host:port` (`[v6]` brackets or not):
+    /// the name and the port, to find its entries in Known hosts.
+    static func hostAndPort(_ text: String) -> (host: String, port: UInt32)? {
+        guard let colon = text.lastIndex(of: ":"), let port = UInt32(text[text.index(after: colon)...]),
+              port > 0, port <= 65535 else { return nil }
+        var host = String(text[..<colon])
+        if host.hasPrefix("[") && host.hasSuffix("]") { host = String(host.dropFirst().dropLast()) }
+        return host.isEmpty ? nil : (host, port)
+    }
+
     /// The text between `start` and the next `end` after it.
     private static func between(_ text: String, _ start: String, _ end: String) -> String? {
         guard let a = text.range(of: start), let b = text.range(of: end, range: a.upperBound..<text.endIndex) else { return nil }
