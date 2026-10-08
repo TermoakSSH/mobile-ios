@@ -125,6 +125,8 @@ func userMessage(_ error: Error) -> String {
     // SFTP, tunnels, commands or a server session asked of a Telnet host.
     case .NotSupportedForTelnet: return String(localized: "error.not_supported_for_telnet")
     case .HostKey(let message): return hostKeyMessage(message)
+    // A transfer stopped with its TransferHandle (usually not shown).
+    case .Cancelled: return String(localized: "error.cancelled")
     default: return errorMessage(error)
     }
 }
@@ -161,6 +163,14 @@ protocol AccountApi: AnyObject {
     func apiGet(path: String) async throws -> String
     func apiPost(path: String, bodyJson: String?) async throws -> String
     func apiDelete(path: String) async throws -> String
+    // Typed AI of the engine 0.6.1 (no hand-written JSON).
+    func decideApprovalWith(taskId: String, approvalId: String, decision: AiDecision) async throws
+    func deleteAiTask(taskId: String) async throws
+    func getRunbook(taskId: String) async throws -> TermoakFFI.AiRunbook
+    func saveRunbook(taskId: String, vaultId: String?, name: String?) async throws -> Snippet
+    func listAiProviders() async throws -> AiProviders
+    func aiExplain(text: String, question: String?, context: AiAssistContext?, provider: String?) async throws -> AiExplanation
+    func aiSuggest(request: String, context: AiAssistContext?, provider: String?) async throws -> AiCommandSuggestion
 }
 
 extension AccountApi {
@@ -187,10 +197,6 @@ extension AccountApi {
     /// The server's AI providers and their models.
     func aiProviders() async throws -> AiProviderList {
         AiProviderList.parse(try await apiGet(path: "/api/v1/ai/providers"))
-    }
-
-    func deleteAiTask(taskId: String) async throws {
-        _ = try await apiDelete(path: "/api/v1/ai/tasks/\(taskId)")
     }
 
     /// The commands a task ran, as a snippet to review.

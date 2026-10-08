@@ -4733,6 +4733,22 @@
         }
       }
     },
+    "error.cancelled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelled"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelado"
+          }
+        }
+      }
+    },
     "error.email_not_verified": {
       "localizations": {
         "en": {

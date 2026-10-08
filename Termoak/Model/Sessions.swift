@@ -81,6 +81,10 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     /// The last connection failed because the host's key changed: the
     /// failure card offers to forget the old key and connect again.
     @Published var hostKeyChange: HostKeyChange?
+    /// The last command that ended in this terminal (its output and why it
+    /// failed), from the engine's `CommandWatcher`: the copilot's context
+    /// chip and the Explain/Fix chip.
+    @Published var lastCommand: LastCommandInfo?
     /// Ctrl and Alt of the bar: they stay pressed until the next key.
     @Published private(set) var ctrl = false
     @Published private(set) var alt = false
