@@ -1,5 +1,6 @@
 import TermoakKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct KeychainView: View {
     @EnvironmentObject private var model: AppModel
@@ -8,10 +9,28 @@ struct KeychainView: View {
     @State private var generating = false
     @State private var importing = false
     @State private var deleting: SshKey?
+    @State private var showing: SshKey?
+    @State private var installing: SshKey?
     @State private var notice: String?
     @State private var tab = 0
 
     var body: some View {
+        // Split in parts: as one expression it is too much for the type checker.
+        withSheets(list)
+            .navigationTitle("nav.keychain")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Menu {
+                        Button { generating = true } label: { Label("keychain.menu.generate", systemImage: "key") }
+                        Button { importing = true } label: { Label("keychain.menu.import", systemImage: "square.and.arrow.down") }
+                    } label: { Image(systemName: "plus") }
+                }
+            }
+            .onAppear(perform: load)
+            .onReceive(account.vaultChanged) { load() }
+    }
+
+    private var list: some View {
         List {
             Section {
                 Picker("", selection: $tab) {
@@ -25,66 +44,90 @@ struct KeychainView: View {
             if tab == 1 {
                 IdentityList(keys: keys)
             } else {
-            if keys.isEmpty {
-                EmptyState(
-                    icon: "key",
-                    title: String(localized: "keychain.empty.title"),
-                    text: String(localized: "keychain.empty.text"),
-                    action: String(localized: "keychain.generate")
-                ) { generating = true }
-                .listRowBackground(Color.clear)
+                keyRows
             }
-            ForEach(keys, id: \.key) { k in
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        Image(systemName: "key.fill").foregroundColor(.accentColor)
-                        VStack(alignment: .leading) {
-                            Text(k.label).font(.headline)
-                            Text(k.hasPassphrase ? String(localized: "keychain.key.with_passphrase \(k.algorithm)") : k.algorithm)
-                                .font(.caption).foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        ItemPlaceBadge(accountId: k.accountId, vaultId: k.vaultId, useOnly: k.isUseOnly,
-                                       deviceOnly: k.syncMode == .deviceOnly)
-                    }
-                    Text(k.fingerprint).font(.system(.caption2, design: .monospaced)).foregroundColor(.secondary).lineLimit(1)
-                    Button { copy(k) } label: { Label("keychain.copy_public", systemImage: "doc.on.doc") }
-                        .buttonStyle(.borderless).font(.footnote)
-                }
-                .padding(.vertical, 4)
+        }
+    }
+
+    @ViewBuilder private var keyRows: some View {
+        if keys.isEmpty {
+            EmptyState(
+                icon: "key",
+                title: String(localized: "keychain.empty.title"),
+                text: String(localized: "keychain.empty.text"),
+                action: String(localized: "keychain.generate")
+            ) { generating = true }
+            .listRowBackground(Color.clear)
+        }
+        ForEach(keys, id: \.key) { k in
+            keyRow(k)
                 .swipeActions {
                     if !k.isUseOnly { Button("common.delete", role: .destructive) { deleting = k } }
                 }
-            }
-            }
+                .contextMenu { keyMenu(k) }
         }
-        .navigationTitle("nav.keychain")
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    Button { generating = true } label: { Label("keychain.menu.generate", systemImage: "key") }
-                    Button { importing = true } label: { Label("keychain.menu.import", systemImage: "square.and.arrow.down") }
-                } label: { Image(systemName: "plus") }
-            }
-        }
-        .sheet(isPresented: $generating, onDismiss: load) { GenerateKeyView().environmentObject(model).environmentObject(account) }
-        .sheet(isPresented: $importing, onDismiss: load) { ImportKeyView().environmentObject(model).environmentObject(account) }
-        .confirmationDialog(Text("keychain.delete.title \(deleting?.label ?? "")"),
-                            isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
-                            titleVisibility: .visible) {
-            Button("common.delete", role: .destructive) {
-                if let k = deleting {
-                    do { try model.core.deleteKey(id: k.id, accountId: k.accountId) } catch { notice = userMessage(error) }
-                    load()
-                    account.sync()
+    }
+
+    /// Tapping a key opens its page (details, QR code, install, export).
+    private func keyRow(_ k: SshKey) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Button { showing = k } label: {
+                HStack {
+                    Image(systemName: "key.fill").foregroundColor(.accentColor)
+                    VStack(alignment: .leading) {
+                        Text(k.label).font(.headline).foregroundColor(.primary)
+                        Text(k.hasPassphrase ? String(localized: "keychain.key.with_passphrase \(k.algorithm)") : k.algorithm)
+                            .font(.caption).foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    ItemPlaceBadge(accountId: k.accountId, vaultId: k.vaultId, useOnly: k.isUseOnly,
+                                   deviceOnly: k.syncMode == .deviceOnly)
+                    Image(systemName: "chevron.right").font(.caption).foregroundColor(.secondary)
                 }
+                .contentShape(Rectangle())
             }
-        } message: { Text("keychain.delete.message") }
-        .alert(notice ?? "", isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } })) {
-            Button("common.ok", role: .cancel) {}
+            .buttonStyle(.plain)
+            Text(k.fingerprint).font(.system(.caption2, design: .monospaced)).foregroundColor(.secondary).lineLimit(1)
+            Button { copy(k) } label: { Label("keychain.copy_public", systemImage: "doc.on.doc") }
+                .buttonStyle(.borderless).font(.footnote)
         }
-        .onAppear(perform: load)
-        .onReceive(account.vaultChanged) { load() }
+        .padding(.vertical, 4)
+    }
+
+    @ViewBuilder private func keyMenu(_ k: SshKey) -> some View {
+        Button { showing = k } label: { Label("keychain.detail.title", systemImage: "info.circle") }
+        Button { copy(k) } label: { Label("keychain.copy_public", systemImage: "doc.on.doc") }
+        Button { installing = k } label: { Label("keychain.install.title", systemImage: "server.rack") }
+        if !k.isUseOnly {
+            Divider()
+            Button(role: .destructive) { deleting = k } label: { Label("common.delete", systemImage: "trash") }
+        }
+    }
+
+    private func withSheets<V: View>(_ view: V) -> some View {
+        view
+            .sheet(isPresented: $generating, onDismiss: load) { GenerateKeyView().environmentObject(model).environmentObject(account) }
+            .sheet(isPresented: $importing, onDismiss: load) { ImportKeyView().environmentObject(model).environmentObject(account) }
+            .sheet(item: Binding(get: { showing.map(KeyItem.init) }, set: { showing = $0?.key }), onDismiss: load) { e in
+                KeyDetailView(original: e.key).environmentObject(model).environmentObject(account)
+            }
+            .sheet(item: Binding(get: { installing.map(KeyItem.init) }, set: { installing = $0?.key })) { e in
+                InstallKeyView(key: e.key).environmentObject(model).environmentObject(account)
+            }
+            .confirmationDialog(Text("keychain.delete.title \(deleting?.label ?? "")"),
+                                isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
+                                titleVisibility: .visible) {
+                Button("common.delete", role: .destructive) {
+                    if let k = deleting {
+                        do { try model.core.deleteKey(id: k.id, accountId: k.accountId) } catch { notice = userMessage(error) }
+                        load()
+                        account.sync()
+                    }
+                }
+            } message: { Text("keychain.delete.message") }
+            .alert(notice ?? "", isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } })) {
+                Button("common.ok", role: .cancel) {}
+            }
     }
 
     private func load() {
@@ -98,29 +141,44 @@ struct KeychainView: View {
     }
 }
 
+private struct KeyItem: Identifiable {
+    let key: SshKey
+    var id: String { key.key }
+}
+
+/// The key types the engine generates, newest first.
+private let keyTypes: [(KeyType, String)] = [
+    (.ed25519, "Ed25519"), (.ecdsaP256, "ECDSA P-256"), (.ecdsaP384, "ECDSA P-384"), (.ecdsaP521, "ECDSA P-521"),
+    (.rsa4096, "RSA 4096"), (.rsa3072, "RSA 3072"), (.rsa2048, "RSA 2048"),
+]
+
 struct GenerateKeyView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Accounts
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @State private var type: KeyType = .ed25519
+    @State private var comment = ""
     @State private var passphrase = ""
+    @State private var storePassphrase = true
     @State private var deviceOnly = true
     @State private var place: ItemPlace = .device
     @State private var busy = false
     @State private var error: String?
+
+    private var label: String { name.isEmpty ? UIDevice.current.name : name }
 
     var body: some View {
         NavigationView {
             Form {
                 TextField(String(localized: "keychain.generate.name \(UIDevice.current.name)"), text: $name)
                 Picker("common.type", selection: $type) {
-                    Text(verbatim: "Ed25519").tag(KeyType.ed25519)
-                    Text(verbatim: "ECDSA").tag(KeyType.ecdsaP256)
-                    Text(verbatim: "RSA 4096").tag(KeyType.rsa4096)
+                    ForEach(keyTypes, id: \.1) { t in Text(verbatim: t.1).tag(t.0) }
                 }
-                .pickerStyle(.segmented)
-                SecureField("keychain.passphrase_optional", text: $passphrase)
+                TextField(String(localized: "keychain.generate.comment \(label)"), text: $comment)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                passphraseSection
                 if account.list.isEmpty {
                     Toggle("common.device_only", isOn: $deviceOnly)
                 } else {
@@ -134,33 +192,49 @@ struct GenerateKeyView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(busy ? String(localized: "keychain.generating") : String(localized: "keychain.generate.action")) {
-                        busy = true
-                        let label = name.isEmpty ? UIDevice.current.name : name
-                        Task {
-                            defer { busy = false }
-                            do {
-                                let p = account.list.isEmpty ? ItemPlace.device : place
-                                let local = account.list.isEmpty ? deviceOnly : p.accountId == nil
-                                _ = try await model.core.generateKey(
-                                    label: label, keyType: type, comment: "\(label) (Termoak)",
-                                    passphrase: passphrase.isEmpty ? nil : passphrase, storePassphrase: !passphrase.isEmpty,
-                                    syncMode: local ? .deviceOnly : .synced, accountId: p.accountId, vaultId: p.vaultId)
-                                account.rememberPlace(p)
-                                account.sync()
-                                dismiss()
-                            } catch {
-                                self.error = userMessage(error)
-                            }
-                        }
-                    }
-                    .disabled(busy)
+                    Button(busy ? String(localized: "keychain.generating") : String(localized: "keychain.generate.action"), action: generate)
+                        .disabled(busy)
                 }
+            }
+        }
+    }
+
+    private var passphraseSection: some View {
+        Section {
+            SecureField("keychain.passphrase_optional", text: $passphrase)
+            if !passphrase.isEmpty {
+                Toggle("keychain.store_passphrase", isOn: $storePassphrase)
+            }
+        } footer: {
+            if !passphrase.isEmpty && !storePassphrase { Text("keychain.store_passphrase.off_hint") }
+        }
+    }
+
+    private func generate() {
+        busy = true
+        let label = self.label
+        let comment = self.comment.trimmingCharacters(in: .whitespaces)
+        Task {
+            defer { busy = false }
+            do {
+                let p = account.list.isEmpty ? ItemPlace.device : place
+                let local = account.list.isEmpty ? deviceOnly : p.accountId == nil
+                _ = try await model.core.generateKey(
+                    label: label, keyType: type, comment: comment.isEmpty ? "\(label) (Termoak)" : comment,
+                    passphrase: passphrase.isEmpty ? nil : passphrase, storePassphrase: !passphrase.isEmpty && storePassphrase,
+                    syncMode: local ? .deviceOnly : .synced, accountId: p.accountId, vaultId: p.vaultId)
+                account.rememberPlace(p)
+                account.sync()
+                dismiss()
+            } catch {
+                self.error = userMessage(error)
             }
         }
     }
 }
 
+/// Import a private key pasted or read from a file, with a preview of what it
+/// is (type, fingerprint, whether it is encrypted) first.
 struct ImportKeyView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Accounts
@@ -168,21 +242,22 @@ struct ImportKeyView: View {
     @State private var name = ""
     @State private var privateKey = ""
     @State private var passphrase = ""
+    @State private var storePassphrase = true
     @State private var place: ItemPlace = .device
+    @State private var picking = false
+    @State private var details: KeyDetails?
+    @State private var checking = false
     @State private var error: String?
+
+    private var trimmed: String { privateKey.trimmingCharacters(in: .whitespacesAndNewlines) }
 
     var body: some View {
         NavigationView {
             Form {
                 TextField("common.name", text: $name)
-                Section("keychain.import.private_key") {
-                    TextEditor(text: $privateKey)
-                        .font(.system(.caption, design: .monospaced))
-                        .frame(minHeight: 140)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                }
-                SecureField("keychain.import.passphrase", text: $passphrase)
+                keySection
+                passphraseSection
+                if let details { previewSection(details) }
                 if account.places.count > 1 { PlacePicker(place: $place) }
                 if let error { Text(error).foregroundColor(Brand.red) }
             }
@@ -191,28 +266,116 @@ struct ImportKeyView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("keychain.import.action") {
-                        Task {
-                            do {
-                                _ = try await model.core.importKey(
-                                    label: name.isEmpty ? String(localized: "keychain.import.default_label") : name,
-                                    privateKey: privateKey.trimmingCharacters(in: .whitespacesAndNewlines),
-                                    passphrase: passphrase.isEmpty ? nil : passphrase, storePassphrase: !passphrase.isEmpty,
-                                    syncMode: account.list.isEmpty ? nil : (place.accountId == nil ? .deviceOnly : .synced),
-                                    accountId: place.accountId, vaultId: place.vaultId)
-                                account.rememberPlace(place)
-                                account.sync()
-                                dismiss()
-                            } catch {
-                                self.error = userMessage(error)
-                            }
-                        }
-                    }
-                    .disabled(privateKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    Button("keychain.import.action", action: importKey).disabled(trimmed.isEmpty)
                 }
             }
         }
+        .fileImporter(isPresented: $picking, allowedContentTypes: [.item]) { read($0) }
         .onAppear { place = account.defaultPlace }
+    }
+
+    private var keySection: some View {
+        Section {
+            Button { picking = true } label: { Label("import.choose_file", systemImage: "folder") }
+            TextEditor(text: $privateKey)
+                .font(.system(.caption, design: .monospaced))
+                .frame(minHeight: 140)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .onChange(of: privateKey) { _ in details = nil }
+        } header: {
+            Text("keychain.import.private_key")
+        }
+    }
+
+    private var passphraseSection: some View {
+        Section {
+            SecureField("keychain.import.passphrase", text: $passphrase)
+                .onChange(of: passphrase) { _ in details = nil }
+            if !passphrase.isEmpty {
+                Toggle("keychain.store_passphrase", isOn: $storePassphrase)
+            }
+            Button(action: check) {
+                HStack {
+                    Label("keychain.import.check", systemImage: "checkmark.shield")
+                    Spacer()
+                    if checking { ProgressView() }
+                }
+            }
+            .disabled(trimmed.isEmpty || checking)
+        } footer: {
+            if !passphrase.isEmpty && !storePassphrase { Text("keychain.store_passphrase.off_hint") }
+        }
+    }
+
+    private func previewSection(_ d: KeyDetails) -> some View {
+        Section("keychain.import.preview") {
+            HStack {
+                Text("common.type")
+                Spacer()
+                Text(verbatim: d.algorithm).foregroundColor(.secondary)
+            }
+            Text(verbatim: d.fingerprint).font(.system(.footnote, design: .monospaced)).textSelection(.enabled)
+            if !d.comment.isEmpty { Text(verbatim: d.comment).font(.footnote).foregroundColor(.secondary) }
+            if d.encrypted {
+                Label("keychain.import.encrypted", systemImage: "lock.fill").font(.footnote).foregroundColor(Brand.amber)
+            }
+        }
+    }
+
+    /// Reads the key without saving it (with the passphrase, if it needs one).
+    private func check() {
+        checking = true
+        error = nil
+        let key = trimmed, pass = passphrase.isEmpty ? nil : passphrase
+        Task {
+            defer { checking = false }
+            do {
+                details = try await inspectPrivateKey(privateKey: key, passphrase: pass)
+                if name.isEmpty, let comment = details?.comment, !comment.isEmpty { name = comment }
+            } catch {
+                details = nil
+                self.error = userMessage(error)
+            }
+        }
+    }
+
+    private func read(_ result: Result<URL, Error>) {
+        do {
+            let url = try result.get()
+            let scoped = url.startAccessingSecurityScopedResource()
+            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+            // A private key is small: anything big is not one.
+            let data = try Data(contentsOf: url)
+            guard data.count <= 64 * 1024, let text = TextFiles.decode(data) else {
+                error = String(localized: "keychain.import.not_a_key")
+                return
+            }
+            privateKey = text
+            if name.isEmpty { name = url.deletingPathExtension().lastPathComponent }
+            // After the editor has taken the new text (it clears the preview).
+            DispatchQueue.main.async { check() }
+        } catch {
+            self.error = String(localized: "import.read_failed")
+        }
+    }
+
+    private func importKey() {
+        Task {
+            do {
+                _ = try await model.core.importKey(
+                    label: name.isEmpty ? String(localized: "keychain.import.default_label") : name,
+                    privateKey: trimmed,
+                    passphrase: passphrase.isEmpty ? nil : passphrase, storePassphrase: !passphrase.isEmpty && storePassphrase,
+                    syncMode: account.list.isEmpty ? nil : (place.accountId == nil ? .deviceOnly : .synced),
+                    accountId: place.accountId, vaultId: place.vaultId)
+                account.rememberPlace(place)
+                account.sync()
+                dismiss()
+            } catch {
+                self.error = userMessage(error)
+            }
+        }
     }
 }
 
@@ -473,6 +636,8 @@ private struct IdentityEditor: View {
     @State private var password = ""
     @State private var keyId: String?
     @State private var place: ItemPlace = .device
+    /// Forget the saved password (the host asks for it next time).
+    @State private var clearPassword = false
     @State private var error: String?
 
     /// Keys of the identity's vault and of This device.
@@ -488,6 +653,10 @@ private struct IdentityEditor: View {
                 TextField("common.username", text: $username).textInputAutocapitalization(.never).autocorrectionDisabled()
                 SecureField(original.hasPassword ? String(localized: "identities.password_keep")
                             : String(localized: "common.password_optional"), text: $password)
+                    .disabled(clearPassword)
+                if original.hasPassword {
+                    Toggle("identities.clear_password", isOn: $clearPassword)
+                }
                 Picker("common.key", selection: $keyId) {
                     Text("identities.no_key").tag(String?.none)
                     ForEach(usableKeys, id: \.key) { Text($0.label).tag(Optional($0.id)) }
@@ -510,7 +679,8 @@ private struct IdentityEditor: View {
                             i.syncMode = place.accountId == nil ? .deviceOnly : .synced
                         }
                         do {
-                            _ = try model.core.saveIdentity(identity: i, password: password.isEmpty ? .keep : .set(value: password))
+                            let secret: SecretChange = clearPassword ? .clear : (password.isEmpty ? .keep : .set(value: password))
+                            _ = try model.core.saveIdentity(identity: i, password: secret)
                             if original.id.isEmpty { account.rememberPlace(place) }
                             account.sync()
                             dismiss()
@@ -536,10 +706,26 @@ struct KnownHostsView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Accounts
     @State private var list: [KnownHost] = []
+    @State private var query = ""
+    @State private var showing: KnownHost?
     @State private var forgetting: KnownHost?
     @State private var error: String?
 
+    /// Searched by host, port, key type and fingerprint.
+    private var filtered: [KnownHost] {
+        let q = query.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !q.isEmpty else { return list }
+        return list.filter { k in [k.display, k.keyType, k.fingerprint].contains { $0.lowercased().contains(q) } }
+    }
+
     var body: some View {
+        withDialogs(content)
+            .navigationTitle("nav.known_hosts")
+            .onAppear(perform: load)
+            .onReceive(account.vaultChanged) { load() }
+    }
+
+    private var content: some View {
         List {
             if list.isEmpty {
                 EmptyState(
@@ -549,43 +735,63 @@ struct KnownHostsView: View {
                 )
                 .listRowBackground(Color.clear)
             }
-            ForEach(list, id: \.key) { k in
-                VStack(alignment: .leading, spacing: 3) {
-                    HStack {
-                        Text(verbatim: k.display).font(.headline)
-                        Spacer()
-                        ItemPlaceBadge(accountId: k.accountId, vaultId: k.vaultId, useOnly: false, deviceOnly: false)
-                    }
-                    Text(k.keyType).font(.caption).foregroundColor(.secondary)
-                    Text(k.fingerprint).font(.system(.caption2, design: .monospaced)).foregroundColor(.secondary)
-                        .lineLimit(1).textSelection(.enabled)
-                }
-                .swipeActions {
-                    if k.canForget {
-                        Button("known_hosts.forget", role: .destructive) { forgetting = k }
-                    }
-                }
-                .contextMenu {
-                    Button { UIPasteboard.general.string = k.fingerprint } label: {
-                        Label("known_hosts.copy_fingerprint", systemImage: "doc.on.doc")
-                    }
-                    if k.canForget {
-                        Button(role: .destructive) { forgetting = k } label: { Label("known_hosts.forget", systemImage: "trash") }
-                    }
-                }
+            ForEach(filtered, id: \.key) { k in row(k) }
+        }
+        .searchable(text: $query, prompt: Text("known_hosts.search"))
+        .overlay {
+            if !list.isEmpty && filtered.isEmpty {
+                Text("hosts.search.no_results \(query)").foregroundColor(.secondary).padding()
             }
         }
-        .navigationTitle("nav.known_hosts")
-        .confirmationDialog(Text("known_hosts.forget.title \(forgetting.map(\.display) ?? "")"),
-                            isPresented: Binding(get: { forgetting != nil }, set: { if !$0 { forgetting = nil } }),
-                            titleVisibility: .visible) {
-            Button("known_hosts.forget", role: .destructive) { if let k = forgetting { forget(k) } }
-        } message: { Text("known_hosts.forget.message") }
-        .alert("common.error", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
-            Button("common.ok", role: .cancel) {}
-        } message: { Text(error ?? "") }
-        .onAppear(perform: load)
-        .onReceive(account.vaultChanged) { load() }
+    }
+
+    private func row(_ k: KnownHost) -> some View {
+        Button { showing = k } label: {
+            VStack(alignment: .leading, spacing: 3) {
+                HStack {
+                    Text(verbatim: k.display).font(.headline).foregroundColor(.primary)
+                    Spacer()
+                    ItemPlaceBadge(accountId: k.accountId, vaultId: k.vaultId, useOnly: false, deviceOnly: false)
+                }
+                Text(k.keyType).font(.caption).foregroundColor(.secondary)
+                Text(k.fingerprint).font(.system(.caption2, design: .monospaced)).foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .swipeActions {
+            if k.canForget {
+                Button("known_hosts.forget", role: .destructive) { forgetting = k }
+            }
+        }
+        .contextMenu {
+            Button { UIPasteboard.general.string = k.fingerprint } label: {
+                Label("known_hosts.copy_fingerprint", systemImage: "doc.on.doc")
+            }
+            if k.canForget {
+                Button(role: .destructive) { forgetting = k } label: { Label("known_hosts.forget", systemImage: "trash") }
+            }
+        }
+    }
+
+    private func withDialogs<V: View>(_ view: V) -> some View {
+        view
+            .sheet(item: Binding(get: { showing.map(KnownHostItem.init) }, set: { showing = $0?.host })) { e in
+                KnownHostDetail(host: e.host) {
+                    showing = nil
+                    // One sheet after the other.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { forgetting = e.host }
+                }
+            }
+            .confirmationDialog(Text("known_hosts.forget.title \(forgetting.map(\.display) ?? "")"),
+                                isPresented: Binding(get: { forgetting != nil }, set: { if !$0 { forgetting = nil } }),
+                                titleVisibility: .visible) {
+                Button("known_hosts.forget", role: .destructive) { if let k = forgetting { forget(k) } }
+            } message: { Text("known_hosts.forget.message") }
+            .alert("common.error", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
+                Button("common.ok", role: .cancel) {}
+            } message: { Text(error ?? "") }
     }
 
     /// Only with access to its vault (not Use only); the engine checks it too.
@@ -598,6 +804,64 @@ struct KnownHostsView: View {
 
     private func load() {
         list = ((try? model.core.listKnownHosts(filter: account.itemFilter)) ?? []).sorted { $0.host < $1.host }
+    }
+}
+
+private struct KnownHostItem: Identifiable {
+    let host: KnownHost
+    var id: String { host.key }
+}
+
+/// A known host: its fingerprint, the whole public key and when it was saved.
+private struct KnownHostDetail: View {
+    let host: KnownHost
+    let onForget: () -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            Form {
+                Section {
+                    line("known_hosts.detail.host", host.host)
+                    line("common.port", String(host.port))
+                    line("common.type", host.keyType)
+                    if host.updatedAt > 0 {
+                        line("known_hosts.detail.saved", dateFromMillis(host.updatedAt).formatted(date: .abbreviated, time: .shortened))
+                    }
+                }
+                Section("keychain.detail.fingerprint") {
+                    Text(verbatim: host.fingerprint).font(.system(.footnote, design: .monospaced)).textSelection(.enabled)
+                    Button { UIPasteboard.general.string = host.fingerprint } label: {
+                        Label("known_hosts.copy_fingerprint", systemImage: "doc.on.doc")
+                    }
+                }
+                Section("keychain.detail.public_key") {
+                    Text(verbatim: host.publicKey).font(.system(.caption2, design: .monospaced)).textSelection(.enabled)
+                    Button { UIPasteboard.general.string = host.publicKey } label: {
+                        Label("known_hosts.copy_key", systemImage: "doc.on.doc")
+                    }
+                }
+                if host.canForget {
+                    Section {
+                        Button(role: .destructive, action: onForget) { Label("known_hosts.forget", systemImage: "trash") }
+                    }
+                }
+            }
+            .navigationTitle(host.display)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button("common.done") { dismiss() } }
+            }
+        }
+        .navigationViewStyle(.stack)
+    }
+
+    private func line(_ title: LocalizedStringKey, _ value: String) -> some View {
+        HStack {
+            Text(title)
+            Spacer()
+            Text(verbatim: value).foregroundColor(.secondary).textSelection(.enabled)
+        }
     }
 }
 

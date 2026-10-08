@@ -6989,6 +6989,22 @@
         }
       }
     },
+    "identities.clear_password": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forget the saved password"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Olvidar la contraseña guardada"
+          }
+        }
+      }
+    },
     "identities.delete.message": {
       "localizations": {
         "en": {
@@ -8301,6 +8317,182 @@
         }
       }
     },
+    "keychain.detail.certificate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificate"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificado"
+          }
+        }
+      }
+    },
+    "keychain.detail.certificate_yes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sí"
+          }
+        }
+      }
+    },
+    "keychain.detail.comment": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comment"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comentario"
+          }
+        }
+      }
+    },
+    "keychain.detail.comment_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The comment goes at the end of the public key (often who and where it is from)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El comentario va al final de la clave pública (suele decir de quién y de dónde es)."
+          }
+        }
+      }
+    },
+    "keychain.detail.fingerprint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fingerprint"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Huella"
+          }
+        }
+      }
+    },
+    "keychain.detail.passphrase": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passphrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frase de paso"
+          }
+        }
+      }
+    },
+    "keychain.detail.passphrase_yes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encrypted"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cifrada"
+          }
+        }
+      }
+    },
+    "keychain.detail.public_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Public key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave pública"
+          }
+        }
+      }
+    },
+    "keychain.detail.qr": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR code"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Código QR"
+          }
+        }
+      }
+    },
+    "keychain.detail.share_public": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share public key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compartir la clave pública"
+          }
+        }
+      }
+    },
+    "keychain.detail.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Details"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detalles"
+          }
+        }
+      }
+    },
     "keychain.empty.text": {
       "localizations": {
         "en": {
@@ -8333,6 +8525,134 @@
         }
       }
     },
+    "keychain.export.action": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export private key…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportar la clave privada…"
+          }
+        }
+      }
+    },
+    "keychain.export.copied": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiada"
+          }
+        }
+      }
+    },
+    "keychain.export.copy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy (this device only, for 2 minutes)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar (solo este dispositivo, 2 minutos)"
+          }
+        }
+      }
+    },
+    "keychain.export.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asks for Face ID, Touch ID or the passcode first."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pide antes Face ID, Touch ID o el código."
+          }
+        }
+      }
+    },
+    "keychain.export.none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This key has no private part saved here."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta clave no tiene la parte privada guardada aquí."
+          }
+        }
+      }
+    },
+    "keychain.export.reason": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show the private key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar la clave privada"
+          }
+        }
+      }
+    },
+    "keychain.export.share": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compartir…"
+          }
+        }
+      }
+    },
+    "keychain.export.warning": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anyone with this text can sign in as you wherever the key is installed. Keep it safe."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cualquiera con este texto puede entrar como tú donde esté instalada la clave. Guárdala bien."
+          }
+        }
+      }
+    },
     "keychain.generate": {
       "localizations": {
         "en": {
@@ -8361,6 +8681,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Generar"
+          }
+        }
+      }
+    },
+    "keychain.generate.comment %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comment (%@ (Termoak))"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comentario (%@ (Termoak))"
           }
         }
       }
@@ -8413,6 +8749,22 @@
         }
       }
     },
+    "keychain.import.check": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprobar la clave"
+          }
+        }
+      }
+    },
     "keychain.import.default_label": {
       "localizations": {
         "en": {
@@ -8429,6 +8781,38 @@
         }
       }
     },
+    "keychain.import.encrypted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protected with a passphrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protegida con frase de paso"
+          }
+        }
+      }
+    },
+    "keychain.import.not_a_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That file isn't a private key."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ese fichero no es una clave privada."
+          }
+        }
+      }
+    },
     "keychain.import.passphrase": {
       "localizations": {
         "en": {
@@ -8441,6 +8825,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Frase de paso (si tiene)"
+          }
+        }
+      }
+    },
+    "keychain.import.preview": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave"
           }
         }
       }
@@ -8473,6 +8873,102 @@
           "stringUnit": {
             "state": "translated",
             "value": "Importar clave"
+          }
+        }
+      }
+    },
+    "keychain.install.already": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key was already installed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave ya estaba instalada"
+          }
+        }
+      }
+    },
+    "keychain.install.done": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key installed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave instalada"
+          }
+        }
+      }
+    },
+    "keychain.install.failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't install the key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo instalar la clave"
+          }
+        }
+      }
+    },
+    "keychain.install.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connects to the host and adds the public key to ~/.ssh/authorized_keys (like ssh-copy-id), so it can be used to sign in there."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se conecta al host y añade la clave pública a ~/.ssh/authorized_keys (como ssh-copy-id), para poder usarla para entrar allí."
+          }
+        }
+      }
+    },
+    "keychain.install.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install on a host…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar en un host…"
+          }
+        }
+      }
+    },
+    "keychain.install.where %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In ~/.ssh/authorized_keys on %@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En ~/.ssh/authorized_keys de %@."
           }
         }
       }
@@ -8553,6 +9049,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Clave pública copiada. Pégala en ~/.ssh/authorized_keys del servidor."
+          }
+        }
+      }
+    },
+    "keychain.store_passphrase": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save the passphrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardar la frase de paso"
+          }
+        }
+      }
+    },
+    "keychain.store_passphrase.off_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You'll type it every time the key is used."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La escribirás cada vez que se use la clave."
           }
         }
       }
@@ -8796,6 +9324,54 @@
         }
       }
     },
+    "known_hosts.copy_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy public key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar la clave pública"
+          }
+        }
+      }
+    },
+    "known_hosts.detail.host": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host"
+          }
+        }
+      }
+    },
+    "known_hosts.detail.saved": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardada"
+          }
+        }
+      }
+    },
     "known_hosts.empty.text": {
       "localizations": {
         "en": {
@@ -8872,6 +9448,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "¿Olvidar %@?"
+          }
+        }
+      }
+    },
+    "known_hosts.search": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search known hosts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar hosts conocidos"
           }
         }
       }
@@ -10376,6 +10968,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bóveda local"
+          }
+        }
+      }
+    },
+    "qr.too_long": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too long for a QR code."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demasiado largo para un código QR."
           }
         }
       }

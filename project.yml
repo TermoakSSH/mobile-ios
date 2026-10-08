@@ -73,6 +73,8 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         # Translated in Termoak/InfoPlist.xcstrings.
         INFOPLIST_KEY_NSLocalNetworkUsageDescription: "To connect over SSH to computers on your local network."
+        # Exporting a private key asks for Face ID (Termoak/InfoPlist.xcstrings).
+        INFOPLIST_KEY_NSFaceIDUsageDescription: "To unlock Termoak and to export a private key."
         # The Rust library is static and carries no bitcode or Swift debug symbols.
         DEBUG_INFORMATION_FORMAT: dwarf
 
@@ -94,6 +96,7 @@ targets:
       - path: Termoak/Model/NoticeDeduper.swift
       - path: Termoak/Model/ApprovalPreview.swift
       - path: Termoak/Model/LockPolicy.swift
+      - path: Termoak/Model/KeyTools.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

@@ -1,6 +1,24 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "NSFaceIDUsageDescription": {
+      "comment": "Face ID prompt when exporting a private key (project.yml: INFOPLIST_KEY_NSFaceIDUsageDescription).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To unlock Termoak and to export a private key."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para desbloquear Termoak y para exportar una clave privada."
+          }
+        }
+      }
+    },
     "NSLocalNetworkUsageDescription": {
       "comment": "Local network permission prompt (project.yml: INFOPLIST_KEY_NSLocalNetworkUsageDescription).",
       "extractionState": "manual",
