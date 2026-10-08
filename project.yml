@@ -46,9 +46,8 @@ targets:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         # Invitation links open the app: termoak://join?server=…&token=…
-        # (https://<server>/join/<token> would need Associated Domains,
-        # `applinks:<server>`, and the server's apple-app-site-association;
-        # JoinLink already parses them).
+        # (https://termoak.com/join/<token> too: Universal Links, see
+        # Termoak/Termoak.entitlements and Signing.xcconfig).
         CFBundleURLTypes:
           - CFBundleURLName: com.termoak.links
             CFBundleTypeRole: Viewer
@@ -56,6 +55,10 @@ targets:
     dependencies:
       - package: TermoakKit
       - package: SwiftTerm
+    # The Team ID and the entitlements (Associated Domains for Universal Links).
+    configFiles:
+      Debug: Signing.xcconfig
+      Release: Signing.xcconfig
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.termoak

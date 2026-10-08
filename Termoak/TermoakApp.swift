@@ -9,8 +9,18 @@ struct TermoakApp: App {
     /// Link that opened the app (also before the vault is open).
     @State private var pendingURL: URL?
 
+    /// The last link received and when (a Universal Link can arrive both
+    /// ways: it is opened once).
+    @State private var lastURL: (url: URL, at: Date)?
+
     init() {
         TerminalFont.registerBundled()
+    }
+
+    private func receive(_ url: URL) {
+        if let last = lastURL, last.url == url, Date().timeIntervalSince(last.at) < 2 { return }
+        lastURL = (url, Date())
+        pendingURL = url
     }
 
     var body: some Scene {
@@ -32,7 +42,12 @@ struct TermoakApp: App {
             .tint(Brand.blue)
             .preferredColorScheme(settings.appTheme.colorScheme)
             .task { vault.open() }
-            .onOpenURL { url in pendingURL = url }
+            .onOpenURL { url in receive(url) }
+            // Universal Links (https://termoak.com/join/<token>): the web
+            // page's activity, in case it doesn't come through onOpenURL.
+            .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
+                if let url = activity.webpageURL { receive(url) }
+            }
         }
     }
 }

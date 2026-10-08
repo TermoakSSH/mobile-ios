@@ -89,6 +89,19 @@ git add core && git commit -m "core vX.Y.Z"
 After a `git pull` that moves `core`, run `git submodule update` and
 rebuild the engine too.
 
+### Signing and Universal Links
+
+`Signing.xcconfig` is the one place for the Apple Team ID
+(`DEVELOPMENT_TEAM`). The app asks for the Associated Domains capability
+(`Termoak/Termoak.entitlements`: `applinks:termoak.com` and
+`applinks:next.termoak.com`) so `https://termoak.com/join/<token>` links open
+it. A personal (free) team can't sign with that capability: empty
+`CODE_SIGN_ENTITLEMENTS` in `Signing.xcconfig` to build with one. Once the
+Team ID is filled in, `scripts/apple-app-site-association.sh <file>` writes
+the `apple-app-site-association` the servers publish at
+`/.well-known/apple-app-site-association` (public-web:
+`site/.well-known/apple-app-site-association`).
+
 ### Another server as the official one
 
 The "official server" button signs in to `https://termoak.com`. To test

@@ -1,0 +1,12 @@
+// Signing of the app target (project.yml → configFiles). THE single place for
+// the Apple Team ID: Xcode signs with it, and
+// scripts/apple-app-site-association.sh writes it into the
+// apple-app-site-association file the servers publish for Universal Links.
+//
+// Empty: Xcode asks for a team, and scripts/build-ipa.sh builds unsigned as
+// always (the .ipa is signed afterwards).
+DEVELOPMENT_TEAM =
+
+// Associated Domains (Universal Links). A personal (free) team can't sign
+// with this capability: leave it empty to build with one.
+CODE_SIGN_ENTITLEMENTS = Termoak/Termoak.entitlements
