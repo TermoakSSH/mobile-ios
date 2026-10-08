@@ -7,6 +7,8 @@ enum SnippetTarget: Hashable {
     case servers
     /// The terminals already open.
     case openTerminals
+    /// The panes of the split view.
+    case splitPanes
 }
 
 struct SnippetSendItem: Identifiable {
@@ -22,6 +24,8 @@ struct SnippetSendItem: Identifiable {
 struct SnippetSendView: View {
     let snippet: Snippet
     var initialTarget: SnippetTarget = .servers
+    /// Hosts picked beforehand (the selection of the hosts list).
+    var initialHosts: [SshHost] = []
 
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var sessions: Sessions
@@ -44,7 +48,7 @@ struct SnippetSendView: View {
         NavigationView {
             Group {
                 if let batch {
-                    SnippetBatchSummary(batch: batch) { showTerminals() }
+                    SnippetBatchSummary(batch: batch, onShowTerminals: { showTerminals() }, onOpen: { showTerminal($0) })
                 } else {
                     form
                 }
@@ -96,6 +100,9 @@ struct SnippetSendView: View {
                 Picker("snippets.send.target", selection: $target) {
                     Text("snippets.send.target.servers").tag(SnippetTarget.servers)
                     Text("snippets.send.target.open").tag(SnippetTarget.openTerminals)
+                    if sessions.splitActive {
+                        Text("snippets.send.target.panes").tag(SnippetTarget.splitPanes)
+                    }
                 }
                 .pickerStyle(.segmented)
             } footer: {
@@ -166,10 +173,10 @@ struct SnippetSendView: View {
 
     private var openSection: some View {
         Section {
-            if sessions.open.isEmpty {
+            if candidates.isEmpty {
                 Text("snippets.send.no_open").foregroundColor(.secondary)
             }
-            ForEach(sessions.open) { s in
+            ForEach(candidates) { s in
                 let ready = canTake(s)
                 Button { toggleOpen(s.id) } label: {
                     HStack(spacing: 12) {
@@ -179,6 +186,8 @@ struct SnippetSendView: View {
                             Text(s.title ?? s.label).foregroundColor(.primary).lineLimit(1)
                             if !ready {
                                 Text("snippets.send.status.not_connected").font(.caption).foregroundColor(.secondary)
+                            } else if s.asleep {
+                                Text("snippets.send.status.wakes").font(.caption).foregroundColor(.secondary)
                             }
                         }
                         Spacer()
@@ -190,6 +199,11 @@ struct SnippetSendView: View {
         } footer: {
             Text("snippets.send.open.footer")
         }
+    }
+
+    /// The open terminals, or only the panes of the split view.
+    private var candidates: [TerminalSession] {
+        target == .splitPanes ? sessions.paneSessions : sessions.open
     }
 
     private func check(_ on: Bool) -> some View {
@@ -218,7 +232,7 @@ struct SnippetSendView: View {
     private var chosenCount: Int {
         switch target {
         case .servers: return hosts.filter { chosenHosts.contains($0.key) }.count
-        case .openTerminals: return sessions.open.filter { chosenOpen.contains($0.id) && canTake($0) }.count
+        case .openTerminals, .splitPanes: return candidates.filter { chosenOpen.contains($0.id) && canTake($0) }.count
         }
     }
 
@@ -227,9 +241,10 @@ struct SnippetSendView: View {
             : String(localized: "snippets.send.paste_count \(chosenCount)")
     }
 
-    /// An open terminal that can take the snippet now.
+    /// An open terminal that can take the snippet: connected, or asleep
+    /// (it wakes up and gets it once connected), and you can type in it.
     private func canTake(_ s: TerminalSession) -> Bool {
-        !s.asleep && s.state == .connected && s.canWrite
+        (s.asleep || s.state == .connected) && s.canWrite
     }
 
     /// The hosts of a group and of the groups inside it.
@@ -264,8 +279,12 @@ struct SnippetSendView: View {
         }
         groups = ((try? model.core.listGroups()) ?? [])
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-        target = initialTarget
-        chosenOpen = Set(sessions.open.filter(canTake).map(\.id))
+        target = initialTarget == .splitPanes && !sessions.splitActive ? .openTerminals : initialTarget
+        chosenOpen = Set(sessions.open.filter { canTake($0) && !$0.asleep }.map(\.id))
+        if !initialHosts.isEmpty {
+            target = .servers
+            chosenHosts = Set(initialHosts.map(\.key))
+        }
         loaded = true
     }
 
@@ -277,10 +296,20 @@ struct SnippetSendView: View {
             let chosen = hosts.filter { chosenHosts.contains($0.key) }
             guard !chosen.isEmpty else { return }
             batch = SnippetBatch(text: text, run: run, terminals: sessions.openInBackground(chosen))
-        case .openTerminals:
-            let chosen = sessions.open.filter { chosenOpen.contains($0.id) && canTake($0) }
+        case .openTerminals, .splitPanes:
+            let chosen = candidates.filter { chosenOpen.contains($0.id) && canTake($0) }
             guard !chosen.isEmpty else { return }
+            // Sleeping tabs connect again and get it once connected.
+            chosen.forEach { sessions.wake($0) }
             batch = SnippetBatch(text: text, run: run, terminals: chosen)
+        }
+    }
+
+    /// Closes and shows one terminal of the summary.
+    private func showTerminal(_ id: UUID) {
+        dismiss()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            if sessions.open.contains(where: { $0.id == id }) { sessions.show(id) }
         }
     }
 
@@ -297,6 +326,8 @@ struct SnippetSendView: View {
 private struct SnippetBatchSummary: View {
     @ObservedObject var batch: SnippetBatch
     let onShowTerminals: () -> Void
+    /// A row was tapped: show that terminal.
+    let onOpen: (UUID) -> Void
 
     var body: some View {
         List {
@@ -325,17 +356,27 @@ private struct SnippetBatchSummary: View {
             }
             Section {
                 ForEach(batch.items) { item in
-                    HStack(spacing: 12) {
-                        icon(item.status).frame(width: 22)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(item.name).lineLimit(1)
-                            Text(text(item.status)).font(.caption).foregroundColor(.secondary).lineLimit(2)
-                        }
-                    }
+                    Button { onOpen(item.id) } label: { row(item) }
+                        .buttonStyle(.plain)
                 }
+            } footer: {
+                Text("snippets.send.summary.tap_row")
             }
         }
         .listStyle(.insetGrouped)
+    }
+
+    private func row(_ item: SnippetBatch.Item) -> some View {
+        HStack(spacing: 12) {
+            icon(item.status).frame(width: 22)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.name).foregroundColor(.primary).lineLimit(1)
+                Text(text(item.status)).font(.caption).foregroundColor(.secondary).lineLimit(2)
+            }
+            Spacer(minLength: 0)
+            Image(systemName: "chevron.right").font(.caption).foregroundColor(.secondary)
+        }
+        .contentShape(Rectangle())
     }
 
     @ViewBuilder private func icon(_ s: SnippetBatch.Status) -> some View {
@@ -356,5 +397,55 @@ private struct SnippetBatchSummary: View {
         case .failed(let why): return why
         case .skipped(let why): return why
         }
+    }
+}
+
+/// Chooses a snippet (to run it on the hosts picked in the list).
+struct SnippetPickerView: View {
+    let onPick: (Snippet) -> Void
+    @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var account: Accounts
+    @Environment(\.dismiss) private var dismiss
+    @State private var snippets: [Snippet] = []
+    @State private var query = ""
+
+    private var filtered: [Snippet] {
+        let q = query.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !q.isEmpty else { return snippets }
+        return snippets.filter { sn in
+            [sn.name, sn.description, sn.script, sn.tags.joined(separator: " ")].contains { $0.lowercased().contains(q) }
+        }
+    }
+
+    var body: some View {
+        NavigationView {
+            List {
+                if snippets.isEmpty {
+                    Text("snippets.empty.title").foregroundColor(.secondary)
+                }
+                ForEach(filtered, id: \.key) { sn in
+                    Button { onPick(sn) } label: { row(sn) }
+                }
+            }
+            .searchable(text: $query, prompt: Text("common.search"))
+            .navigationTitle("hosts.select.run_snippet")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
+            }
+        }
+        .navigationViewStyle(.stack)
+        .onAppear {
+            snippets = ((try? model.core.listSnippets(filter: account.itemFilter)) ?? [])
+                .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        }
+    }
+
+    private func row(_ sn: Snippet) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(sn.name).font(.headline).foregroundColor(.primary)
+            Text(sn.script).font(.system(.caption, design: .monospaced)).foregroundColor(.secondary).lineLimit(2)
+        }
+        .padding(.vertical, 2)
     }
 }

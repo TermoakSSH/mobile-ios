@@ -48,6 +48,14 @@ struct HostsView: View {
     @State private var managingAccounts = false
     @State private var showingVaults = false
     @State private var notice: Notice?
+    /// A short message at the bottom ("Address copied").
+    @State private var toast: String?
+    /// A Use-only host whose details are on screen ("View").
+    @State private var viewing: SshHost?
+    /// The selected hosts, while a snippet to run on them is chosen.
+    @State private var snippetPick: HostBatch?
+    /// The snippet chosen for the selected hosts.
+    @State private var snippetRun: SnippetRun?
     /// Selecting several hosts (by `SshHost.key`).
     @State private var editMode: EditMode = .inactive
     @State private var selection: Set<String> = []
@@ -149,7 +157,8 @@ struct HostsView: View {
 
     var body: some View {
         // Split in parts: as one expression it is too much for the type checker.
-        withDialogs(withSheets(withToolbar(content)))
+        withDialogs(withMoreSheets(withSheets(withToolbar(content))))
+        .overlay(alignment: .bottom) { toastView }
         .onAppear {
             load()
             if isRoot { account.sync() }
@@ -262,6 +271,54 @@ struct HostsView: View {
         }
     }
 
+    /// The details of a Use-only host and running a snippet on the selection.
+    private func withMoreSheets<V: View>(_ view: V) -> some View {
+        view
+        .sheet(item: Binding(get: { viewing.map(SelectedHost.init) }, set: { viewing = $0?.host })) { e in
+            HostDetailsView(host: e.host, strict: isStrict(e.host), onConnect: { onServer in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { connect(e.host, onServer: onServer) }
+            }, canOpenOnServer: canOpenOnServer(e.host))
+            .environmentObject(model).environmentObject(account)
+        }
+        .sheet(item: $snippetPick) { batch in
+            SnippetPickerView { snippet in
+                // One sheet after the other.
+                snippetPick = nil
+                endSelection()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    snippetRun = SnippetRun(snippet: snippet, hosts: batch.hosts)
+                }
+            }
+            .environmentObject(model).environmentObject(account)
+        }
+        .sheet(item: $snippetRun) { run in
+            SnippetSendView(snippet: run.snippet, initialTarget: .servers, initialHosts: run.hosts)
+                .environmentObject(model)
+                .environmentObject(sessions)
+        }
+    }
+
+    /// "Address copied" for a moment.
+    @ViewBuilder private var toastView: some View {
+        if let toast {
+            Text(verbatim: toast)
+                .font(.subheadline.weight(.medium))
+                .foregroundColor(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Color.black.opacity(0.8), in: Capsule())
+                .padding(.bottom, 24)
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+        }
+    }
+
+    private func flash(_ text: String) {
+        withAnimation { toast = text }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+            if toast == text { withAnimation { toast = nil } }
+        }
+    }
+
     private func withDialogs<V: View>(_ view: V) -> some View {
         view
         .confirmationDialog(Text("hosts.delete.title \(deleting?.label ?? "")"),
@@ -343,7 +400,7 @@ struct HostsView: View {
                         .swipeActions(edge: .trailing) {
                             if g.canEdit {
                                 Button(role: .destructive) { deletingGroup = g } label: { Label("hosts.group.delete", systemImage: "trash") }
-                                Button { editedGroup = GroupEdit(group: g) } label: { Label("hosts.group.rename", systemImage: "pencil") }
+                                Button { editedGroup = GroupEdit(group: g) } label: { Label("common.edit", systemImage: "pencil") }
                                     .tint(.orange)
                             }
                         }
@@ -352,37 +409,11 @@ struct HostsView: View {
             }
             ForEach(sections) { section in
                 Section(section.title) {
-                    ForEach(section.hosts, id: \.key) { host in
-                        HostRow(host: host, selecting: selecting,
-                                account: account.showsAccountBadges ? account.account(host.accountId) : nil,
-                                vault: account.showsVaults ? account.vault(host.accountId, host.vaultId) : nil,
-                                showVault: account.showsVaults || (host.accountId == nil && !account.scoped.isEmpty)) {
-                            connect(host, onServer: false)
-                        }
-                        .contextMenu { menu(host) }
-                        .listRowBackground(keyboardHighlight(cursor == host.key))
-                        .id(host.key)
-                        .swipeActions(edge: .trailing) {
-                            if host.canEdit {
-                                Button(role: .destructive) { deleting = host } label: { Label("common.delete", systemImage: "trash") }
-                                Button { editing = HostEdit(host: host) } label: { Label("common.edit", systemImage: "pencil") }
-                                    .tint(.orange)
-                            }
-                        }
-                        .swipeActions(edge: .leading) {
-                            if host.canEdit {
-                                Button { toggleFavorite(host) } label: {
-                                    if host.favorite {
-                                        Label("hosts.menu.unfavorite", systemImage: "star.slash")
-                                    } else {
-                                        Label("hosts.menu.favorite", systemImage: "star")
-                                    }
-                                }
-                                .tint(Brand.amber)
-                            }
-                        }
-                    }
+                    ForEach(section.hosts, id: \.key) { host in hostRow(host) }
                 }
+            }
+            if let g = group, isEmptyGroup {
+                Section { emptyGroupState(g) }
             }
         }
         .listStyle(.insetGrouped)
@@ -406,6 +437,67 @@ struct HostsView: View {
         .navigationTitle(selecting ? selectionTitle : title)
     }
 
+    /// A host of the list, with its menu and swipe actions.
+    private func hostRow(_ host: SshHost) -> some View {
+        HostRow(host: host, selecting: selecting,
+                account: account.showsAccountBadges ? account.account(host.accountId) : nil,
+                vault: account.showsVaults ? account.vault(host.accountId, host.vaultId) : nil,
+                showVault: account.showsVaults || (host.accountId == nil && !account.scoped.isEmpty),
+                connected: connectedKeys.contains(host.key),
+                onTag: selecting ? nil : { query = $0 }) {
+            connect(host, onServer: false)
+        }
+        .contextMenu { menu(host) }
+        .listRowBackground(keyboardHighlight(cursor == host.key))
+        .id(host.key)
+        .swipeActions(edge: .trailing) {
+            if host.canEdit {
+                Button(role: .destructive) { deleting = host } label: { Label("common.delete", systemImage: "trash") }
+                Button { editing = HostEdit(host: host) } label: { Label("common.edit", systemImage: "pencil") }
+                    .tint(.orange)
+            }
+        }
+        .swipeActions(edge: .leading) {
+            if host.canEdit {
+                Button { toggleFavorite(host) } label: {
+                    if host.favorite {
+                        Label("hosts.menu.unfavorite", systemImage: "star.slash")
+                    } else {
+                        Label("hosts.menu.favorite", systemImage: "star")
+                    }
+                }
+                .tint(Brand.amber)
+            }
+        }
+    }
+
+    /// Hosts with a terminal open (by `SshHost.key`): the dot on their icon.
+    private var connectedKeys: Set<String> {
+        Set(sessions.open.compactMap { s -> String? in
+            guard let h = s.hostId else { return nil }
+            if case .closed = s.state { return nil }
+            return itemKey(s.accountId, h)
+        })
+    }
+
+    /// Inside a group with nothing in it (no hosts nor groups).
+    private var isEmptyGroup: Bool {
+        guard let groupId, !searching else { return false }
+        return !hosts.contains { $0.groupId == groupId && $0.accountId == groupAccountId }
+            && !groups.contains { $0.parentId == groupId && $0.accountId == groupAccountId }
+    }
+
+    /// "This group is empty", and New host (it goes in the group).
+    private func emptyGroupState(_ g: HostGroup) -> some View {
+        EmptyState(
+            icon: "folder",
+            title: String(localized: "hosts.group.empty.title"),
+            text: String(localized: "hosts.group.empty.text"),
+            action: g.canEdit ? String(localized: "common.new_host") : nil
+        ) { editing = HostEdit(host: nil) }
+        .listRowBackground(Color.clear)
+    }
+
     // MARK: Hardware keyboard
 
     /// Something covers the list (a sheet, an alert, the terminal...).
@@ -415,6 +507,7 @@ struct HostsView: View {
             sessions.showing, editing != nil, editedGroup != nil, generatingKey, importingKey, importingConfig, quickConnecting,
             transferring != nil, addingAccount, resuming != nil, managingAccounts, showingVaults,
             filesHost != nil, tunnelsHost != nil, deleting != nil, deletingGroup != nil, deletingSelection, notice != nil,
+            viewing != nil, snippetPick != nil, snippetRun != nil,
         ]
         return shown.contains(true)
     }
@@ -517,6 +610,12 @@ struct HostsView: View {
         Button { connectSelection() } label: {
             Label(String(localized: "hosts.select.connect \(chosen.count)"), systemImage: "terminal")
                 .labelStyle(.titleAndIcon)
+        }
+        .disabled(chosen.isEmpty)
+        Spacer()
+        // Run a snippet on them (a terminal to each one).
+        Button { snippetPick = HostBatch(hosts: chosen) } label: {
+            Label("hosts.select.run_snippet", systemImage: "chevron.left.forwardslash.chevron.right")
         }
         .disabled(chosen.isEmpty)
         Spacer()
@@ -801,6 +900,9 @@ struct HostsView: View {
         Divider()
         if host.canEdit {
             Button { editing = HostEdit(host: host) } label: { Label("common.edit", systemImage: "pencil") }
+        } else {
+            // Use only: what it is, without its secrets.
+            Button { viewing = host } label: { Label("hosts.menu.view", systemImage: "eye") }
         }
         Button { startSelection(host) } label: { Label("hosts.select", systemImage: "checkmark.circle") }
         if host.canEdit {
@@ -813,11 +915,14 @@ struct HostsView: View {
             }
             Button { duplicate(host) } label: { Label("hosts.menu.duplicate", systemImage: "plus.square.on.square") }
         }
-        Button { UIPasteboard.general.string = host.address } label: {
+        Button {
+            UIPasteboard.general.string = host.address
+            flash(String(localized: "hosts.address_copied"))
+        } label: {
             Label("hosts.menu.copy_address", systemImage: "doc.on.doc")
         }
         if desktop && host.canEdit { moveToGroupMenu(host) }
-        if !account.list.isEmpty {
+        if !account.list.isEmpty && !host.isUseOnly {
             let place = account.place(accountId: host.accountId, vaultId: host.vaultId)
             Menu {
                 if host.canEdit {
@@ -841,10 +946,70 @@ struct HostsView: View {
     }
 
     @ViewBuilder private func groupMenu(_ g: HostGroup) -> some View {
+        let inside = hostsIn(g)
+        Button { connectAll(inside, split: false) } label: {
+            Label(String(localized: "hosts.group.connect_all \(inside.count)"), systemImage: "terminal")
+        }
+        .disabled(inside.isEmpty)
+        if desktop {
+            Button { connectAll(inside, split: true) } label: {
+                Label("hosts.group.split_all", systemImage: "rectangle.split.2x2")
+            }
+            .disabled(inside.isEmpty)
+        }
         if g.canEdit {
-            Button { editedGroup = GroupEdit(group: g) } label: { Label("hosts.group.rename", systemImage: "pencil") }
+            Divider()
+            Button { editedGroup = GroupEdit(group: g) } label: { Label("hosts.group.edit", systemImage: "pencil") }
+        }
+        if !account.list.isEmpty && g.canEdit {
+            groupTransferMenu(g)
+        }
+        if g.canEdit {
+            Divider()
             Button(role: .destructive) { deletingGroup = g } label: { Label("hosts.group.delete", systemImage: "trash") }
         }
+    }
+
+    /// Move or copy the group (with its hosts) to another vault or account.
+    private func groupTransferMenu(_ g: HostGroup) -> some View {
+        let place = account.place(accountId: g.accountId, vaultId: g.vaultId)
+        let item = ItemRef(accountId: g.accountId, id: g.id)
+        return Menu {
+            Button { transferring = TransferRequest(items: [item], names: [g.name], from: place, mode: .move) } label: {
+                Label("transfer.move_to", systemImage: "arrow.right.square")
+            }
+            Button { transferring = TransferRequest(items: [item], names: [g.name], from: place, mode: .copy) } label: {
+                Label("transfer.copy_to", systemImage: "plus.square.on.square")
+            }
+        } label: {
+            Label("transfer.menu", systemImage: "lock.shield")
+        }
+    }
+
+    /// The hosts of a group and of the groups inside it, in list order.
+    private func hostsIn(_ g: HostGroup) -> [SshHost] {
+        var ids: Set<String> = [g.id]
+        var pending = [g]
+        while let next = pending.popLast() {
+            for child in groups where child.parentId == next.id && child.accountId == g.accountId && !ids.contains(child.id) {
+                ids.insert(child.id)
+                pending.append(child)
+            }
+        }
+        return hosts.filter { h in h.accountId == g.accountId && h.groupId.map { ids.contains($0) } == true }.sorted(by: listOrder)
+    }
+
+    /// "Connect to all": a tab to each host (`split`: side by side, up to
+    /// four). Strict Use-only hosts open through their server.
+    private func connectAll(_ chosen: [SshHost], split: Bool) {
+        guard !chosen.isEmpty else { return }
+        if chosen.count == 1 {
+            connect(chosen[0], onServer: false)
+            return
+        }
+        let strict = chosen.filter { isStrict($0) }
+        sessions.openLocal(chosen.filter { !isStrict($0) }, split: split)
+        strict.forEach { sessions.openOnServer($0) }
     }
 
     private func isStrict(_ host: SshHost) -> Bool {
@@ -1167,7 +1332,7 @@ private extension HostsView {
             GridGroupHeader(title: section.title, count: section.hosts.count, color: hexColor(g.color) ?? .accentColor,
                             account: account.showsAccountBadges ? account.account(g.accountId) : nil,
                             vault: account.showsVaults ? account.vault(g.accountId, g.vaultId) : nil,
-                            showsMenu: g.canEdit) {
+                            showsMenu: true) {
                 groupMenu(g)
             }
         } else if !section.title.isEmpty {
@@ -1184,6 +1349,7 @@ private extension HostsView {
                  account: account.showsAccountBadges ? account.account(host.accountId) : nil,
                  vault: account.showsVaults ? account.vault(host.accountId, host.vaultId) : nil,
                  showVault: account.showsVaults || (host.accountId == nil && !account.scoped.isEmpty),
+                 connected: connectedKeys.contains(host.key), onTag: { query = $0 },
                  onTap: { tapCard(host) }) {
             menu(host)
         }
@@ -1319,6 +1485,19 @@ private struct GroupNode: Identifiable {
     var id: String { group.key }
 }
 
+/// Hosts picked in the list (to run a snippet on them).
+private struct HostBatch: Identifiable {
+    let id = UUID()
+    let hosts: [SshHost]
+}
+
+/// A snippet to run on the hosts picked in the list.
+private struct SnippetRun: Identifiable {
+    let id = UUID()
+    let snippet: Snippet
+    let hosts: [SshHost]
+}
+
 struct HostEdit: Identifiable {
     let id = UUID()
     let host: SshHost?
@@ -1419,6 +1598,10 @@ private struct HostRow: View {
     var vault: VaultInfo? = nil
     /// Show the vault chip (or "This device").
     var showVault = false
+    /// A terminal to it is open: a green dot on its icon.
+    var connected = false
+    /// A tag was tapped (to filter the list by it).
+    var onTag: ((String) -> Void)? = nil
     let onConnect: () -> Void
 
     var body: some View {
@@ -1433,6 +1616,7 @@ private struct HostRow: View {
     private var content: some View {
         HStack(spacing: 14) {
             HostIcon(host: host, size: 42)
+                .overlay(alignment: .bottomTrailing) { if connected { ConnectedDot() } }
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
                     Text(host.displayName)
@@ -1452,7 +1636,7 @@ private struct HostRow: View {
                         if showVault && (vault != nil || host.accountId == nil) { VaultChip(vault: vault) }
                         if host.isUseOnly { UseOnlyBadge() }
                         ForEach(Array(host.tags.prefix(3).enumerated()), id: \.offset) { _, tag in
-                            TagChip(text: tag)
+                            TappableTag(text: tag, onTap: onTag)
                         }
                         if host.tags.count > 3 { TagChip(text: "+\(host.tags.count - 3)") }
                     }
@@ -1466,6 +1650,36 @@ private struct HostRow: View {
     }
 }
 
+/// "A terminal to this host is open": a green dot on the corner of its icon.
+struct ConnectedDot: View {
+    var body: some View {
+        Circle()
+            .fill(Brand.green)
+            .frame(width: 11, height: 11)
+            .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 2))
+            .offset(x: 3, y: 3)
+            .accessibilityLabel(Text("hosts.connected"))
+    }
+}
+
+/// A tag that filters the list by it when tapped (over the row's own tap).
+struct TappableTag: View {
+    let text: String
+    let onTap: ((String) -> Void)?
+
+    var body: some View {
+        if let onTap {
+            TagChip(text: text)
+                .contentShape(Rectangle())
+                .highPriorityGesture(TapGesture().onEnded { onTap(text) })
+                .accessibilityAddTraits(.isButton)
+                .accessibilityHint(Text("hosts.tag.filter_hint"))
+        } else {
+            TagChip(text: text)
+        }
+    }
+}
+
 /// Name of a group (new or existing).
 private struct GroupEditor: View {
     let original: HostGroup
@@ -1473,6 +1687,7 @@ private struct GroupEditor: View {
     @EnvironmentObject private var account: Accounts
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
+    @State private var color: String?
     @State private var place: ItemPlace = .device
     @State private var error: String?
 
@@ -1486,9 +1701,10 @@ private struct GroupEditor: View {
             Form {
                 TextField("hosts.group.name", text: $name)
                 if choosesPlace { PlacePicker(place: $place) }
+                Section { GroupColorPicker(color: $color) }
                 if let error { Text(error).foregroundColor(Brand.red) }
             }
-            .navigationTitle(original.id.isEmpty ? String(localized: "hosts.group.new") : String(localized: "hosts.group.rename"))
+            .navigationTitle(original.id.isEmpty ? String(localized: "hosts.group.new") : String(localized: "hosts.group.edit"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
@@ -1496,6 +1712,7 @@ private struct GroupEditor: View {
                     Button("common.save") {
                         var g = original
                         g.name = name.trimmingCharacters(in: .whitespaces)
+                        g.color = color
                         if choosesPlace {
                             g.accountId = place.accountId
                             g.vaultId = place.vaultId
@@ -1516,8 +1733,50 @@ private struct GroupEditor: View {
         }
         .onAppear {
             name = original.name
+            color = original.color
             place = account.place(accountId: original.accountId, vaultId: original.vaultId)
         }
+    }
+}
+
+/// A group's colour: none (the accent colour) or one of the hosts' palette.
+private struct GroupColorPicker: View {
+    @Binding var color: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("host_editor.color")
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 30, maximum: 40), spacing: 8)], alignment: .leading, spacing: 8) {
+                Button { color = nil } label: {
+                    Circle()
+                        .strokeBorder(Color.secondary.opacity(0.6), style: StrokeStyle(lineWidth: 1.5, dash: [3, 2]))
+                        .frame(width: 24, height: 24)
+                        .padding(3)
+                        .overlay(Circle().stroke(color == nil ? Color.accentColor : .clear, lineWidth: 2))
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel(Text("hosts.group.color.none"))
+                .accessibilityAddTraits(color == nil ? .isSelected : [])
+                ForEach(Array(hostPalette.enumerated()), id: \.offset) { i, value in
+                    swatch(i, hexString(value))
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func swatch(_ i: Int, _ hex: String) -> some View {
+        let selected = sameColor(color, hex)
+        return Button { color = hex } label: {
+            Circle()
+                .fill(hexColor(hex) ?? .accentColor)
+                .frame(width: 24, height: 24)
+                .padding(3)
+                .overlay(Circle().stroke(selected ? Color.primary : .clear, lineWidth: 2))
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel(Text("host_editor.color.option \(i + 1)"))
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
 

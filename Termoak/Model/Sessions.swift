@@ -1598,9 +1598,9 @@ final class Sessions: ObservableObject {
     }
 
     /// Opens a terminal to each host (several selected in the list). On an
-    /// iPad, up to four of them go side by side.
-    func openLocal(_ hosts: [SshHost]) {
-        let new = openInBackground(hosts)
+    /// iPad (with `split`), up to four of them go side by side.
+    func openLocal(_ hosts: [SshHost], split: Bool = true) {
+        let new = openInBackground(hosts, split: split)
         guard let first = new.first else { return }
         activeId = first.id
         showing = true
@@ -1610,7 +1610,7 @@ final class Sessions: ObservableObject {
     /// on several servers). On an iPad, up to four of them go side by side
     /// when they are shown.
     @discardableResult
-    func openInBackground(_ hosts: [SshHost]) -> [TerminalSession] {
+    func openInBackground(_ hosts: [SshHost], split: Bool = true) -> [TerminalSession] {
         let new: [TerminalSession] = hosts.map { LocalTerminal(core: core, host: $0, settings: settings) }
         guard !new.isEmpty else { return [] }
         splitOnNextOpen = false
@@ -1618,7 +1618,7 @@ final class Sessions: ObservableObject {
             prepare(s)
             open.append(s)
         }
-        if UIDevice.current.userInterfaceIdiom == .pad && new.count >= 2 {
+        if split && UIDevice.current.userInterfaceIdiom == .pad && new.count >= 2 {
             panes = new.prefix(PaneLayout.maxPanes).map(\.id)
             focusMode = false
             broadcasting = false

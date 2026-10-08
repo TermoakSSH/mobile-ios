@@ -29,6 +29,10 @@ struct HostCard<MenuItems: View>: View {
     var vault: VaultInfo? = nil
     /// Show the vault chip (or "This device").
     var showVault = false
+    /// A terminal to it is open: a green dot on its icon.
+    var connected = false
+    /// A tag was tapped (to filter the grid by it).
+    var onTag: ((String) -> Void)? = nil
     let onTap: () -> Void
     @ViewBuilder let menuItems: () -> MenuItems
 
@@ -67,6 +71,7 @@ struct HostCard<MenuItems: View>: View {
                         .foregroundColor(selected ? .accentColor : .secondary)
                 }
                 HostIcon(host: host, size: 40)
+                    .overlay(alignment: .bottomTrailing) { if connected { ConnectedDot() } }
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 4) {
                         Text(host.displayName)
@@ -116,7 +121,7 @@ struct HostCard<MenuItems: View>: View {
             if showVault && (vault != nil || host.accountId == nil) { VaultChip(vault: vault) }
             if host.isUseOnly { UseOnlyBadge() }
             ForEach(Array(host.tags.prefix(3).enumerated()), id: \.offset) { _, tag in
-                TagChip(text: tag)
+                TappableTag(text: tag, onTap: selecting ? nil : onTag)
             }
             if host.tags.count > 3 { TagChip(text: "+\(host.tags.count - 3)") }
         }
