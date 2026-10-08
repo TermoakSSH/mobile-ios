@@ -99,6 +99,7 @@ targets:
       - path: Termoak/Model/LockPolicy.swift
       - path: Termoak/Model/KeyTools.swift
       - path: Termoak/Model/InviteLink.swift
+      - path: Termoak/Model/AiTaskJson.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
