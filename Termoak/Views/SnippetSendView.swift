@@ -40,6 +40,9 @@ struct SnippetSendView: View {
     @State private var chosenOpen: Set<UUID> = []
     @State private var query = ""
     @State private var batch: SnippetBatch?
+    /// Run it on the servers without terminals and collect each one's output.
+    @State private var collect = false
+    @State private var execBatch: ExecBatch?
     @State private var loaded = false
 
     private var variables: [String] { snippetVariables(script: snippet.script) }
@@ -47,7 +50,9 @@ struct SnippetSendView: View {
     var body: some View {
         NavigationView {
             Group {
-                if let batch {
+                if let execBatch {
+                    ExecBatchSummary(batch: execBatch)
+                } else if let batch {
                     SnippetBatchSummary(batch: batch, onShowTerminals: { showTerminals() }, onOpen: { showTerminal($0) })
                 } else {
                     form
@@ -56,7 +61,7 @@ struct SnippetSendView: View {
             .navigationTitle(snippet.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if batch == nil {
+                if batch == nil && execBatch == nil {
                     ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                     ToolbarItem(placement: .confirmationAction) {
                         Button(sendTitle) { send() }
@@ -107,6 +112,13 @@ struct SnippetSendView: View {
                 .pickerStyle(.segmented)
             } footer: {
                 Text(run ? String(localized: "snippets.send.mode.run_footer") : String(localized: "snippets.send.mode.paste_footer"))
+            }
+            if target == .servers && run {
+                Section {
+                    Toggle("snippets.exec.toggle", isOn: $collect)
+                } footer: {
+                    Text("snippets.exec.toggle.footer")
+                }
             }
             if target == .servers {
                 serverSections
@@ -295,6 +307,10 @@ struct SnippetSendView: View {
         case .servers:
             let chosen = hosts.filter { chosenHosts.contains($0.key) }
             guard !chosen.isEmpty else { return }
+            if collect && run {
+                execBatch = ExecBatch(core: model.core, command: text, hosts: chosen)
+                return
+            }
             batch = SnippetBatch(text: text, run: run, terminals: sessions.openInBackground(chosen))
         case .openTerminals, .splitPanes:
             let chosen = candidates.filter { chosenOpen.contains($0.id) && canTake($0) }

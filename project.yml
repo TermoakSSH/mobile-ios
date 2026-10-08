@@ -103,6 +103,7 @@ targets:
       - path: Termoak/Model/InviteLink.swift
       - path: Termoak/Model/AiTaskJson.swift
       - path: Termoak/Model/GroupChain.swift
+      - path: Termoak/Model/ExecReport.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
