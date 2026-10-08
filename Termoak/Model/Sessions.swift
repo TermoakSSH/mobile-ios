@@ -1735,6 +1735,7 @@ final class Sessions: ObservableObject {
     }
 
     func openLocal(_ host: SshHost) {
+        RecentHostsStore.record(host)
         add(LocalTerminal(core: core, host: host, settings: settings))
     }
 
@@ -1773,6 +1774,7 @@ final class Sessions: ObservableObject {
     /// A persistent session on the host's server (its account). The server
     /// does not open Telnet sessions: a Telnet host's tab says so.
     func openOnServer(_ host: SshHost) {
+        RecentHostsStore.record(host)
         if host.isTelnet {
             let reason = host.isUseOnly ? String(localized: "telnet.strict_vault") : String(localized: "telnet.no_server_sessions")
             add(LocalTerminal(core: core, host: host, settings: settings, refusal: reason))

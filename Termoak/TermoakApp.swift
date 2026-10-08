@@ -7,6 +7,9 @@ struct TermoakApp: App {
     @StateObject private var vault = LocalVault()
     @StateObject private var settings = AppSettings()
     @ObservedObject private var lock = AppLock.shared
+    /// Only to receive the home-screen Quick Actions (through its scene delegate).
+    @UIApplicationDelegateAdaptor(TermoakAppDelegate.self) private var appDelegate
+    @ObservedObject private var system = SystemRouter.shared
     @Environment(\.scenePhase) private var phase
     /// Link that opened the app (also before the vault is open).
     @State private var pendingURL: URL?
@@ -50,6 +53,12 @@ struct TermoakApp: App {
             .preferredColorScheme(settings.appTheme.colorScheme)
             .task { vault.open() }
             .onOpenURL { url in receive(url) }
+            // The same links, if they reach the scene delegate instead.
+            .onReceive(system.$url) { url in
+                guard let url else { return }
+                system.url = nil
+                receive(url)
+            }
             // Universal Links (https://termoak.com/join/<token>): the web
             // page's activity, in case it doesn't come through onOpenURL.
             .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
@@ -71,6 +80,8 @@ final class AppModel: ObservableObject {
     @Published var joining: JoinSheetItem?
     /// A `termoak://invite` link: sign up with it.
     @Published var inviting: InviteLink?
+    /// Quick connect from a home-screen Quick Action.
+    @Published var quickConnecting = false
     private var subscriptions: Set<AnyCancellable> = []
 
     init(core: TermoakCore, settings: AppSettings) {
@@ -169,6 +180,28 @@ final class AppModel: ObservableObject {
         }
     }
 
+    /// A home-screen Quick Action: Quick connect, Join with a link (over the
+    /// home screen: a terminal on screen closes first) or connect to a host.
+    func perform(_ action: QuickAction) {
+        switch action {
+        case .quickConnect:
+            overHome { $0.quickConnecting = true }
+        case .join:
+            overHome { $0.joining = JoinSheetItem(link: nil) }
+        case .host(let id, let accountId):
+            guard let host = try? core.getHost(id: id, accountId: accountId) else { return }
+            sessions.connect(host, strict: host.isUseOnly && account.isStrict(accountId: host.accountId, vaultId: host.vaultId))
+        }
+    }
+
+    private func overHome(_ show: @escaping (AppModel) -> Void) {
+        let covered = sessions.showing
+        sessions.showing = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + (covered ? 0.6 : 0.1)) { [weak self] in
+            if let self { show(self) }
+        }
+    }
+
     /// A notification was tapped: to that session (over whatever is on screen).
     private func openFromNotice(sessionId: String, title: String, owner: Bool) {
         joining = nil
@@ -180,6 +213,7 @@ private struct Root: View {
     @StateObject private var model: AppModel
     @Environment(\.scenePhase) private var phase
     @Binding var pendingURL: URL?
+    @ObservedObject private var system = SystemRouter.shared
 
     init(core: TermoakCore, settings: AppSettings, pendingURL: Binding<URL?>) {
         _model = StateObject(wrappedValue: AppModel(core: core, settings: settings))
@@ -197,6 +231,12 @@ private struct Root: View {
         RootContent()
             .onAppear { openPendingURL() }
             .onChange(of: pendingURL) { _ in openPendingURL() }
+            // A home-screen Quick Action (also the one that launched the app).
+            .onReceive(system.$action) { action in
+                guard let action else { return }
+                system.action = nil
+                model.perform(action)
+            }
             .environmentObject(model)
             .environmentObject(model.account)
             .environmentObject(model.sessions)
@@ -206,11 +246,15 @@ private struct Root: View {
                 await model.account.refresh()
                 await model.restoreServerSessions()
                 model.account.sync()
+                RecentHostsStore.updateShortcutItems(core: model.core)
             }
             .onChange(of: phase) { newPhase in
                 BackgroundNotices.shared.inBackground = newPhase == .background
                 switch newPhase {
-                case .background: model.sessions.enterBackground()
+                case .background:
+                    model.sessions.enterBackground()
+                    // The icon's Quick Actions with the hosts of now.
+                    RecentHostsStore.updateShortcutItems(core: model.core)
                 case .active:
                     model.sessions.returnedToForeground()
                     Task {
@@ -264,6 +308,14 @@ private struct RootContent: View {
                             .environmentObject(model.tunnels)
                     }
             }
+        }
+        // Quick connect from a home-screen Quick Action.
+        .sheet(isPresented: $model.quickConnecting) {
+            QuickConnectView { host, strict in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { sessions.connect(host, strict: strict) }
+            }
+            .environmentObject(model)
+            .environmentObject(account)
         }
         .sheet(item: $model.joining) { item in
             JoinLinkView(link: item.link)
