@@ -168,8 +168,9 @@ struct CopilotPanel: View {
                         }
                         ForEach(copilot.live) { e in item(e) }
                         ForEach(copilot.approvals, id: \.id) { a in
-                            ApprovalCard(approval: a, task: String(localized: "copilot.approval_title"), copilot: true) { approve, always in
-                                copilot.decide(a, approve: approve, always: always)
+                            ApprovalCard(approval: a, task: String(localized: "copilot.approval_title"), copilot: true,
+                                         preview: copilot.preview(for: a.id)) { choice in
+                                copilot.decide(a, choice)
                             }
                             .padding(.horizontal)
                         }

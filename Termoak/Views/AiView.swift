@@ -24,6 +24,8 @@ struct AiView: View {
     @EnvironmentObject private var account: Accounts
     @State private var tasks: [AiTask] = []
     @State private var approvals: [AiApproval] = []
+    /// What each pending approval shows (server 0.6), by id.
+    @State private var previews: [String: ApprovalPreview] = [:]
     @State private var creating = false
     @State private var loggingIn = false
     @State private var error: String?
@@ -96,8 +98,8 @@ struct AiView: View {
             if !approvals.isEmpty {
                 Section("ai.section.approvals") {
                     ForEach(approvals, id: \.id) { a in
-                        ApprovalCard(approval: a, task: tasks.first { $0.id == a.taskId }?.title) { approve, always in
-                            decide(a, approve: approve, always: always)
+                        ApprovalCard(approval: a, task: tasks.first { $0.id == a.taskId }?.title, preview: previews[a.id]) { choice in
+                            decide(a, choice)
                         }
                     }
                 }
@@ -122,16 +124,17 @@ struct AiView: View {
         do {
             tasks = try await api.listAiTasks(limit: 50)
             approvals = try await api.listPendingApprovals()
+            previews = approvals.isEmpty ? [:] : await api.approvalPreviews()
             await account.refreshApprovals()
         } catch {
             self.error = userMessage(error)
         }
     }
 
-    private func decide(_ a: AiApproval, approve: Bool, always: Bool) {
+    private func decide(_ a: AiApproval, _ choice: ApprovalChoice) {
         Task {
             do {
-                try await api.decideApproval(taskId: a.taskId, approvalId: a.id, approve: approve, always: always)
+                try await api.decide(taskId: a.taskId, approvalId: a.id, choice)
             } catch {
                 self.error = userMessage(error)
             }
@@ -164,23 +167,53 @@ private struct TaskRow: View {
     }
 }
 
-/// An action the AI wants to take that needs your permission.
+/// An action the AI wants to take that needs your permission: with server
+/// 0.6, its risk and why, the exact command, the file's diff or the plan;
+/// Approve, Edit and approve (editable commands and plans), Deny with an
+/// optional reason, and approve the rest of the task.
 struct ApprovalCard: View {
     let approval: AiApproval
     let task: String?
     /// In the copilot: a standalone card with an amber border and the buttons on two rows.
     var copilot = false
-    let decide: (Bool, Bool) -> Void
+    /// What the server shows about it (`nil` before server 0.6).
+    var preview: ApprovalPreview? = nil
+    let decide: (ApprovalChoice) -> Void
+
+    @State private var editing = false
+    @State private var denying = false
 
     /// The command, if the tool runs one.
     private var command: String? {
+        if let c = preview?.command, !c.isEmpty { return c }
         guard let d = approval.inputJson.data(using: .utf8),
               let o = try? JSONSerialization.jsonObject(with: d) as? [String: Any],
               let c = o["command"] as? String, !c.isEmpty else { return nil }
         return c
     }
 
+    private var isPlan: Bool { preview?.kind == "plan" || approval.tool == "plan" }
+
     var body: some View {
+        card
+            .sheet(isPresented: $editing) {
+                ApprovalTextSheet(title: isPlan ? String(localized: "ai.approval.edit_plan") : String(localized: "ai.approval.edit"),
+                                  hint: isPlan ? String(localized: "ai.approval.edit_plan_hint") : String(localized: "ai.approval.edit_hint"),
+                                  initial: preview?.editableText ?? command ?? "",
+                                  action: String(localized: "ai.approval.approve_edited"), required: true) { text in
+                    decide(ApprovalChoice(approve: true, edited: text))
+                }
+            }
+            .sheet(isPresented: $denying) {
+                ApprovalTextSheet(title: String(localized: "ai.approval.deny_title"), hint: String(localized: "ai.approval.deny_hint"),
+                                  initial: "", placeholder: String(localized: "ai.approval.reason_placeholder"),
+                                  action: String(localized: "common.deny"), required: false, destructive: true) { text in
+                    decide(ApprovalChoice(approve: false, reason: text))
+                }
+            }
+    }
+
+    @ViewBuilder private var card: some View {
         if copilot {
             content
                 .padding(12)
@@ -193,39 +226,122 @@ struct ApprovalCard: View {
 
     private var content: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label(task ?? approval.tool, systemImage: "wrench.and.screwdriver")
-                .font(.subheadline.weight(.semibold)).foregroundColor(Brand.amber).lineLimit(1)
-            if let command {
-                if !approval.summary.isEmpty && approval.summary != command {
-                    Text(approval.summary).font(.footnote)
-                }
-                block(command)
-            } else {
-                block(approval.summary.isEmpty ? approval.inputJson : approval.summary)
+            header
+            if let e = preview?.explanation, !e.isEmpty {
+                Text(e).font(.footnote).foregroundColor(.secondary)
             }
-            if copilot {
-                HStack {
-                    Button { decide(true, false) } label: { Label("common.approve", systemImage: "checkmark") }
-                        .buttonStyle(.borderedProminent)
-                    Button { decide(false, false) } label: { Label("common.deny", systemImage: "xmark") }
-                        .buttonStyle(.bordered)
-                }
-                Button("ai.approve_always") { decide(true, true) }
-                    .font(.footnote)
-                    .buttonStyle(.borderless)
-            } else {
-                HStack {
-                    Button { decide(true, false) } label: { Label("common.approve", systemImage: "checkmark") }
-                        .buttonStyle(.borderedProminent)
-                    Button { decide(false, false) } label: { Label("common.deny", systemImage: "xmark") }
-                        .buttonStyle(.bordered)
-                    Spacer()
-                    Button("ai.always") { decide(true, true) }.font(.footnote)
-                }
-                .buttonStyle(.borderless)
+            details
+            if let reasons = preview?.reasons, !reasons.isEmpty { reasonList(reasons) }
+            actions
+        }
+    }
+
+    private var header: some View {
+        HStack(spacing: 8) {
+            Label(task ?? approval.tool, systemImage: isPlan ? "list.number" : "wrench.and.screwdriver")
+                .font(.subheadline.weight(.semibold)).foregroundColor(Brand.amber).lineLimit(1)
+            Spacer(minLength: 4)
+            if let risk = preview?.risk { riskChip(risk) }
+        }
+    }
+
+    @ViewBuilder private var details: some View {
+        if isPlan, let plan = preview?.plan ?? nonEmpty(approval.summary) {
+            Text("ai.approval.plan_title").font(.caption.weight(.semibold)).foregroundColor(.secondary)
+            block(plan)
+        } else if preview?.kind == "file", let p = preview {
+            fileDetails(p)
+        } else if let command {
+            if !approval.summary.isEmpty && approval.summary != command {
+                Text(approval.summary).font(.footnote)
+            }
+            if let host = preview?.host, !host.isEmpty {
+                Label(host, systemImage: "server.rack").font(.caption).foregroundColor(.secondary)
+            }
+            block(command)
+        } else {
+            block(approval.summary.isEmpty ? approval.inputJson : approval.summary)
+        }
+    }
+
+    @ViewBuilder private func fileDetails(_ p: ApprovalPreview) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "doc.text").foregroundColor(.secondary)
+            Text(verbatim: p.path ?? approval.summary).font(.system(.footnote, design: .monospaced)).lineLimit(2)
+            if p.newFile { Chip(String(localized: "ai.approval.new_file"), Brand.green) }
+            Spacer(minLength: 0)
+            if let a = p.added { Text(verbatim: "+\(a)").font(.caption.monospacedDigit()).foregroundColor(Brand.green) }
+            if let r = p.removed { Text(verbatim: "−\(r)").font(.caption.monospacedDigit()).foregroundColor(Brand.red) }
+        }
+        if let diff = p.diff, !diff.isEmpty {
+            DiffView(diff: diff)
+            if p.diffTruncated {
+                Text("ai.approval.diff_truncated").font(.caption).foregroundColor(.secondary)
+            }
+        } else if let e = p.diffError {
+            Text("ai.approval.no_diff \(e)").font(.caption).foregroundColor(.secondary)
+        } else if p.added == 0 && p.removed == 0 {
+            Text("ai.approval.no_changes").font(.caption).foregroundColor(.secondary)
+        }
+    }
+
+    private func reasonList(_ reasons: [ApprovalPreview.Reason]) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            ForEach(Array(reasons.enumerated()), id: \.offset) { _, r in
+                Label(reasonText(r), systemImage: "exclamationmark.triangle")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
         }
     }
+
+    @ViewBuilder private var actions: some View {
+        if copilot {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack { approveButton; denyButton }
+                secondaryButtons.font(.footnote).buttonStyle(.borderless)
+            }
+        } else {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack { approveButton; denyButton; Spacer() }
+                HStack(spacing: 16) { secondaryButtons }.font(.footnote)
+            }
+            .buttonStyle(.borderless)
+        }
+    }
+
+    private var approveButton: some View {
+        Button { decide(ApprovalChoice(approve: true)) } label: {
+            Label(isPlan ? String(localized: "ai.approval.approve_plan") : String(localized: "common.approve"), systemImage: "checkmark")
+        }
+        .buttonStyle(.borderedProminent)
+    }
+
+    private var denyButton: some View {
+        Button { denying = true } label: { Label("ai.approval.deny_with_reason", systemImage: "xmark") }
+            .buttonStyle(.bordered)
+    }
+
+    @ViewBuilder private var secondaryButtons: some View {
+        if preview?.editable == true {
+            Button(isPlan ? String(localized: "ai.approval.edit_plan") : String(localized: "ai.approval.edit")) { editing = true }
+        }
+        if !isPlan {
+            Button(copilot ? "ai.approve_always" : "ai.always") { decide(ApprovalChoice(approve: true, always: true)) }
+        }
+    }
+
+    private func riskChip(_ risk: String) -> some View {
+        let (text, color): (String, Color)
+        switch risk {
+        case "high": (text, color) = (String(localized: "ai.risk.high"), Brand.red)
+        case "medium": (text, color) = (String(localized: "ai.risk.medium"), Brand.amber)
+        default: (text, color) = (String(localized: "ai.risk.low"), Brand.green)
+        }
+        return Chip(text, color)
+    }
+
+    private func nonEmpty(_ s: String) -> String? { s.isEmpty ? nil : s }
 
     private func block(_ text: String) -> some View {
         Text(text)
@@ -234,6 +350,129 @@ struct ApprovalCard: View {
             .padding(10)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 8))
+    }
+}
+
+/// The classifier's reason in the app's language (the server's English text
+/// for an unknown one).
+func reasonText(_ r: ApprovalPreview.Reason) -> String {
+    switch r.code {
+    case "pipe": return String(localized: "ai.reason.pipe")
+    case "chain": return String(localized: "ai.reason.chain")
+    case "redirect": return String(localized: "ai.reason.redirect")
+    case "substitution": return String(localized: "ai.reason.substitution")
+    case "sudo": return String(localized: "ai.reason.sudo")
+    case "rm_rf": return String(localized: "ai.reason.rm_rf")
+    case "delete": return String(localized: "ai.reason.delete")
+    case "disk": return String(localized: "ai.reason.disk")
+    case "reboot": return String(localized: "ai.reason.reboot")
+    case "service": return String(localized: "ai.reason.service")
+    case "packages": return String(localized: "ai.reason.packages")
+    case "firewall": return String(localized: "ai.reason.firewall")
+    case "permissions": return String(localized: "ai.reason.permissions")
+    case "kill": return String(localized: "ai.reason.kill")
+    case "users": return String(localized: "ai.reason.users")
+    case "remote_script": return String(localized: "ai.reason.remote_script")
+    case "containers": return String(localized: "ai.reason.containers")
+    case "cron": return String(localized: "ai.reason.cron")
+    case "git_history": return String(localized: "ai.reason.git_history")
+    case "redacted": return String(localized: "ai.reason.redacted")
+    case "changes": return String(localized: "ai.reason.changes")
+    case "critical_file": return String(localized: "ai.reason.critical_file")
+    case "system_path":
+        if let path = ApprovalPreview.reasonPath(r.text) { return String(localized: "ai.reason.system_path \(path)") }
+        return r.text
+    default: return r.text
+    }
+}
+
+/// A unified diff with the added lines in green, the removed ones in red and
+/// the hunk headers in blue; it scrolls sideways and stops growing at 14 lines.
+private struct DiffView: View {
+    let diff: String
+
+    private var lines: [Substring] { diff.split(separator: "\n", omittingEmptySubsequences: false) }
+
+    var body: some View {
+        ScrollView([.horizontal, .vertical]) {
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
+                    row(line)
+                }
+            }
+            .padding(8)
+        }
+        .frame(maxHeight: min(CGFloat(lines.count) * 16 + 16, 240))
+        .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 8))
+    }
+
+    private func row(_ line: Substring) -> some View {
+        let kind = DiffLineKind(line)
+        let color: Color
+        switch kind {
+        case .added: color = Brand.green
+        case .removed: color = Brand.red
+        case .hunk: color = Brand.blue
+        case .header: color = .secondary
+        case .context: color = .primary
+        }
+        return Text(verbatim: line.isEmpty ? " " : String(line))
+            .font(.system(.caption, design: .monospaced))
+            .foregroundColor(color)
+            .fixedSize()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(kind == .added ? Brand.green.opacity(0.08) : kind == .removed ? Brand.red.opacity(0.08) : Color.clear)
+    }
+}
+
+/// Edit the command or plan before approving it, or say why it's denied.
+private struct ApprovalTextSheet: View {
+    let title: String
+    let hint: String
+    let initial: String
+    var placeholder = ""
+    let action: String
+    /// The text can't be empty (an edit).
+    let required: Bool
+    var destructive = false
+    let done: (String) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var text = ""
+
+    private var empty: Bool { text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+    var body: some View {
+        NavigationView {
+            Form {
+                Section {
+                    ZStack(alignment: .topLeading) {
+                        if text.isEmpty && !placeholder.isEmpty {
+                            Text(placeholder).foregroundColor(.secondary).padding(.top, 8).padding(.leading, 5)
+                        }
+                        TextEditor(text: $text)
+                            .font(.system(.body, design: .monospaced))
+                            .frame(minHeight: 120)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                    }
+                } footer: {
+                    if required && empty { Text("ai.approval.edit_empty").foregroundColor(Brand.red) } else { Text(hint) }
+                }
+            }
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(action) {
+                        done(text)
+                        dismiss()
+                    }
+                    .disabled(required && empty)
+                }
+            }
+        }
+        .onAppear { text = initial }
     }
 }
 
@@ -353,6 +592,12 @@ struct TaskView: View {
 
     private var api: AccountApi { model.core.api(for: accountId) }
 
+    /// What the task's pending approvals show (server 0.6), by id.
+    private var previews: [String: ApprovalPreview] {
+        guard let t = task, !t.pendingApprovals.isEmpty else { return [:] }
+        return ApprovalPreview.byApproval(json: t.rawJson)
+    }
+
     var body: some View {
         Group {
             if let t = task {
@@ -362,10 +607,15 @@ struct TaskView: View {
                             let conversation = turns(t)
                             if conversation.isEmpty { TurnView(turn: .user(0, stripContext(t.prompt))) }
                             ForEach(conversation) { TurnView(turn: $0, running: t.isActive) }
+                            let shown = previews
                             ForEach(t.pendingApprovals, id: \.id) { a in
-                                ApprovalCard(approval: a, task: nil) { approve, always in
+                                ApprovalCard(approval: a, task: nil, preview: shown[a.id]) { choice in
                                     Task {
-                                        try? await api.decideApproval(taskId: a.taskId, approvalId: a.id, approve: approve, always: always)
+                                        do {
+                                            try await api.decide(taskId: a.taskId, approvalId: a.id, choice)
+                                        } catch {
+                                            self.error = userMessage(error)
+                                        }
                                         await account.refreshApprovals()
                                         await load()
                                     }

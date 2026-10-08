@@ -158,6 +158,29 @@ protocol AccountApi: AnyObject {
     func attachServerSession(sessionId: String, listener: ServerTerminalListener) async throws -> ServerTerminalHandle
     func closeServerSession(sessionId: String) async throws
     func sessionActivity(sessionId: String) async throws -> SessionActivity?
+    func apiGet(path: String) async throws -> String
+    func apiPost(path: String, bodyJson: String?) async throws -> String
+}
+
+extension AccountApi {
+    /// Approves or denies, with an edited command or plan or a reason when
+    /// given (through the API: the engine's typed call only has approve and
+    /// always until C3).
+    func decide(taskId: String, approvalId: String, _ choice: ApprovalChoice) async throws {
+        if choice.isPlain {
+            try await decideApproval(taskId: taskId, approvalId: approvalId, approve: choice.approve, always: choice.always)
+            return
+        }
+        let data = try JSONSerialization.data(withJSONObject: choice.body)
+        _ = try await apiPost(path: "/api/v1/ai/tasks/\(taskId)/approvals/\(approvalId)",
+                              bodyJson: String(decoding: data, as: UTF8.self))
+    }
+
+    /// What the pending approvals show (risk, diff, plan...), by approval id.
+    func approvalPreviews() async -> [String: ApprovalPreview] {
+        guard let json = try? await apiGet(path: "/api/v1/ai/approvals") else { return [:] }
+        return ApprovalPreview.byApproval(json: json)
+    }
 }
 
 extension TermoakCore: AccountApi {}

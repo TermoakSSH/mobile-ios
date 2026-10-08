@@ -46,6 +46,8 @@ final class Copilot: ObservableObject {
     @Published private(set) var pending: [String] = []
     @Published private(set) var live: [LiveItem] = []
     @Published private(set) var liveApprovals: [AiApproval] = []
+    /// What the approvals that arrived live show (server 0.6), by id.
+    private var livePreviews: [String: ApprovalPreview] = [:]
     @Published private(set) var liveStatus: AiTaskStatus?
     /// Increases with every content change (to scroll to the end of the conversation).
     @Published private(set) var changes = 0
@@ -273,10 +275,17 @@ final class Copilot: ObservableObject {
         }
     }
 
-    func decide(_ a: AiApproval, approve: Bool, always: Bool) {
+    /// What an approval shows: from the saved task, or as it arrived live.
+    func preview(for approvalId: String) -> ApprovalPreview? {
+        if let p = livePreviews[approvalId] { return p }
+        guard let t = task, t.pendingApprovals.contains(where: { $0.id == approvalId }) else { return nil }
+        return ApprovalPreview.byApproval(json: t.rawJson)[approvalId]
+    }
+
+    func decide(_ a: AiApproval, _ choice: ApprovalChoice) {
         Task {
             do {
-                try await core.decideApproval(taskId: a.taskId, approvalId: a.id, approve: approve, always: always)
+                try await core.decide(taskId: a.taskId, approvalId: a.id, choice)
                 decided.insert(a.id)
                 liveApprovals.removeAll { $0.id == a.id }
                 changes += 1
@@ -348,6 +357,7 @@ final class Copilot: ObservableObject {
         case "approval_requested":
             let aid = string(ev["approval_id"])
             guard !aid.isEmpty, !decided.contains(aid), !liveApprovals.contains(where: { $0.id == aid }) else { break }
+            if let p = ev["preview"] as? [String: Any] { livePreviews[aid] = ApprovalPreview.parse(p) }
             liveApprovals.append(AiApproval(
                 id: aid, taskId: id, tool: ev["tool"] as? String ?? "", inputJson: json(ev["input"]),
                 summary: ev["summary"] as? String ?? "", status: "pending", decidedBy: nil,

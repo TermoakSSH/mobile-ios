@@ -92,6 +92,7 @@ targets:
       - path: Termoak/Model/ShareJson.swift
       - path: Termoak/Model/EngineMessages.swift
       - path: Termoak/Model/NoticeDeduper.swift
+      - path: Termoak/Model/ApprovalPreview.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
