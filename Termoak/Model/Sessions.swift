@@ -708,6 +708,18 @@ final class LocalTerminal: TerminalSession {
     private let refusal: String?
     /// Connected over SSH: to start the automatic tunnels.
     var onConnected: ((String, SshSession) -> Void)?
+    /// The host's system was detected and saved (its logo changes).
+    var onHostChanged: (() -> Void)?
+    /// The system was already looked for (once per terminal).
+    private var detectedOs = false
+    /// Connected when the app went to the background (to reconnect it on
+    /// return if the system cut it meanwhile).
+    private var connectedWhenLeaving = false
+    /// Until when a drop reconnects by itself (just after coming back).
+    private var reconnectsUntil: Date?
+    /// The last close came with an exit status: the program ended (`exit`,
+    /// a logout), it was not the network.
+    private var endedByProgram = false
 
     /// The SSH connection of this terminal (for SFTP and tunnels without
     /// reconnecting). Telnet terminals have none.
@@ -769,12 +781,62 @@ final class LocalTerminal: TerminalSession {
                 let (c, r) = size
                 try? h.resize(cols: c, rows: r)
                 // Tunnels go over SSH only.
-                if !h.isTelnet() { onConnected?(hostId, h.session()) }
+                if !h.isTelnet() {
+                    onConnected?(hostId, h.session())
+                    detectOs(h.session())
+                }
                 _ = view.becomeFirstResponder()
             } catch {
                 state = .closed(userMessage(error))
             }
         }
+    }
+
+    /// The first time a host without a known system connects: the engine
+    /// detects it (`/etc/os-release`, `uname`...) and saves it in the host,
+    /// so its logo shows (like the desktop).
+    private func detectOs(_ session: SshSession) {
+        guard !detectedOs, !telnet, let hostId,
+              let host = try? core.getHost(id: hostId, accountId: accountId), host.os == nil else { return }
+        detectedOs = true
+        Task { [weak self] in
+            guard (try? await session.detectOsInfo()) != nil else { return }
+            self?.onHostChanged?()
+        }
+    }
+
+    /// The app goes to the background.
+    func leaving() {
+        connectedWhenLeaving = state == .connected
+    }
+
+    /// Back in the foreground after `away` seconds: a terminal the system
+    /// cut meanwhile reconnects by itself; one that still looks connected
+    /// after a long while is checked first (a keep-alive), and if it drops
+    /// in the next seconds it reconnects too. Not the ones you closed.
+    func returned(after away: TimeInterval) {
+        guard connectedWhenLeaving, !asleep, refusal == nil else { return }
+        connectedWhenLeaving = false
+        switch state {
+        case .closed:
+            if !endedByProgram { autoReconnect() }
+        case .connected:
+            reconnectsUntil = Date().addingTimeInterval(AutoReconnect.window)
+            guard away >= AutoReconnect.checkAfter, let h = handle else { return }
+            Task { [weak self] in
+                let alive = (try? await h.latencyMs(timeoutMs: Latency.timeoutMs)) != nil
+                guard let self, !alive, self.handle === h, self.state == .connected else { return }
+                self.autoReconnect()
+            }
+        case .connecting:
+            break
+        }
+    }
+
+    private func autoReconnect() {
+        reconnectsUntil = nil
+        showFlash(String(localized: "terminal.flash.reconnecting"))
+        reconnect()
     }
 
     override func reconnect() {
@@ -947,6 +1009,12 @@ final class LocalTerminal: TerminalSession {
         guard case .closed(let code, let reason) = status else { return }
         handle = nil
         stopSharing()
+        endedByProgram = code != nil
+        // Cut just after coming back from the background (not `exit`): again by itself.
+        if let until = reconnectsUntil, Date() < until, state == .connected, code == nil {
+            autoReconnect()
+            return
+        }
         if let reason, !reason.isEmpty {
             state = .closed(reason)
         } else if let code {
@@ -1384,7 +1452,11 @@ final class Sessions: ObservableObject {
     private let settings: AppSettings
     private let tunnels: Tunnels
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
+    /// When the app went to the background (to reconnect what was cut).
+    private var leftAt: Date?
     private var subscriptions: Set<AnyCancellable> = []
+    /// A host changed here (its system detected): the lists reload.
+    var onHostChanged: (() -> Void)?
 
     init(core: TermoakCore, settings: AppSettings, tunnels: Tunnels) {
         self.core = core
@@ -1745,6 +1817,7 @@ final class Sessions: ObservableObject {
             local.onConnected = { [weak self] hostId, connection in
                 Task { await self?.tunnels.onTerminalConnected(hostId: hostId, session: connection) }
             }
+            local.onHostChanged = { [weak self] in self?.onHostChanged?() }
         }
     }
 
@@ -1865,10 +1938,24 @@ final class Sessions: ObservableObject {
     /// iOS freezes the app shortly after leaving it: ask for a few minutes of
     /// grace so local connections are not cut instantly.
     func enterBackground() {
+        if leftAt == nil {
+            leftAt = Date()
+            open.compactMap { $0 as? LocalTerminal }.forEach { $0.leaving() }
+        }
         guard open.contains(where: { !$0.asleep }), backgroundTask == .invalid else { return }
         backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "Terminals") { [weak self] in
             Task { @MainActor in self?.endBackground() }
         }
+    }
+
+    /// Back in the foreground: the terminals of this device that the
+    /// system cut meanwhile reconnect by themselves.
+    func returnedToForeground() {
+        endBackground()
+        guard let leftAt else { return }
+        self.leftAt = nil
+        let away = Date().timeIntervalSince(leftAt)
+        open.compactMap { $0 as? LocalTerminal }.forEach { $0.returned(after: away) }
     }
 
     func endBackground() {

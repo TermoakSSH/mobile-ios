@@ -77,6 +77,9 @@ final class AppModel: ObservableObject {
         account = Accounts(core: core)
         tunnels = Tunnels(core: core)
         sessions = Sessions(core: core, settings: settings, tunnels: tunnels)
+        // A host's system detected after connecting: its logo in the lists.
+        let accounts = account
+        sessions.onHostChanged = { [weak accounts] in accounts?.vaultChanged.send() }
         try? core.setDeviceName(name: UIDevice.current.name)
         // Sharing notices in the background become notifications; a tap
         // opens the session.
@@ -198,7 +201,7 @@ private struct Root: View {
                 switch newPhase {
                 case .background: model.sessions.enterBackground()
                 case .active:
-                    model.sessions.endBackground()
+                    model.sessions.returnedToForeground()
                     Task {
                         await model.account.refresh()
                         await model.sessions.refreshServer(accounts: model.account.list.filter { $0.status == .active }.map(\.id))
