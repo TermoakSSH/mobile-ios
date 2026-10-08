@@ -168,7 +168,8 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         let host = hostId.flatMap { try? core.getHost(id: $0, accountId: accountId) }
         os = host?.os
         hostTheme = host?.settings.theme
-        let terminal = TermoakTerminalView(frame: CGRect(x: 0, y: 0, width: 400, height: 600))
+        let terminal = TermoakTerminalView(frame: CGRect(x: 0, y: 0, width: 400, height: 600), font: nil,
+                                           options: TerminalSession.terminalOptions)
         view = terminal
         super.init()
         terminal.onPaste = { [weak self] in self?.pasteClipboard() }
@@ -202,6 +203,17 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
 
     deinit {
         observers.forEach(NotificationCenter.default.removeObserver)
+    }
+
+    /// Lines kept above the screen (SwiftTerm keeps 500 by default; the
+    /// desktop and Android keep 10,000).
+    static let scrollbackLines = 10_000
+
+    /// What every terminal view starts with.
+    static var terminalOptions: TerminalOptions {
+        var options = TerminalOptions.default
+        options.scrollback = scrollbackLines
+        return options
     }
 
     var size: (cols: UInt32, rows: UInt32) {
