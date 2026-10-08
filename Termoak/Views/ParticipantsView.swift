@@ -534,11 +534,13 @@ private struct ShareToastRow: View {
         case .join: return String(localized: "share.toast.join \(name) \(title)")
         case .control: return String(localized: "share.toast.control \(name) \(title)")
         case .shared: return String(localized: "share.toast.shared \(name) \(title)")
+        case .controlGranted: return String(localized: "share.toast.control_granted \(title)")
+        case .controlRevoked: return String(localized: "share.toast.control_revoked \(title)")
         }
     }
 
     @ViewBuilder private var actions: some View {
-        if toast.kind != .shared, let p = toast.participantId,
+        if toast.kind == .join || toast.kind == .control, let p = toast.participantId,
            let tab = sessions.tab(forSession: toast.sessionId), tab.shareAttached, tab.isOwner {
             Button {
                 if toast.kind == .join {
@@ -563,7 +565,7 @@ private struct ShareToastRow: View {
             .buttonStyle(.bordered)
         } else {
             Button("common.open") {
-                sessions.openSession(toast.sessionId, title: toast.title, owner: toast.kind != .shared)
+                sessions.openSession(toast.sessionId, title: toast.title, owner: toast.kind == .join || toast.kind == .control)
                 dismiss()
             }
             .buttonStyle(.borderedProminent)

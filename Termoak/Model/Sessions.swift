@@ -284,13 +284,25 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     fileprivate func addRequest(_ kind: ShareRequest.Kind, _ p: SessionParticipant) {
         guard !requests.contains(where: { $0.kind == kind && $0.participant.id == p.id }) else { return }
         requests.append(ShareRequest(kind: kind, participant: p))
+        notifyInBackground([ShareRequest(kind: kind, participant: p)])
+    }
+
+    /// New requests become notifications while the app is in the background.
+    private func notifyInBackground(_ new: [ShareRequest]) {
+        guard let sessionId = shareSessionId else { return }
+        for r in new {
+            BackgroundNotices.shared.notify(r.kind == .join ? .join : .control, sessionId: sessionId, title: title ?? label,
+                                            name: r.participant.name, participantId: r.participant.id)
+        }
     }
 
     /// Owner: the pending requests are those of the people list (the waiting
     /// room and who asked for the keyboard).
     fileprivate func rebuildRequests() {
+        let before = Set(requests.map(\.id))
         requests = participants.filter { $0.waiting }.map { ShareRequest(kind: .join, participant: $0) }
             + participants.filter { $0.requestedControl && !$0.waiting }.map { ShareRequest(kind: .control, participant: $0) }
+        notifyInBackground(requests.filter { !before.contains($0.id) })
     }
 
     fileprivate func setPeople(_ people: [SessionParticipant], driver: String?) {

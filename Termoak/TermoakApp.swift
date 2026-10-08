@@ -71,6 +71,12 @@ final class AppModel: ObservableObject {
         tunnels = Tunnels(core: core)
         sessions = Sessions(core: core, settings: settings, tunnels: tunnels)
         try? core.setDeviceName(name: UIDevice.current.name)
+        // Sharing notices in the background become notifications; a tap
+        // opens the session.
+        BackgroundNotices.shared.start()
+        BackgroundNotices.shared.onOpen = { [weak self] id, title, owner in
+            self?.openFromNotice(sessionId: id, title: title, owner: owner)
+        }
         // The running server sessions of every signed-in account appear as
         // sleeping tabs: at launch and when an account signs in. Those of an
         // account that signs out go away.
@@ -117,18 +123,35 @@ final class AppModel: ObservableObject {
     /// A notice of the events WebSocket about sessions.
     func sessionNotice(_ n: ShareNotice) {
         guard let id = n.sessionId else { return }
+        let onScreen = sessions.showing && sessions.current?.shareSessionId == id
         switch n.type {
         case "session_shared":
             sessions.notices.post(ShareToast(kind: .shared, sessionId: id, title: n.title, name: n.by ?? "", participantId: nil))
+            BackgroundNotices.shared.notify(.shared, sessionId: id, title: n.title, name: n.by ?? "", participantId: nil)
         case "join_request", "control_request":
             guard let pid = n.participantId else { return }
+            let join = n.type == "join_request"
+            BackgroundNotices.shared.notify(join ? .join : .control, sessionId: id, title: n.title,
+                                            name: n.participantName ?? "", participantId: pid)
             // The terminal on screen already shows it.
-            if sessions.showing, sessions.current?.shareSessionId == id { return }
-            sessions.notices.post(ShareToast(kind: n.type == "join_request" ? .join : .control, sessionId: id,
+            if onScreen { return }
+            sessions.notices.post(ShareToast(kind: join ? .join : .control, sessionId: id,
                                              title: n.title, name: n.participantName ?? "", participantId: pid))
+        case "control_granted", "control_revoked":
+            // You were given the keyboard of a session you joined, or it was
+            // taken back (the terminal on screen says it itself).
+            if onScreen { return }
+            sessions.notices.post(ShareToast(kind: n.type == "control_granted" ? .controlGranted : .controlRevoked,
+                                             sessionId: id, title: n.title, name: n.by ?? "", participantId: nil))
         default:
             break
         }
+    }
+
+    /// A notification was tapped: to that session (over whatever is on screen).
+    private func openFromNotice(sessionId: String, title: String, owner: Bool) {
+        joining = nil
+        sessions.openSession(sessionId, title: title, owner: owner)
     }
 }
 
@@ -164,6 +187,7 @@ private struct Root: View {
                 model.account.sync()
             }
             .onChange(of: phase) { newPhase in
+                BackgroundNotices.shared.inBackground = newPhase == .background
                 switch newPhase {
                 case .background: model.sessions.enterBackground()
                 case .active:

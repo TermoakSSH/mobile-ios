@@ -311,6 +311,8 @@ struct ShareSessionView: View {
             do {
                 let b = try await backend()
                 let inv = try await b.invite(t, options)
+                // Requests to join or for the keyboard can then notify you in the background.
+                BackgroundNotices.shared.requestPermission()
                 if kind == .link {
                     created = inv
                     copied = false

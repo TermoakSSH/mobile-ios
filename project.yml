@@ -91,6 +91,7 @@ targets:
       - path: Termoak/Model/RemotePaths.swift
       - path: Termoak/Model/ShareJson.swift
       - path: Termoak/Model/EngineMessages.swift
+      - path: Termoak/Model/NoticeDeduper.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

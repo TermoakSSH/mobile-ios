@@ -12644,6 +12644,54 @@
         }
       }
     },
+    "share.notice.control_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Someone asks for the keyboard"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alguien pide el teclado"
+          }
+        }
+      }
+    },
+    "share.notice.join_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Someone wants to join"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alguien quiere entrar"
+          }
+        }
+      }
+    },
+    "share.notice.shared_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session shared with you"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Han compartido una sesión contigo"
+          }
+        }
+      }
+    },
     "share.participants.actions": {
       "localizations": {
         "en": {
@@ -13280,6 +13328,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$@ pide el control de «%2$@»"
+          }
+        }
+      }
+    },
+    "share.toast.control_granted %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You have the keyboard of “%@”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tienes el teclado de «%@»"
+          }
+        }
+      }
+    },
+    "share.toast.control_revoked %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You no longer have the keyboard of “%@”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya no tienes el teclado de «%@»"
           }
         }
       }

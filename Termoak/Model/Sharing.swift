@@ -379,6 +379,8 @@ struct ShareNotice {
 struct ShareToast: Identifiable, Equatable {
     enum Kind: Equatable {
         case join, control, shared
+        /// You were given the keyboard of a session you joined, or it was taken back.
+        case controlGranted, controlRevoked
     }
 
     let id = UUID()
@@ -402,7 +404,7 @@ final class ShareNotices: ObservableObject {
         toasts.append(toast)
         if toasts.count > 3 { toasts.removeFirst(toasts.count - 3) }
         let id = toast.id
-        let seconds: UInt64 = toast.kind == .shared ? 8 : 60
+        let seconds: UInt64 = toast.kind == .join || toast.kind == .control ? 60 : 8
         Task { [weak self] in
             try? await Task.sleep(nanoseconds: seconds * 1_000_000_000)
             self?.dismiss(id)
