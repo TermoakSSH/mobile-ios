@@ -78,6 +78,12 @@ private struct TerminalContent: View {
     @State private var quickConnect = false
     /// ⌘,: the settings in a sheet.
     @State private var showingSettings = false
+    /// ⌘/ or the menu: the keyboard shortcuts.
+    @State private var showingShortcuts = false
+    /// "Disconnect all" from the menu, asking first.
+    @State private var closingAll = false
+    /// The tab being renamed.
+    @State private var renaming: TerminalSession?
 
     /// On a tablet (or a big phone in landscape) the panel goes on the side.
     private var side: Bool { sizeClass == .regular }
@@ -115,8 +121,10 @@ private struct TerminalContent: View {
                                       onQuickConnect: desktop?.onQuickConnect ?? { quickConnect = true },
                                       onFind: { finding = true },
                                       onSettings: desktop?.onSettings ?? { showingSettings = true },
-                                      onHome: desktop?.onHome))
+                                      onHome: desktop?.onHome,
+                                      onShortcuts: { showingShortcuts = true }))
         .modifier(TerminalColorScheme(light: theme.isLight, embedded: embedded))
+        .modifier(TerminalExtraSheets(showingShortcuts: $showingShortcuts, closingAll: $closingAll, renaming: $renaming))
         .animation(.easeOut(duration: 0.2), value: sessions.quickPanelOpen)
         .animation(.easeOut(duration: 0.2), value: settings.sidePanel)
         .animation(.easeOut(duration: 0.22), value: sessions.copilotOpen)
@@ -133,12 +141,12 @@ private struct TerminalContent: View {
         }
         .sheet(isPresented: $sharing) {
             if let source = shareSource {
-                ShareSessionView(core: model.core, source: source, title: session.title ?? session.label)
+                ShareSessionView(core: model.core, source: source, title: session.displayTitle)
             }
         }
         .sheet(isPresented: $showingActivity) {
             if let id = activitySessionId {
-                SessionActivityView(core: model.core.api(for: session.accountId), sessionId: id, title: session.title ?? session.label)
+                SessionActivityView(core: model.core.api(for: session.accountId), sessionId: id, title: session.displayTitle)
             }
         }
         .fullScreenCover(isPresented: $showingFiles) {
@@ -226,7 +234,7 @@ private struct TerminalContent: View {
         let covered: [Bool] = [
             session.prompt != nil, customizing, showingPeople, sharing, showingActivity, showingFiles,
             tunnelsHost != nil, filling != nil, sessions.pasteRequest != nil, terminating, quickConnect, showingSettings,
-            desktop?.covered ?? false,
+            showingShortcuts, closingAll, renaming != nil, desktop?.covered ?? false,
         ]
         return !covered.contains(true)
     }
@@ -369,7 +377,7 @@ private struct TerminalContent: View {
                 Image(systemName: "chevron.down").font(.headline).frame(width: 40, height: 40).contentShape(Rectangle()).hoverEffect()
             }
             VStack(alignment: .leading, spacing: 1) {
-                Text(session.title ?? session.label).font(.subheadline.weight(.semibold)).lineLimit(1)
+                Text(session.displayTitle).font(.subheadline.weight(.semibold)).lineLimit(1)
                 Text(subtitle).font(.caption2).foregroundColor(.secondary).lineLimit(1)
             }
             if showsLatency { latencyBadge.padding(.leading, 4) }
@@ -399,7 +407,7 @@ private struct TerminalContent: View {
         HStack(spacing: 4) {
             Circle().fill(stateColor).frame(width: 8, height: 8).padding(.leading, 10)
             VStack(alignment: .leading, spacing: 1) {
-                Text(session.title ?? session.label).font(.subheadline.weight(.semibold)).lineLimit(1)
+                Text(session.displayTitle).font(.subheadline.weight(.semibold)).lineLimit(1)
                 Text(subtitle).font(.caption2).foregroundColor(.secondary).lineLimit(1)
             }
             .padding(.leading, 4)
@@ -549,6 +557,8 @@ private struct TerminalContent: View {
             Button { UIPasteboard.general.string = session.screenText() } label: {
                 Label("terminal.menu.copy_screen", systemImage: "doc.on.doc")
             }
+            Button { finding = true } label: { Label("shortcut.find", systemImage: "magnifyingglass") }
+            Button { session.clearTerminal() } label: { Label("terminal.menu.clear", systemImage: "eraser") }
             Button { settings.changeFontSize(1) } label: { Label("common.font_larger", systemImage: "textformat.size.larger") }
             Button { settings.changeFontSize(-1) } label: { Label("common.font_smaller", systemImage: "textformat.size.smaller") }
             if canShare {
@@ -568,6 +578,8 @@ private struct TerminalContent: View {
                 Button { tunnelsHost = h } label: { Label("common.tunnels", systemImage: "point.3.connected.trianglepath.dotted") }
             }
             Divider()
+            tabMenu
+            Divider()
             Button { session.reconnect() } label: { Label("common.reconnect", systemImage: "arrow.clockwise") }
             if session is ServerTerminal && session.isOwner {
                 Button(role: .destructive) { terminating = true } label: {
@@ -578,9 +590,20 @@ private struct TerminalContent: View {
                 Label(session.persistent ? String(localized: "terminal.menu.close_tab_persistent") : String(localized: "common.close"),
                       systemImage: "xmark")
             }
+            if sessions.open.count > 1 {
+                Button(role: .destructive) { closingAll = true } label: {
+                    Label("connections.disconnect_all", systemImage: "xmark.circle")
+                }
+            }
         } label: { Image(systemName: "ellipsis.circle").frame(width: 40, height: 40).contentShape(Rectangle()).hoverEffect() }
         .accessibilityLabel("terminal.more")
         .accessibilityIdentifier("terminal-menu")
+    }
+
+    /// Rename, duplicate, close the others, and the shortcuts list.
+    @ViewBuilder private var tabMenu: some View {
+        TabExtraActions(session: session) { renaming = session }
+        Button { showingShortcuts = true } label: { Label("shortcuts.title", systemImage: "command") }
     }
 
     /// Your session on the server (not a relay of a terminal of this
@@ -610,7 +633,8 @@ private struct TerminalContent: View {
                 ForEach(sessions.open) { s in
                     TabChip(session: s, selected: s.id == session.id,
                             inPane: sessions.splitActive && sessions.panes.contains(s.id),
-                            onTap: { sessions.show(s.id) }, onClose: { sessions.close(s.id) })
+                            onTap: { sessions.show(s.id) }, onClose: { sessions.close(s.id) },
+                            onRename: { renaming = s })
                 }
                 Button { sessions.showing = false } label: {
                     Image(systemName: "plus").frame(width: 32, height: 30).contentShape(Rectangle()).hoverEffect()
@@ -699,6 +723,7 @@ private struct TabChip: View {
     var inPane = false
     let onTap: () -> Void
     let onClose: () -> Void
+    let onRename: () -> Void
 
     var body: some View {
         HStack(spacing: 6) {
@@ -706,7 +731,7 @@ private struct TabChip: View {
             if session.persistent { Image(systemName: "icloud").font(.caption2).foregroundColor(.secondary) }
             if !session.others.isEmpty { Image(systemName: "person.2.fill").font(.caption2).foregroundColor(.secondary) }
             Circle().fill(session.asleep ? SwiftUI.Color.secondary : color).frame(width: 7, height: 7)
-            Text(session.title ?? session.label).font(.footnote).lineLimit(1).frame(maxWidth: 140)
+            Text(session.displayTitle).font(.footnote).lineLimit(1).frame(maxWidth: 140)
             Button(action: onClose) { Image(systemName: "xmark").font(.caption2).foregroundColor(.secondary) }
                 .buttonStyle(.plain)
                 .accessibilityLabel("common.close")
@@ -719,6 +744,7 @@ private struct TabChip: View {
         // Secondary click (trackpad, mouse) or a long press.
         .contextMenu {
             Button(action: onTap) { Label("shortcut.show_tab", systemImage: "terminal") }
+            TabExtraActions(session: session, onRename: onRename)
             Button(role: .destructive, action: onClose) {
                 Label(session.persistent ? String(localized: "terminal.menu.close_tab_persistent") : String(localized: "common.close"),
                       systemImage: "xmark")
@@ -888,5 +914,23 @@ private struct TerminalColorScheme: ViewModifier {
         } else {
             content.preferredColorScheme(light ? .light : .dark)
         }
+    }
+}
+
+/// Sheets and dialogs of the terminal's menu: the keyboard shortcuts,
+/// "Disconnect all" (asking first) and renaming a tab.
+private struct TerminalExtraSheets: ViewModifier {
+    @Binding var showingShortcuts: Bool
+    @Binding var closingAll: Bool
+    @Binding var renaming: TerminalSession?
+    @EnvironmentObject private var sessions: Sessions
+
+    func body(content: Content) -> some View {
+        content
+            .sheet(isPresented: $showingShortcuts) { ShortcutsSheet() }
+            .confirmationDialog("connections.disconnect_all.title", isPresented: $closingAll, titleVisibility: .visible) {
+                Button("connections.disconnect_all", role: .destructive) { sessions.closeAll() }
+            } message: { Text("connections.disconnect_all.message") }
+            .tabRenameAlert($renaming)
     }
 }

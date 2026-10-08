@@ -90,6 +90,9 @@ final class AppSettings: ObservableObject {
         didSet { d.set(keyBarWithHardwareKeyboard, forKey: "key_bar_hardware_keyboard") }
     }
 
+    /// The bell (BEL) vibrates (flashes the terminal on an iPad).
+    @Published var bellFeedback: Bool { didSet { d.set(bellFeedback, forKey: "bell_feedback") } }
+
     /// Telnet hosts: their username and password answer the first login
     /// prompts (like the desktop's setting).
     @Published var telnetAutoLogin: Bool { didSet { d.set(telnetAutoLogin, forKey: "telnet_auto_login") } }
@@ -122,6 +125,7 @@ final class AppSettings: ObservableObject {
         gestureMode = GestureMode(rawValue: d.string(forKey: "modo_gestos") ?? "") ?? .hold
         suggestionMode = SuggestionMode(rawValue: d.string(forKey: "modo_sugerencias") ?? "") ?? .cursor
         telnetAutoLogin = d.object(forKey: "telnet_auto_login") as? Bool ?? true
+        bellFeedback = d.object(forKey: "bell_feedback") as? Bool ?? true
         wideLayout = WideLayout(rawValue: d.string(forKey: "wide_layout") ?? "") ?? .automatic
     }
 

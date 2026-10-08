@@ -91,6 +91,7 @@ targets:
       - path: Termoak/Model/HostLogos.swift
       - path: Termoak/Model/Layouts.swift
       - path: Termoak/Model/RemotePaths.swift
+      - path: Termoak/Model/TerminalMath.swift
       - path: Termoak/Model/ShareJson.swift
       - path: Termoak/Model/EngineMessages.swift
       - path: Termoak/Model/NoticeDeduper.swift

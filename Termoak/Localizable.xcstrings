@@ -12764,6 +12764,54 @@
         }
       }
     },
+    "settings.bell.flash": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flash on bell"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Destello con la campana"
+          }
+        }
+      }
+    },
+    "settings.bell.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When the remote program rings the bell (BEL)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuando el programa remoto avisa (BEL)"
+          }
+        }
+      }
+    },
+    "settings.bell.vibrate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vibrate on bell"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vibrar con la campana"
+          }
+        }
+      }
+    },
     "settings.command_suggestions": {
       "localizations": {
         "en": {
@@ -15948,6 +15996,326 @@
         }
       }
     },
+    "shortcuts.copy_paste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy the selection, paste"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar la selección, pegar"
+          }
+        }
+      }
+    },
+    "shortcuts.find_next_previous": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next or previous match"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coincidencia siguiente o anterior"
+          }
+        }
+      }
+    },
+    "shortcuts.home_tabs": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault, Connections, Profile"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault, Conexiones, Perfil"
+          }
+        }
+      }
+    },
+    "shortcuts.intro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With a hardware keyboard, Ctrl and Option combinations go to the terminal as they are; the app's own shortcuts use ⌘. On an iPad, hold ⌘ to see those of the screen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con un teclado físico, las combinaciones con Ctrl y Opción llegan al terminal tal cual; los atajos de la app usan ⌘. En un iPad, mantén ⌘ para ver los de la pantalla."
+          }
+        }
+      }
+    },
+    "shortcuts.lists": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose in a list and open"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegir en una lista y abrir"
+          }
+        }
+      }
+    },
+    "shortcuts.mouse_select": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag: select text. Secondary click: copy and paste menu"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrastrar: seleccionar texto. Clic secundario: menú de copiar y pegar"
+          }
+        }
+      }
+    },
+    "shortcuts.mouse_shift": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shift with click or drag: select even when the program uses the mouse"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mayús con clic o arrastre: seleccionar aunque el programa use el ratón"
+          }
+        }
+      }
+    },
+    "shortcuts.mouse_wheel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wheel or two fingers: scroll the history (or go to the program, when it uses the mouse, like vim or tmux)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rueda o dos dedos: recorrer el historial (o enviarlo al programa cuando usa el ratón, como vim o tmux)"
+          }
+        }
+      }
+    },
+    "shortcuts.move_tab": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move the tab left or right"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mover la pestaña a la izquierda o a la derecha"
+          }
+        }
+      }
+    },
+    "shortcuts.pinch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pinch: text size. Tap a link: open it"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pellizcar: tamaño del texto. Tocar un enlace: abrirlo"
+          }
+        }
+      }
+    },
+    "shortcuts.search_hosts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search hosts (desktop layout)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar hosts (diseño de escritorio)"
+          }
+        }
+      }
+    },
+    "shortcuts.section.app": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App"
+          }
+        }
+      }
+    },
+    "shortcuts.section.files": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Files"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archivos"
+          }
+        }
+      }
+    },
+    "shortcuts.section.mouse": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mouse, trackpad and touch"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ratón, trackpad y táctil"
+          }
+        }
+      }
+    },
+    "shortcuts.section.split": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Split view (iPad)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vista dividida (iPad)"
+          }
+        }
+      }
+    },
+    "shortcuts.section.terminal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminal"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminal"
+          }
+        }
+      }
+    },
+    "shortcuts.split_focus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus the pane in that direction"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ir al panel en esa dirección"
+          }
+        }
+      }
+    },
+    "shortcuts.tab_number": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go to tab 1 to 8, or the last one"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ir a la pestaña 1 a 8, o a la última"
+          }
+        }
+      }
+    },
+    "shortcuts.text_size": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bigger or smaller text"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Texto más grande o más pequeño"
+          }
+        }
+      }
+    },
+    "shortcuts.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keyboard shortcuts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atajos de teclado"
+          }
+        }
+      }
+    },
     "snippets.delete.message": {
       "localizations": {
         "en": {
@@ -17228,6 +17596,22 @@
         }
       }
     },
+    "terminal.edit_host": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editar host"
+          }
+        }
+      }
+    },
     "terminal.error.not_connected": {
       "localizations": {
         "en": {
@@ -17240,6 +17624,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "El terminal no está conectado"
+          }
+        }
+      }
+    },
+    "terminal.flash.reconnecting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reconnecting…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reconectando…"
           }
         }
       }
@@ -17288,6 +17688,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Latencia con %@ (ida y vuelta)"
+          }
+        }
+      }
+    },
+    "terminal.menu.clear": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear terminal"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpiar terminal"
           }
         }
       }
@@ -17576,6 +17992,102 @@
           "stringUnit": {
             "state": "translated",
             "value": "Telnet desde este dispositivo · sin cifrar"
+          }
+        }
+      }
+    },
+    "terminal.tab.close_others": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close other tabs"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerrar las demás pestañas"
+          }
+        }
+      }
+    },
+    "terminal.tab.duplicate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duplicate session"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duplicar sesión"
+          }
+        }
+      }
+    },
+    "terminal.tab.rename": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renombrar…"
+          }
+        }
+      }
+    },
+    "terminal.tab.rename_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave it empty to use the automatic name again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Déjalo vacío para volver al nombre automático."
+          }
+        }
+      }
+    },
+    "terminal.tab.rename_placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tab name"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre de la pestaña"
+          }
+        }
+      }
+    },
+    "terminal.tab.rename_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename tab"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renombrar pestaña"
           }
         }
       }

@@ -52,6 +52,8 @@ struct TerminalShortcuts: View {
     let onFind: () -> Void
     let onSettings: () -> Void
     var onHome: (() -> Void)? = nil
+    /// ⌘/: the list of shortcuts.
+    var onShortcuts: (() -> Void)? = nil
     @EnvironmentObject private var sessions: Sessions
     @EnvironmentObject private var settings: AppSettings
 
@@ -95,6 +97,9 @@ struct TerminalShortcuts: View {
             if session.view.isFirstResponder { session.input(Data([0x1B])) }
         }
         ShortcutButton(title: String(localized: "shortcut.settings"), key: ",", action: onSettings)
+        if let onShortcuts {
+            ShortcutButton(title: String(localized: "shortcuts.title"), key: "/", action: onShortcuts)
+        }
     }
 
 }
@@ -120,12 +125,12 @@ struct TabSwitchShortcuts: View {
         }
         let tabs = Array(sessions.open.prefix(8).enumerated())
         ForEach(tabs, id: \.element.id) { i, s in
-            ShortcutButton(title: s.title ?? s.label, key: KeyEquivalent(Character("\(i + 1)"))) {
+            ShortcutButton(title: s.displayTitle, key: KeyEquivalent(Character("\(i + 1)"))) {
                 sessions.showTab(number: i + 1)
             }
         }
         if sessions.open.count >= 9, let last = sessions.open.last {
-            ShortcutButton(title: last.title ?? last.label, key: "9") { sessions.showTab(number: 9) }
+            ShortcutButton(title: last.displayTitle, key: "9") { sessions.showTab(number: 9) }
         }
     }
 }

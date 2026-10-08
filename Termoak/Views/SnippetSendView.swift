@@ -183,7 +183,7 @@ struct SnippetSendView: View {
                         Image(systemName: s.persistent ? "icloud" : "terminal")
                             .foregroundColor(.secondary).frame(width: 24)
                         VStack(alignment: .leading, spacing: 1) {
-                            Text(s.title ?? s.label).foregroundColor(.primary).lineLimit(1)
+                            Text(s.displayTitle).foregroundColor(.primary).lineLimit(1)
                             if !ready {
                                 Text("snippets.send.status.not_connected").font(.caption).foregroundColor(.secondary)
                             } else if s.asleep {

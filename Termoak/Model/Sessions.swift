@@ -51,6 +51,10 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     /// until tapped.
     @Published var asleep = false
     @Published var title: String?
+    /// Name given to the tab by hand ("Rename"); `nil`: the automatic one.
+    @Published var customTitle: String?
+    /// The tab's name: the one given by hand, the program's title or the host's name.
+    var displayTitle: String { TabTitle.display(custom: customTitle, title: title, label: label) }
     @Published var prompt: AuthPrompt?
     /// Ctrl and Alt of the bar: they stay pressed until the next key.
     @Published private(set) var ctrl = false
@@ -109,6 +113,8 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     private var gesture: CursorGesture?
     /// Trackpad and mouse: scroll wheel, drag to select, secondary click.
     private var pointer: TerminalPointer?
+    /// Pinch to change the text size and a tap on a link.
+    private var touches: TerminalTouches?
     private var observers: [NSObjectProtocol] = []
     /// Requested by the key bar (grid button).
     var onOpenPanel: (() -> Void)?
@@ -155,6 +161,7 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         didSet {
             guard followSize != oldValue else { return }
             gesture?.suspended = followSize != nil
+            touches?.pinchEnabled = followSize == nil
             viewport.follow = followSize
         }
     }
@@ -180,6 +187,7 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         view.inputAccessoryView = keyBar
         gesture = CursorGesture(session: self)
         pointer = TerminalPointer(view: view)
+        touches = TerminalTouches(session: self)
         gestureMode = settings.gestureMode
         gesture?.configure(gestureMode, cursorByButton: cursorByButton)
         #if DEBUG
@@ -351,11 +359,28 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         theme.apply(to: view)
         keyBar?.applyTheme(theme)
         (view as? TermoakTerminalView)?.optionAsMeta = settings.optionAsMeta
+        view.bellStyle = TerminalSession.bellStyle(settings.bellFeedback)
         suggestionMode = settings.suggestionMode
         suggestions = []
         gestureMode = settings.gestureMode
         gesture?.configure(gestureMode, cursorByButton: cursorByButton)
         keyBar?.paintGestureButton()
+    }
+
+    /// The bell (BEL): a vibration (SwiftTerm's haptic) where there is one,
+    /// a flash of the terminal on an iPad; nothing when Settings turns it off.
+    static func bellStyle(_ on: Bool) -> BellStyle {
+        guard on else { return .none }
+        return UIDevice.current.userInterfaceIdiom == .pad ? .visual : .sound
+    }
+
+    /// Clears the history and, outside full-screen programs, asks the shell
+    /// to clear the screen (Ctrl+L), like the desktop's "Clear terminal".
+    func clearTerminal() {
+        // ED 3: the lines above the screen.
+        view.feed(text: "\u{1b}[3J")
+        guard !view.getTerminal().isCurrentBufferAlternate, state == .connected, canWrite else { return }
+        input(Data([0x0C]), mirror: false)
     }
 
     /// Everything that goes to the terminal passes through here: the typed line
@@ -813,7 +838,7 @@ final class LocalTerminal: TerminalSession {
     /// Shares the terminal so people can be invited (relay through the
     /// server). It stays shared when the copilot stops.
     func shareWithPeople() async throws -> SharedTerminal {
-        let r = try await startRelay(title: title ?? label)
+        let r = try await startRelay(title: displayTitle)
         sharedByCopilot = false
         return r.shared
     }
@@ -1733,6 +1758,32 @@ final class Sessions: ObservableObject {
         // Sleeping tabs do not wake up by themselves: if only those remain, go home.
         if activeId == id { activeId = open.last(where: { !$0.asleep })?.id }
         if !open.contains(where: { !$0.asleep }) { showing = false }
+    }
+
+    /// Every terminal but this one (the tab menu's "Close other tabs").
+    func closeOthers(_ id: UUID) {
+        for s in open where s.id != id { close(s.id) }
+        if open.contains(where: { $0.id == id }) { show(id) }
+    }
+
+    /// The same host again in a new tab: a new connection from here, or a
+    /// new session on the server (not for sessions shared with you).
+    func duplicate(_ id: UUID) {
+        guard let s = open.first(where: { $0.id == id }), s.isOwner, let hostId = s.hostId,
+              let host = try? core.getHost(id: hostId, accountId: s.accountId) else { return }
+        if s is ServerTerminal { openOnServer(host) } else { openLocal(host) }
+    }
+
+    /// Can be duplicated: yours and with a host.
+    func canDuplicate(_ s: TerminalSession) -> Bool {
+        s.isOwner && s.hostId != nil && (s as? ServerTerminal)?.link == nil
+    }
+
+    /// An account signed out: its terminals close (those of its hosts from
+    /// this device and its server sessions, which stay on the server).
+    func closeTerminals(ofAccount accountId: String) {
+        for s in open where s.accountId == accountId { close(s.id) }
+        onServer.removeAll { $0.accountId == accountId }
     }
 
     func closeAll() {

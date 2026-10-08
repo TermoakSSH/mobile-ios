@@ -15,6 +15,7 @@ struct SettingsView: View {
     @State private var twoFactor: TwoFactorStatus?
     @State private var loggingIn = false
     @State private var customizing = false
+    @State private var showingShortcuts = false
 
     private var version: String {
         (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "?"
@@ -95,6 +96,7 @@ struct SettingsView: View {
                         ForEach(SuggestionMode.allCases) { Text($0.title).tag($0) }
                     }
                     Toggle("settings.keep_screen_on", isOn: $settings.keepScreenOn)
+                    bellToggle
                     Toggle("settings.telnet_auto_login", isOn: $settings.telnetAutoLogin)
                     Text("settings.telnet_auto_login.footer").font(.footnote).foregroundColor(.secondary)
                 } header: { Text("settings.terminal") } footer: {
@@ -110,6 +112,7 @@ struct SettingsView: View {
                 Section {
                     Toggle("settings.option_as_meta", isOn: $settings.optionAsMeta)
                     Toggle("settings.key_bar_hardware_keyboard", isOn: $settings.keyBarWithHardwareKeyboard)
+                    Button { showingShortcuts = true } label: { Label("shortcuts.title", systemImage: "command") }
                 } header: {
                     Text("settings.hardware_keyboard")
                 } footer: {
@@ -185,7 +188,19 @@ struct SettingsView: View {
         .onChange(of: settings.gestureMode) { _ in sessions.applyAppearance() }
         .onChange(of: settings.optionAsMeta) { _ in sessions.applyAppearance() }
         .onChange(of: settings.keyboard) { _ in sessions.applyKeyboard() }
+        .onChange(of: settings.bellFeedback) { _ in sessions.applyAppearance() }
         .sheet(isPresented: $customizing) { KeyboardEditor().environmentObject(settings) }
+        .sheet(isPresented: $showingShortcuts) { ShortcutsSheet() }
+    }
+
+    /// The bell vibrates on a phone and flashes the terminal on an iPad.
+    private var bellToggle: some View {
+        Toggle(isOn: $settings.bellFeedback) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(UIDevice.current.userInterfaceIdiom == .pad ? LocalizedStringKey("settings.bell.flash") : LocalizedStringKey("settings.bell.vibrate"))
+                Text("settings.bell.hint").font(.caption).foregroundColor(.secondary)
+            }
+        }
     }
 
     /// The current account: who you are and where it syncs.

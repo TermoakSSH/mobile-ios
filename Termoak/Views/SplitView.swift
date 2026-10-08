@@ -76,7 +76,7 @@ private struct PaneView: View {
         HStack(spacing: 6) {
             Circle().fill(stateColor).frame(width: 7, height: 7)
             if session.persistent { Image(systemName: "icloud").font(.caption2).foregroundColor(.secondary) }
-            Text(session.title ?? session.label)
+            Text(session.displayTitle)
                 .font(.caption.weight(focused ? .semibold : .regular))
                 .lineLimit(1)
                 .foregroundColor(theme.foregroundColor.opacity(focused ? 1 : 0.7))
@@ -162,6 +162,9 @@ struct SessionStage: View {
     /// Connection steps (like Termius' connection screen).
     @State private var steps: [String] = []
     @State private var didConnect = false
+    /// The host opened in the editor from the failure card.
+    @State private var editingHost: HostEdit?
+    @EnvironmentObject private var account: Accounts
 
     private var theme: TerminalTheme { session.theme }
 
@@ -200,6 +203,28 @@ struct SessionStage: View {
         }
         .onAppear { record(session.state) }
         .onChange(of: session.state) { record($0) }
+        .sheet(item: $editingHost) { e in
+            // "Save & connect" tries again with what was changed.
+            HostEditor(original: e.host) { _ in
+                steps = []
+                session.reconnect()
+            }
+            .environmentObject(model).environmentObject(account).environmentObject(sessions)
+        }
+    }
+
+    /// The host of a terminal of this device that you can change (to fix
+    /// its address, user or key after a failure).
+    private var editableHost: SshHost? {
+        guard session is LocalTerminal, let h = host, h.canEdit else { return nil }
+        return h
+    }
+
+    @ViewBuilder private var editHostButton: some View {
+        if let h = editableHost {
+            Button { editingHost = HostEdit(host: h) } label: { Label("terminal.edit_host", systemImage: "pencil") }
+                .buttonStyle(.bordered)
+        }
     }
 
     private var tileSize: CGFloat { compact ? 44 : 64 }
@@ -221,7 +246,7 @@ struct SessionStage: View {
     private var asleepCard: some View {
         VStack(spacing: 12) {
             HostTile(name: session.label, os: host?.os, icon: host?.icon, size: tileSize)
-            Text(session.title ?? session.label).font(compact ? Font.headline : Font.title3.weight(.semibold))
+            Text(session.displayTitle).font(compact ? Font.headline : Font.title3.weight(.semibold))
             Label("terminal.asleep.label", systemImage: "icloud")
                 .font(.subheadline).foregroundColor(.secondary)
             HStack {
@@ -250,6 +275,7 @@ struct SessionStage: View {
                     HStack {
                         Button { steps = []; session.reconnect() } label: { Label("common.reconnect", systemImage: "arrow.clockwise") }
                             .buttonStyle(.borderedProminent)
+                        editHostButton
                         Button("common.close") { sessions.close(session.id) }.buttonStyle(.bordered)
                     }
                     .padding(.top, 4)
@@ -313,6 +339,7 @@ struct SessionStage: View {
             if error != nil {
                 HStack {
                     Button("common.retry") { steps = []; session.reconnect() }.buttonStyle(.borderedProminent)
+                    editHostButton
                     Button("common.close") { sessions.close(session.id) }.buttonStyle(.bordered)
                 }
                 .padding(.top, 8)
@@ -368,7 +395,7 @@ struct SplitMenu: View {
                 if sessions.panes.count < PaneLayout.maxPanes {
                     Menu {
                         ForEach(others) { s in
-                            Button(s.title ?? s.label) { sessions.addPane(s.id) }
+                            Button(s.displayTitle) { sessions.addPane(s.id) }
                         }
                         Button { newTerminalInSplit() } label: { Label("split.new_terminal", systemImage: "plus") }
                     } label: {
@@ -395,7 +422,7 @@ struct SplitMenu: View {
             } else {
                 Section {
                     ForEach(others) { s in
-                        Button(s.title ?? s.label) { sessions.addPane(s.id) }
+                        Button(s.displayTitle) { sessions.addPane(s.id) }
                     }
                     Button { newTerminalInSplit() } label: { Label("split.new_terminal", systemImage: "plus") }
                 } header: {

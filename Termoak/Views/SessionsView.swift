@@ -327,7 +327,7 @@ private struct OpenSessionRow: View {
                 HostIcon(label: session.label, os: host?.os, color: host?.color, icon: host?.icon, size: 42)
                     .overlay(alignment: .bottomTrailing) { statusBadge.offset(x: 4, y: 4) }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(session.title ?? session.label).font(.headline).foregroundColor(.primary).lineLimit(1)
+                    Text(session.displayTitle).font(.headline).foregroundColor(.primary).lineLimit(1)
                     Text(verbatim: address).font(.subheadline).foregroundColor(.secondary).lineLimit(1)
                     Label {
                         Text(verbatim: statusText)

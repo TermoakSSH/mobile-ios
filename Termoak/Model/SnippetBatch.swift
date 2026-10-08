@@ -41,7 +41,7 @@ final class SnippetBatch: ObservableObject {
     init(text: String, run: Bool, terminals: [TerminalSession]) {
         self.text = text
         self.run = run
-        items = terminals.map { Item(id: $0.id, name: $0.title ?? $0.label, status: .connecting) }
+        items = terminals.map { Item(id: $0.id, name: $0.displayTitle, status: .connecting) }
         for t in terminals { start(t) }
     }
 

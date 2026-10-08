@@ -145,6 +145,8 @@ private struct DesktopTabBar: View {
     @EnvironmentObject private var sessions: Sessions
     /// The tab being dragged.
     @State private var dragging: UUID?
+    /// The tab being renamed.
+    @State private var renaming: TerminalSession?
 
     var body: some View {
         HStack(spacing: 2) {
@@ -182,6 +184,7 @@ private struct DesktopTabBar: View {
         .padding(.horizontal, 6)
         .frame(height: 42)
         .background(Color(.secondarySystemBackground).ignoresSafeArea(edges: .top))
+        .tabRenameAlert($renaming)
     }
 
     private var homeTab: some View {
@@ -210,7 +213,8 @@ private struct DesktopTabBar: View {
                           onShow: { sessions.show(s.id) },
                           onClose: { sessions.close(s.id) },
                           onMove: { sessions.moveTab(s.id, by: $0) },
-                          onSplit: canSplit ? { addToSplit(s) } : nil)
+                          onSplit: canSplit ? { addToSplit(s) } : nil,
+                          onRename: { renaming = s })
             .id(s.id)
             .onDrag {
                 dragging = s.id
@@ -238,6 +242,7 @@ private struct DesktopTab: View {
     let onClose: () -> Void
     let onMove: (Int) -> Void
     let onSplit: (() -> Void)?
+    let onRename: () -> Void
 
     var body: some View {
         HStack(spacing: 6) {
@@ -246,7 +251,7 @@ private struct DesktopTab: View {
             if !session.asleep {
                 Circle().fill(stateColor).frame(width: 7, height: 7)
             }
-            Text(session.title ?? session.label)
+            Text(session.displayTitle)
                 .font(.footnote.weight(selected ? .semibold : .regular))
                 .lineLimit(1)
                 .frame(maxWidth: 180)
@@ -283,6 +288,8 @@ private struct DesktopTab: View {
         if canMoveRight {
             Button { onMove(1) } label: { Label("desktop.tab.move_right", systemImage: "arrow.right") }
         }
+        Divider()
+        TabExtraActions(session: session, onRename: onRename)
         Divider()
         Button(role: .destructive, action: onClose) {
             Label(session.persistent ? String(localized: "terminal.menu.close_tab_persistent") : String(localized: "common.close"),
