@@ -213,7 +213,8 @@ struct VaultDetailView: View {
                         ProgressView()
                     }
                     ForEach(members, id: \.id) { m in
-                        MemberRow(member: m)
+                        MemberRow(member: m, onRole: vault.canManage && !m.implicit ? { setRole(m, $0) } : nil,
+                                  onRemove: { removing = m })
                             .contextMenu { memberMenu(m) }
                             .swipeActions {
                                 if vault.canManage && !m.implicit {
@@ -228,6 +229,14 @@ struct VaultDetailView: View {
                     Text("vaults.members.title")
                 } footer: {
                     Text("vaults.roles.footer")
+                }
+            }
+
+            if vault.canManage {
+                Section {
+                    NavigationLink { VaultAuditView(vault: vault, members: members) } label: {
+                        Label("vaults.activity", systemImage: "clock.arrow.circlepath")
+                    }
                 }
             }
 
@@ -398,9 +407,12 @@ extension VaultRow {
     }
 }
 
-/// A member: person or team, and their role.
+/// A member: person or team, and their role (a menu to change it, for
+/// managers, so it is not only behind a long press).
 private struct MemberRow: View {
     let member: VaultMember
+    var onRole: ((VaultRole) -> Void)? = nil
+    var onRemove: () -> Void = {}
 
     var body: some View {
         HStack(spacing: 12) {
@@ -422,9 +434,30 @@ private struct MemberRow: View {
             }
             Spacer(minLength: 0)
             VStack(alignment: .trailing, spacing: 2) {
-                Text(verbatim: member.role.title)
-                    .font(.caption.weight(.semibold))
-                    .foregroundColor(member.role == .useOnly ? Brand.amber : .secondary)
+                if let onRole {
+                    Menu {
+                        Picker("vaults.member.role", selection: Binding(get: { member.role }, set: { onRole($0) })) {
+                            Text("vaults.role.editor").tag(VaultRole.editor)
+                            Text("vaults.role.use_only").tag(VaultRole.useOnly)
+                        }
+                        Divider()
+                        Button(role: .destructive, action: onRemove) {
+                            Label("vaults.member.remove", systemImage: "person.badge.minus")
+                        }
+                    } label: {
+                        HStack(spacing: 3) {
+                            Text(verbatim: member.role.title)
+                            Image(systemName: "chevron.up.chevron.down").font(.caption2)
+                        }
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(member.role == .useOnly ? Brand.amber : .accentColor)
+                    }
+                    .accessibilityLabel(Text("vaults.member.role"))
+                } else {
+                    Text(verbatim: member.role.title)
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(member.role == .useOnly ? Brand.amber : .secondary)
+                }
                 if member.implicit {
                     Text("vaults.member.implicit").font(.caption2).foregroundColor(.secondary)
                 }
@@ -771,5 +804,91 @@ struct DeleteVaultView: View {
                 self.error = userMessage(error)
             }
         }
+    }
+}
+
+// MARK: - Activity
+
+/// What happened in a vault (the server's audit log): when, what and who,
+/// newest first, 50 at a time.
+private struct VaultAuditView: View {
+    let vault: VaultInfo
+    /// To show who did it by name (the log has their id).
+    let members: [VaultMember]
+
+    @EnvironmentObject private var model: AppModel
+    @State private var events: [AuditEvent] = []
+    @State private var more = false
+    @State private var loading = false
+    @State private var error: String?
+
+    private static let page: UInt32 = 50
+
+    var body: some View {
+        List {
+            if let error {
+                Text(error).foregroundColor(Brand.red)
+            } else if events.isEmpty && !loading {
+                Text("vaults.activity.empty").foregroundColor(.secondary)
+            }
+            ForEach(events, id: \.id) { e in row(e) }
+            if loading {
+                ProgressView()
+            } else if more {
+                Button("vaults.activity.more") { Task { await load(more: true) } }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle("vaults.activity")
+        .navigationBarTitleDisplayMode(.inline)
+        .refreshable { await load(more: false) }
+        .task { await load(more: false) }
+    }
+
+    private func row(_ e: AuditEvent) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(auditActionTitle(e.action)).font(.subheadline)
+            Text(verbatim: "\(who(e.actor)) · \(dateFromMillis(e.createdAt).formatted(date: .abbreviated, time: .shortened))")
+                .font(.caption).foregroundColor(.secondary).lineLimit(1)
+        }
+        .padding(.vertical, 2)
+    }
+
+    /// The member's email or name for an actor id (the id itself otherwise).
+    private func who(_ actor: String) -> String {
+        guard let m = members.first(where: { $0.userId == actor || $0.id == actor }) else { return actor }
+        return m.email ?? (m.name.isEmpty ? actor : m.name)
+    }
+
+    private func load(more: Bool) async {
+        guard let handle = try? model.core.account(accountId: vault.accountId) else { return }
+        loading = true
+        defer { loading = false }
+        do {
+            let before = more ? events.last?.id : nil
+            let list = try await handle.vaultAudit(vaultId: vault.id, limit: Self.page, before: before)
+            events = more ? events + list : list
+            self.more = list.count == Int(Self.page)
+            error = nil
+        } catch {
+            self.error = userMessage(error)
+        }
+    }
+}
+
+/// Text of an audit action of a vault (the action itself when unknown).
+private func auditActionTitle(_ action: String) -> String {
+    switch action.replacingOccurrences(of: "-", with: "_") {
+    case "secret.reveal": return String(localized: "vaults.audit.secret_reveal")
+    case "secret.use": return String(localized: "vaults.audit.secret_use")
+    case "session.open": return String(localized: "vaults.audit.session_open")
+    case "vault.create": return String(localized: "vaults.audit.vault_create")
+    case "vault.delete": return String(localized: "vaults.audit.vault_delete")
+    case "vault.member_add": return String(localized: "vaults.audit.vault_member_add")
+    case "vault.member_removed": return String(localized: "vaults.audit.vault_member_removed")
+    case "vault.role_changed": return String(localized: "vaults.audit.vault_role_changed")
+    case "vault.transfer": return String(localized: "vaults.audit.vault_transfer")
+    case "vault.update": return String(localized: "vaults.audit.vault_update")
+    default: return action
     }
 }

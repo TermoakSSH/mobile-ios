@@ -17607,7 +17607,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sus miembros perderán el acceso a las sesiones compartidas con él, y se eliminan sus bóvedas con sus elementos."
+            "value": "Sus miembros perderán el acceso a las sesiones compartidas con él, y se eliminan sus vaults con sus elementos."
           }
         }
       }
@@ -17767,7 +17767,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Serás su propietario. Después podrás añadir a otros usuarios de este servidor por su correo y compartir sesiones y bóvedas con todo el equipo."
+            "value": "Serás su propietario. Después podrás añadir a otros usuarios de este servidor por su correo y compartir sesiones y vaults con todo el equipo."
           }
         }
       }
@@ -20040,6 +20040,214 @@
           "stringUnit": {
             "state": "translated",
             "value": "No se pudo abrir la bóveda"
+          }
+        }
+      }
+    },
+    "vaults.activity": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activity"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actividad"
+          }
+        }
+      }
+    },
+    "vaults.activity.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing has happened in this vault yet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no ha pasado nada en este vault."
+          }
+        }
+      }
+    },
+    "vaults.activity.more": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Load more"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cargar más"
+          }
+        }
+      }
+    },
+    "vaults.audit.secret_reveal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secret revealed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secreto mostrado"
+          }
+        }
+      }
+    },
+    "vaults.audit.secret_use": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Credentials used from a device"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Credenciales usadas desde un dispositivo"
+          }
+        }
+      }
+    },
+    "vaults.audit.session_open": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server session opened"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesión en el servidor abierta"
+          }
+        }
+      }
+    },
+    "vaults.audit.vault_create": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault created"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault creado"
+          }
+        }
+      }
+    },
+    "vaults.audit.vault_delete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault deleted"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault eliminado"
+          }
+        }
+      }
+    },
+    "vaults.audit.vault_member_add": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Member added"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Miembro añadido"
+          }
+        }
+      }
+    },
+    "vaults.audit.vault_member_removed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Member removed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Miembro quitado"
+          }
+        }
+      }
+    },
+    "vaults.audit.vault_role_changed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Role changed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rol cambiado"
+          }
+        }
+      }
+    },
+    "vaults.audit.vault_transfer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Items moved or copied"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elementos movidos o copiados"
+          }
+        }
+      }
+    },
+    "vaults.audit.vault_update": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault changed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault modificado"
           }
         }
       }
