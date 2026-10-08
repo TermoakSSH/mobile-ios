@@ -104,6 +104,11 @@ struct UploadDeviceItemsView: View {
         for s in (try? core.listSnippets(filter: f)) ?? [] {
             out.append(DeviceItem(id: s.id, name: s.name, icon: "chevron.left.forwardslash.chevron.right", deviceOnly: s.syncMode == .deviceOnly))
         }
+        // Port forwards go too (like Android); a forward's host goes with it.
+        for fw in (try? core.listForwards(hostId: nil, filter: f)) ?? [] {
+            let name = fw.label.isEmpty ? "\(fw.bindPort) → \(fw.destHost ?? "")\(fw.destPort.map { ":\($0)" } ?? "")" : fw.label
+            out.append(DeviceItem(id: fw.id, name: name, icon: "arrow.left.arrow.right", deviceOnly: fw.syncMode == .deviceOnly))
+        }
         items = out
         chosen = Set(out.filter { !$0.deviceOnly }.map(\.id))
     }

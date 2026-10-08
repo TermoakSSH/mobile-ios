@@ -483,6 +483,7 @@ final class Accounts: ObservableObject {
         n += (try? core.listKeys(filter: f).count) ?? 0
         n += (try? core.listIdentities(filter: f).count) ?? 0
         n += (try? core.listSnippets(filter: f).count) ?? 0
+        n += (try? core.listForwards(hostId: nil, filter: f).count) ?? 0
         return n
     }
 
