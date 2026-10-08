@@ -79,12 +79,12 @@ private func parseTags(_ text: String) -> [String] {
 }
 
 /// `#rrggbb` of a palette color (as the desktop saves it).
-private func hexString(_ value: UInt32) -> String {
+func hexString(_ value: UInt32) -> String {
     String(format: "#%06x", value)
 }
 
 /// Same color, written in any case and with or without `#`.
-private func sameColor(_ a: String?, _ b: String?) -> Bool {
+func sameColor(_ a: String?, _ b: String?) -> Bool {
     guard let a, let b else { return a == nil && b == nil }
     func clean(_ s: String) -> String {
         var t = s.trimmingCharacters(in: .whitespaces).lowercased()
@@ -128,6 +128,8 @@ struct HostEditor: View {
     @State private var username = ""
     @State private var method: AuthMethod = .password
     @State private var password = ""
+    /// The password typed shows as text (the eye button).
+    @State private var revealPassword = false
     @State private var clearPassword = false
     @State private var keyId: String?
     @State private var identityId: String?
@@ -438,13 +440,7 @@ struct HostEditor: View {
             .pickerStyle(.segmented)
             switch method {
             case .password:
-                SecureField(original?.hasPassword == true && !clearPassword
-                            ? String(localized: "common.password_saved") : String(localized: "common.password_optional"),
-                            text: $password)
-                    .textContentType(.password)
-                    .focused($focus, equals: .password)
-                    .submitLabel(.done)
-                    .onSubmit { save(connect: false) }
+                passwordRow
                 if original?.hasPassword == true && !clearPassword && password.isEmpty {
                     Button("host_editor.clear_password", role: .destructive) { clearPassword = true }
                 }
@@ -478,6 +474,35 @@ struct HostEditor: View {
         }
     }
 
+    /// The password, hidden or shown with the eye button.
+    private var passwordRow: some View {
+        HStack {
+            Group {
+                if revealPassword {
+                    TextField(passwordPrompt, text: $password)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                } else {
+                    SecureField(passwordPrompt, text: $password)
+                }
+            }
+            .textContentType(.password)
+            .focused($focus, equals: .password)
+            .submitLabel(.done)
+            .onSubmit { save(connect: false) }
+            Button { revealPassword.toggle() } label: {
+                Image(systemName: revealPassword ? "eye.slash" : "eye").foregroundColor(.secondary)
+            }
+            .buttonStyle(.borderless)
+            .accessibilityLabel(revealPassword ? Text("host_editor.hide_password") : Text("host_editor.show_password"))
+        }
+    }
+
+    private var passwordPrompt: String {
+        original?.hasPassword == true && !clearPassword
+            ? String(localized: "common.password_saved") : String(localized: "common.password_optional")
+    }
+
     private var connectButton: some View {
         Section {
             Button { save(connect: true) } label: {
@@ -499,7 +524,23 @@ struct HostEditor: View {
             if account.list.isEmpty {
                 Toggle("common.device_only", isOn: $deviceOnly)
             }
-            TextField("host_editor.notes", text: $notes)
+            notesEditor
+        }
+    }
+
+    /// Several lines of notes (a placeholder while empty).
+    private var notesEditor: some View {
+        ZStack(alignment: .topLeading) {
+            if notes.isEmpty {
+                Text("host_editor.notes")
+                    .foregroundColor(Color(.placeholderText))
+                    .padding(.top, 8)
+                    .padding(.leading, 4)
+                    .accessibilityHidden(true)
+            }
+            TextEditor(text: $notes)
+                .frame(minHeight: 72, maxHeight: 180)
+                .accessibilityLabel(Text("host_editor.notes"))
         }
     }
 

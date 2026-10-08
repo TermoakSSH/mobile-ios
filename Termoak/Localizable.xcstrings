@@ -5853,6 +5853,22 @@
         }
       }
     },
+    "host_editor.hide_password": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide password"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ocultar la contraseña"
+          }
+        }
+      }
+    },
     "host_editor.jump_chain": {
       "localizations": {
         "en": {
@@ -6333,6 +6349,22 @@
         }
       }
     },
+    "host_editor.show_password": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show password"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar la contraseña"
+          }
+        }
+      }
+    },
     "host_editor.startup_snippet": {
       "localizations": {
         "en": {
@@ -6557,6 +6589,38 @@
         }
       }
     },
+    "hosts.address_copied": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Address copied"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dirección copiada"
+          }
+        }
+      }
+    },
+    "hosts.connected": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectado"
+          }
+        }
+      }
+    },
     "hosts.copy_label %@": {
       "localizations": {
         "en": {
@@ -6621,6 +6685,134 @@
         }
       }
     },
+    "hosts.details.address": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Address"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dirección"
+          }
+        }
+      }
+    },
+    "hosts.details.asked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asked when connecting"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se pide al conectar"
+          }
+        }
+      }
+    },
+    "hosts.details.identity %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identity %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identidad %@"
+          }
+        }
+      }
+    },
+    "hosts.details.key %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave %@"
+          }
+        }
+      }
+    },
+    "hosts.details.password_saved": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved password (not shown)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contraseña guardada (no se muestra)"
+          }
+        }
+      }
+    },
+    "hosts.details.port": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Port"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Puerto"
+          }
+        }
+      }
+    },
+    "hosts.details.tags": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tags"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Etiquetas"
+          }
+        }
+      }
+    },
+    "hosts.details.username": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Username"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usuario"
+          }
+        }
+      }
+    },
     "hosts.empty.import": {
       "localizations": {
         "en": {
@@ -6681,6 +6873,62 @@
           "stringUnit": {
             "state": "translated",
             "value": "Crea tu primer host"
+          }
+        }
+      }
+    },
+    "hosts.group.color.none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No color"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin color"
+          }
+        }
+      }
+    },
+    "hosts.group.connect_all %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Connect to all (%lld tab)"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Connect to all (%lld tabs)"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Conectar a todos (%lld pestaña)"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Conectar a todos (%lld pestañas)"
+                }
+              }
+            }
           }
         }
       }
@@ -6773,6 +7021,54 @@
         }
       }
     },
+    "hosts.group.edit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit group"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editar grupo"
+          }
+        }
+      }
+    },
+    "hosts.group.empty.text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a host, or move one here from its editor."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añade un host, o mueve aquí uno desde su editor."
+          }
+        }
+      }
+    },
+    "hosts.group.empty.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This group is empty"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este grupo está vacío"
+          }
+        }
+      }
+    },
     "hosts.group.name": {
       "localizations": {
         "en": {
@@ -6817,6 +7113,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cambiar nombre"
+          }
+        }
+      }
+    },
+    "hosts.group.split_all": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open all in split view"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir todos en vista dividida"
           }
         }
       }
@@ -6929,6 +7241,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quitar de favoritos"
+          }
+        }
+      }
+    },
+    "hosts.menu.view": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver"
           }
         }
       }
@@ -7141,6 +7469,22 @@
         }
       }
     },
+    "hosts.select.run_snippet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run a snippet…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ejecutar un snippet…"
+          }
+        }
+      }
+    },
     "hosts.select.title": {
       "localizations": {
         "en": {
@@ -7229,6 +7573,22 @@
         }
       }
     },
+    "hosts.tag.filter_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shows the hosts with this tag"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muestra los hosts con esta etiqueta"
+          }
+        }
+      }
+    },
     "hosts.telnet_badge": {
       "localizations": {
         "en": {
@@ -7241,6 +7601,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Telnet: sin cifrar"
+          }
+        }
+      }
+    },
+    "hosts.use_only.normal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use only: connect with it, but its password and keys are never shown."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo uso: puedes conectarte, pero su contraseña y sus claves nunca se muestran."
+          }
+        }
+      }
+    },
+    "hosts.use_only.strict": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use only in a Strict vault: it connects through the server, and its password and keys never reach this device."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo uso en un vault Estricto: se conecta a través del servidor, y su contraseña y sus claves nunca llegan a este dispositivo."
           }
         }
       }
@@ -16004,6 +16396,22 @@
         }
       }
     },
+    "snippets.send.status.wakes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asleep: it reconnects and gets it"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dormido: se vuelve a conectar y lo recibe"
+          }
+        }
+      }
+    },
     "snippets.send.summary.needs_you": {
       "localizations": {
         "en": {
@@ -16052,6 +16460,22 @@
         }
       }
     },
+    "snippets.send.summary.tap_row": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap a terminal to open it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca un terminal para abrirlo."
+          }
+        }
+      }
+    },
     "snippets.send.target": {
       "localizations": {
         "en": {
@@ -16080,6 +16504,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Terminales abiertos"
+          }
+        }
+      }
+    },
+    "snippets.send.target.panes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Split panes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paneles"
           }
         }
       }
