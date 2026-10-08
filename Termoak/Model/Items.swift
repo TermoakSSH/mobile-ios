@@ -180,21 +180,6 @@ extension TermoakCore {
 
     /// Teams of an account (for sharing a vault or creating a team vault).
     func teams(of accountId: String) async throws -> [Team] {
-        let json = try await account(accountId: accountId).apiGet(path: "/api/v1/teams")
-        guard let data = json.data(using: .utf8),
-              let rows = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { return [] }
-        return rows.compactMap { r in
-            guard let id = r["id"] as? String, let name = r["name"] as? String else { return nil }
-            let role: TeamRole?
-            switch r["role"] as? String {
-            case "owner": role = .owner
-            case "admin": role = .admin
-            case "member": role = .member
-            default: role = nil
-            }
-            return Team(id: id, name: name, role: role,
-                        memberCount: UInt32((r["member_count"] as? Int) ?? 0),
-                        createdAt: Int64((r["created_at"] as? Int) ?? 0))
-        }
+        try await account(accountId: accountId).listTeams()
     }
 }
