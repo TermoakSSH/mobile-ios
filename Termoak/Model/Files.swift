@@ -2,17 +2,16 @@ import TermoakKit
 import Foundation
 
 /// Where the files come from: SFTP over the phone's SSH connection or SFTP
-/// done by the server (for the sessions that live there).
+/// done by the server (for the sessions that live there and the hosts only
+/// the server reaches). Both can do the same: read and write whole files,
+/// stat and chmod too through the server since engine 0.6.1.
 protocol RemoteFileSystem: AnyObject {
-    /// Permissions can be changed (only over direct SSH).
-    var canChmod: Bool { get }
-    /// Text files can be read and written whole (only over direct SSH: the
-    /// server has no such calls yet).
-    var canEdit: Bool { get }
     func read(_ path: String, maxBytes: UInt64) async throws -> Data
     func write(_ path: String, data: Data) async throws
     func home() async throws -> String
     func list(_ path: String) async throws -> [RemoteFile]
+    /// One file's details (a link: those of what it points to).
+    func stat(_ path: String) async throws -> RemoteFile
     /// `cancel`: cancelling it stops the transfer in the engine, which then
     /// throws `TermoakError.Cancelled` (a download leaves no file behind).
     func download(_ remote: String, to local: URL, progress: TransferListener, cancel: TransferHandle) async throws
@@ -35,12 +34,11 @@ final class SshFileSystem: RemoteFileSystem {
         self.own = own
     }
 
-    var canChmod: Bool { true }
-    var canEdit: Bool { true }
     func home() async throws -> String { try await session.sftpHome() }
     func read(_ path: String, maxBytes: UInt64) async throws -> Data { try await session.sftpRead(path: path, maxBytes: maxBytes) }
     func write(_ path: String, data: Data) async throws { try await session.sftpWrite(path: path, data: data) }
     func list(_ path: String) async throws -> [RemoteFile] { try await session.sftpList(path: path) }
+    func stat(_ path: String) async throws -> RemoteFile { try await session.sftpStat(path: path) }
     func download(_ remote: String, to local: URL, progress: TransferListener, cancel: TransferHandle) async throws {
         _ = try await session.sftpDownload(remotePath: remote, localPath: local.path, listener: progress, cancel: cancel)
     }
@@ -70,16 +68,15 @@ final class ServerFileSystem: RemoteFileSystem {
         self.accountId = accountId
     }
 
-    var canChmod: Bool { false }
-    var canEdit: Bool { false }
     func home() async throws -> String { try await core.serverSftpHome(hostId: hostId, accountId: accountId) }
     func read(_ path: String, maxBytes: UInt64) async throws -> Data {
-        throw TermoakError.Invalid(message: String(localized: "files.error.edit_ssh_only"))
+        try await core.serverSftpRead(hostId: hostId, path: path, maxBytes: maxBytes, accountId: accountId)
     }
     func write(_ path: String, data: Data) async throws {
-        throw TermoakError.Invalid(message: String(localized: "files.error.edit_ssh_only"))
+        _ = try await core.serverSftpWrite(hostId: hostId, path: path, data: data, accountId: accountId)
     }
     func list(_ path: String) async throws -> [RemoteFile] { try await core.serverSftpList(hostId: hostId, path: path, accountId: accountId) }
+    func stat(_ path: String) async throws -> RemoteFile { try await core.serverSftpStat(hostId: hostId, path: path, accountId: accountId) }
     func download(_ remote: String, to local: URL, progress: TransferListener, cancel: TransferHandle) async throws {
         _ = try await core.serverSftpDownload(hostId: hostId, remotePath: remote, localPath: local.path, listener: progress,
                                               accountId: accountId, cancel: cancel)
@@ -92,7 +89,7 @@ final class ServerFileSystem: RemoteFileSystem {
     func rename(_ from: String, to: String) async throws { try await core.serverSftpRename(hostId: hostId, from: from, to: to, accountId: accountId) }
     func delete(_ path: String, recursive: Bool) async throws { try await core.serverSftpDelete(hostId: hostId, path: path, recursive: recursive, accountId: accountId) }
     func setPermissions(_ path: String, mode: UInt32) async throws {
-        throw TermoakError.Invalid(message: String(localized: "files.error.chmod_ssh_only"))
+        try await core.serverSftpChmod(hostId: hostId, path: path, mode: mode, accountId: accountId)
     }
     func close() {}
 }
@@ -219,8 +216,6 @@ final class FileBrowser: ObservableObject {
         self.source = source
     }
 
-    var canChmod: Bool { fileSystem?.canChmod ?? false }
-    var canEdit: Bool { fileSystem?.canEdit ?? false }
     /// The home folder (for "Go to" `~`).
     private(set) var home = ""
 
@@ -337,7 +332,7 @@ final class FileBrowser: ObservableObject {
         await go(to: target)
     }
 
-    /// An empty file in this folder (only over direct SSH).
+    /// An empty file in this folder.
     func createFile(_ name: String) async {
         let n = name.trimmingCharacters(in: .whitespaces)
         guard !entries.contains(where: { $0.name == n }) else {
@@ -385,6 +380,12 @@ final class FileBrowser: ObservableObject {
 
     func setPermissions(_ f: RemoteFile, mode: UInt32) async {
         await perform { try await $0.setPermissions(f.path, mode: mode) }
+    }
+
+    /// The details of a file as they are now (for Info; a link: those of
+    /// what it points to). `nil` if they can't be read.
+    func stat(_ f: RemoteFile) async -> RemoteFile? {
+        try? await fileSystem?.stat(f.path)
     }
 
     private func perform(_ action: @escaping (RemoteFileSystem) async throws -> Void) async {

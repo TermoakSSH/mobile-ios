@@ -5269,6 +5269,22 @@
         }
       }
     },
+    "files.info.link_to %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Link to: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enlace a: %@"
+          }
+        }
+      }
+    },
     "files.info.modified": {
       "localizations": {
         "en": {

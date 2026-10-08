@@ -130,9 +130,7 @@ struct FilesScreen: View {
             Button { uploading = true } label: { Label("files.upload", systemImage: "arrow.up.doc") }
             Button { pickingPhotos = true } label: { Label("files.upload_photos", systemImage: "photo.on.rectangle") }
             Button { name = ""; newFolder = true } label: { Label("files.new_folder", systemImage: "folder.badge.plus") }
-            if browser.canEdit {
-                Button { name = ""; newFile = true } label: { Label("files.new_file", systemImage: "doc.badge.plus") }
-            }
+            Button { name = ""; newFile = true } label: { Label("files.new_file", systemImage: "doc.badge.plus") }
             Button { typedPath = browser.path; goingTo = true } label: { Label("files.go_to", systemImage: "arrow.right.circle") }
             Button { startSelection(nil) } label: { Label("files.select", systemImage: "checkmark.circle") }
             Divider()
@@ -189,7 +187,7 @@ struct FilesScreen: View {
                 PermissionsEditor(file: e.file) { mode in Task { await browser.setPermissions(e.file, mode: mode) } }
             }
             .sheet(item: Binding(get: { showingInfo.map(IdentifiableFile.init) }, set: { showingInfo = $0?.file })) { e in
-                FileInfoView(file: e.file)
+                FileInfoView(file: e.file) { await browser.stat(e.file) }
             }
             .sheet(item: $editingText) { e in
                 TextFileEditor(file: e) { text in try await browser.saveText(text, to: e.path) }
@@ -471,15 +469,13 @@ struct FilesScreen: View {
                 }
             }
             Button { startSelection(f) } label: { Label("files.select", systemImage: "checkmark.circle") }
-            if f.kind == .file && browser.canEdit {
+            if f.kind == .file {
                 Button { edit(f) } label: { Label("files.edit", systemImage: "square.and.pencil") }
             }
             Button { showingInfo = f } label: { Label("files.info", systemImage: "info.circle") }
             Button { name = f.name; renaming = f } label: { Label("common.rename", systemImage: "pencil") }
             Button { typedPath = browser.path; moving = f } label: { Label("files.move_to", systemImage: "folder") }
-            if browser.canChmod {
-                Button { changingPermissions = f } label: { Label("common.permissions", systemImage: "lock") }
-            }
+            Button { changingPermissions = f } label: { Label("common.permissions", systemImage: "lock") }
             Button { UIPasteboard.general.string = f.path } label: { Label("common.copy_path", systemImage: "doc.on.doc") }
             Button(role: .destructive) { deleting = f } label: { Label("common.delete", systemImage: "trash") }
         }
@@ -813,7 +809,27 @@ private struct TransferRow: View {
 /// both forms, owner and group, path.
 private struct FileInfoView: View {
     let file: RemoteFile
+    /// The file's details as they are now (`stat`; a link: its target).
+    let load: () async -> RemoteFile?
+    @State private var current: RemoteFile?
     @Environment(\.dismiss) private var dismiss
+
+    /// What is shown: the fresh details, or the listing's meanwhile.
+    private var shown: RemoteFile {
+        guard let current else { return file }
+        // A link keeps its own name and path; size, dates and permissions are its target's.
+        var f = current
+        f.name = file.name
+        f.path = file.path
+        f.kind = file.kind
+        return f
+    }
+
+    /// What a link points to (folder, file...), once known.
+    private var targetKind: RemoteFileKind? {
+        guard file.kind == .symlink, let current, current.kind != .symlink else { return nil }
+        return current.kind
+    }
 
     var body: some View {
         NavigationView {
@@ -826,6 +842,7 @@ private struct FileInfoView: View {
                 }
                 Section { details }
             }
+            .task { current = await load() }
             .navigationTitle("files.info")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -835,8 +852,9 @@ private struct FileInfoView: View {
     }
 
     @ViewBuilder private var details: some View {
+        let file = shown
         line("files.info.kind", kindTitle)
-        if file.kind != .dir {
+        if file.kind != .dir && targetKind != .dir {
             line("files.info.size", "\(ByteCountFormatter.string(fromByteCount: Int64(file.size), countStyle: .file)) (\(file.size))")
         }
         if let m = file.modified {
@@ -853,7 +871,13 @@ private struct FileInfoView: View {
     }
 
     private var kindTitle: String {
-        switch file.kind {
+        let own = Self.title(file.kind)
+        guard let targetKind else { return own }
+        return String(localized: "files.info.link_to \(Self.title(targetKind))")
+    }
+
+    private static func title(_ kind: RemoteFileKind) -> String {
+        switch kind {
         case .dir: return String(localized: "files.kind.folder")
         case .file: return String(localized: "files.kind.file")
         case .symlink: return String(localized: "files.kind.link")
