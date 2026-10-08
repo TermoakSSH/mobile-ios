@@ -1565,6 +1565,150 @@
         }
       }
     },
+    "ai.memories": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memories"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memorias"
+          }
+        }
+      }
+    },
+    "ai.memories.content_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What the AI should remember, e.g. “The web servers restart with systemctl restart app”."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo que la IA debe recordar, p. ej. «Los servidores web se reinician con systemctl restart app»."
+          }
+        }
+      }
+    },
+    "ai.memories.delete.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this memory?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Borrar esta memoria?"
+          }
+        }
+      }
+    },
+    "ai.memories.edit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit memory"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editar memoria"
+          }
+        }
+      }
+    },
+    "ai.memories.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No memories yet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía no hay memorias."
+          }
+        }
+      }
+    },
+    "ai.memories.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Facts the AI keeps between tasks, about you or about a host. They are saved in the account's vault and synced."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datos que la IA conserva entre tareas, sobre ti o sobre un host. Se guardan en el vault de la cuenta y se sincronizan."
+          }
+        }
+      }
+    },
+    "ai.memories.host": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host"
+          }
+        }
+      }
+    },
+    "ai.memories.new": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New memory"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nueva memoria"
+          }
+        }
+      }
+    },
+    "ai.memories.no_host": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Any host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cualquier host"
+          }
+        }
+      }
+    },
     "ai.mode.ask": {
       "localizations": {
         "en": {

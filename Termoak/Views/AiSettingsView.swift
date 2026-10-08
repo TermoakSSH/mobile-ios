@@ -27,6 +27,10 @@ struct AiSettingsView: View {
                 }
 
                 Section {
+                    NavigationLink { AiMemoriesView(accountId: nil) } label: { Label("ai.memories", systemImage: "brain.head.profile") }
+                }
+
+                Section {
                     EmptyView()
                 } footer: {
                     Label("settings.ai.privacy", systemImage: "lock")

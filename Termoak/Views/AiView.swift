@@ -104,6 +104,9 @@ struct AiView: View {
                     }
                 }
             }
+            Section {
+                NavigationLink { AiMemoriesView(accountId: aiAccountId) } label: { Label("ai.memories", systemImage: "brain.head.profile") }
+            }
             Section("ai.section.tasks") {
                 if tasks.isEmpty {
                     Text("ai.tasks.empty")
