@@ -312,7 +312,7 @@ private struct OpenSessionRow: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 14) {
-                HostIcon(label: session.label, os: host?.os, color: host?.color, size: 42)
+                HostIcon(label: session.label, os: host?.os, color: host?.color, icon: host?.icon, size: 42)
                     .overlay(alignment: .bottomTrailing) { statusBadge.offset(x: 4, y: 4) }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(session.title ?? session.label).font(.headline).foregroundColor(.primary).lineLimit(1)
@@ -394,7 +394,7 @@ private struct ServerSessionRow: View {
         Button(action: onTap) {
             HStack(spacing: 14) {
                 HostIcon(label: host.map { $0.label.isEmpty ? $0.address : $0.label } ?? session.title,
-                         os: host?.os, color: host?.color, size: 42)
+                         os: host?.os, color: host?.color, icon: host?.icon, size: 42)
                     .overlay(alignment: .bottomTrailing) {
                         Circle()
                             .fill(color)

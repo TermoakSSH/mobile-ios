@@ -260,6 +260,14 @@ struct QuickConnectView: View {
     @State private var query = ""
     @State private var hosts: [SshHost] = []
     @State private var highlighted: String?
+    @State private var error: String?
+
+    /// An address typed in the search (`user@host:port`,
+    /// `telnet://[user@]host[:port]`...) when no saved host matches it.
+    private var quickTarget: QuickTarget? {
+        guard results.isEmpty else { return nil }
+        return QuickTarget.parse(query)
+    }
 
     private var results: [SshHost] {
         let q = query.trimmingCharacters(in: .whitespaces).lowercased()
@@ -306,11 +314,19 @@ struct QuickConnectView: View {
         }
         .navigationViewStyle(.stack)
         .onAppear { hosts = (try? model.core.listHosts(filter: account.hostFilter)) ?? [] }
+        .alert("host_editor.save_failed", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
+            Button("common.ok", role: .cancel) {}
+        } message: { Text(error ?? "") }
     }
 
     private var list: some View {
         ScrollViewReader { proxy in
             List {
+                if let target = quickTarget {
+                    Button { quickConnect(target) } label: { quickRow(target) }
+                        .buttonStyle(.plain)
+                        .listRowBackground(keyboardHighlight(true))
+                }
                 ForEach(results, id: \.key) { h in
                     Button { connect(h) } label: { row(h) }
                         .buttonStyle(.plain)
@@ -320,7 +336,7 @@ struct QuickConnectView: View {
             }
             .listStyle(.plain)
             .overlay {
-                if results.isEmpty {
+                if results.isEmpty && quickTarget == nil {
                     Text(hosts.isEmpty ? String(localized: "quick_connect.no_hosts") : String(localized: "hosts.search.no_results \(query)"))
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -349,9 +365,68 @@ struct QuickConnectView: View {
         .contentShape(Rectangle())
     }
 
+    /// "Connect to telnet://router:2323" (saved as a new host first).
+    private func quickRow(_ t: QuickTarget) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "bolt.horizontal.circle.fill")
+                .font(.system(size: 22))
+                .foregroundColor(t.isTelnet ? Brand.amber : .accentColor)
+                .frame(width: 32, height: 32)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("quick_connect.connect_to \(t.display)")
+                    .font(.body.weight(.medium)).foregroundColor(.primary).lineLimit(1)
+                Text("quick_connect.saved_as_host").font(.caption).foregroundColor(.secondary).lineLimit(1)
+            }
+            if t.isTelnet { TelnetBadge() }
+            Spacer(minLength: 0)
+            Image(systemName: "return").font(.caption).foregroundColor(.secondary)
+        }
+        .padding(.vertical, 2)
+        .contentShape(Rectangle())
+    }
+
     private func connectCurrent() {
+        if let target = quickTarget {
+            quickConnect(target)
+            return
+        }
         guard let key = current, let h = results.first(where: { $0.key == key }) else { return }
         connect(h)
+    }
+
+    /// Connects to a typed address: to the saved host with that address,
+    /// protocol, user and port if there is one; otherwise it is saved as a
+    /// new host first (so its password, fingerprint and history have a
+    /// place), like the desktop's quick connect.
+    private func quickConnect(_ t: QuickTarget) {
+        let existing = hosts.first { h in
+            h.address.caseInsensitiveCompare(t.host) == .orderedSame
+                && h.isTelnet == t.isTelnet
+                && (t.user == nil || h.settings.username == t.user)
+                && h.effectivePort == t.effectivePort
+        }
+        if let existing {
+            connect(existing)
+            return
+        }
+        var host = SshHost(label: t.display, address: t.host)
+        host.protocol = t.protocol
+        host.settings.username = t.user
+        // Telnet hosts keep their port written out (like the editor).
+        host.settings.port = t.port ?? (t.isTelnet ? HostProtocol.defaultPort(t.protocol) : nil)
+        if !account.list.isEmpty {
+            let place = account.defaultPlace
+            host.accountId = place.accountId
+            host.vaultId = place.vaultId
+            host.syncMode = place.accountId == nil ? .deviceOnly : .synced
+        }
+        do {
+            let saved = try model.core.saveHost(host: host, password: .keep)
+            account.sync()
+            connect(saved)
+        } catch {
+            self.error = userMessage(error)
+        }
     }
 
     private func connect(_ h: SshHost) {

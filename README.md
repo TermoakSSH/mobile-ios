@@ -13,9 +13,12 @@ The same as the Android app:
 - **Accounts**: several at once, on the official server or your own, with
   in-app sign-up. The app also works without a server, only on the device.
 - **Vaults** shared with people and teams (Editor or Use only), with sync.
-- **Hosts**: search, groups, favorites, multi-select and a full editor.
-- **Terminal** with tabs: local SSH and persistent server sessions, snippets,
-  copy/paste, and split view with broadcast input on iPad.
+- **Hosts**: search, groups, favorites, multi-select and a full editor,
+  with logos (the detected system's or one you choose).
+- **Terminal** with tabs: local SSH and Telnet, persistent server sessions,
+  snippets, copy/paste, the latency in the bar, and split view with
+  broadcast input on iPad. Quick connect (⌘K) takes `user@host:port` and
+  `telnet://host:port` too.
 - **Live session sharing**: invite by email, team or link; one person types
   at a time, with a waiting room; join with `termoak://join` links.
 - **AI** with approvals, keychain, SFTP files, port forwarding and settings.
@@ -29,7 +32,9 @@ The same as the Android app:
   top (Home, one per terminal, drag to reorder), a collapsible sidebar
   (⌃⌘S) with the vault, server and app sections, hosts as cards in a grid
   with the editor in a side panel, and the desktop's terminal toolbar.
-  Narrow windows keep the phone layout.
+  Narrow windows keep the phone layout. Settings → Appearance → "Layout on
+  wide screens" can keep the phone layout, or use the desktop one on an
+  iPhone Plus or Pro Max in landscape too.
 
 iOS cuts local connections shortly after you leave the app (the app asks for
 a few minutes of grace time). For long jobs, use server sessions.
@@ -94,7 +99,8 @@ Any server also works through "Use your own server".
 ### Unit tests
 
 `UnitTests/` checks the pure logic, such as what each key of a hardware
-keyboard sends (`Termoak/Model/HardwareKeys.swift`). The target compiles the
+keyboard sends (`Termoak/Model/HardwareKeys.swift`), the Telnet port and
+`telnet://` addresses, host logos and the layout of wide windows. The target compiles the
 files it tests, so it needs neither the app nor an sshd:
 
 ```sh

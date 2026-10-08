@@ -95,6 +95,8 @@ struct SettingsView: View {
                         ForEach(SuggestionMode.allCases) { Text($0.title).tag($0) }
                     }
                     Toggle("settings.keep_screen_on", isOn: $settings.keepScreenOn)
+                    Toggle("settings.telnet_auto_login", isOn: $settings.telnetAutoLogin)
+                    Text("settings.telnet_auto_login.footer").font(.footnote).foregroundColor(.secondary)
                 } header: { Text("settings.terminal") } footer: {
                     Text("settings.terminal.footer")
                 }
@@ -114,11 +116,18 @@ struct SettingsView: View {
                     Text("settings.hardware_keyboard.footer")
                 }
 
-                Section("settings.appearance") {
+                Section {
                     Picker("common.theme", selection: $settings.appTheme) {
                         ForEach(AppTheme.allCases) { Text($0.title).tag($0) }
                     }
                     .pickerStyle(.segmented)
+                    Picker("settings.wide_layout", selection: $settings.wideLayout) {
+                        ForEach(WideLayout.allCases) { Text($0.title).tag($0) }
+                    }
+                } header: {
+                    Text("settings.appearance")
+                } footer: {
+                    Text("settings.wide_layout.footer")
                 }
 
                 Section {

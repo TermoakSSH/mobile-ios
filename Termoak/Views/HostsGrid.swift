@@ -5,12 +5,12 @@ import SwiftUI
 // the desktop app's Hosts view: cards in a grid under the group chips. The
 // list itself (what is shown, the actions) is HostsView's.
 
-/// "user@address" (with ":port" when it is not 22), as the desktop app shows
-/// a host.
+/// "user@address" (with ":port" when it is not the protocol's default), as
+/// the desktop app shows a host.
 func hostAddressLine(_ host: SshHost) -> String {
     var line = host.address
     if let u = host.settings.username, !u.isEmpty { line = "\(u)@\(line)" }
-    if let p = host.settings.port, p != 22 { line += ":\(p)" }
+    if let p = host.settings.port, p != HostProtocol.defaultPort(host.protocol) { line += ":\(p)" }
     return line
 }
 
@@ -103,12 +103,14 @@ struct HostCard<MenuItems: View>: View {
         highlighted || selected ? Color.accentColor : Color(.separator).opacity(0.6)
     }
 
-    /// The system's badge (or "SSH"), the vault and the first tags.
+    /// "Telnet" (unencrypted), the system's badge (or "SSH"), the vault and
+    /// the first tags.
     private var badges: some View {
         HStack(spacing: 4) {
+            if host.isTelnet { TelnetBadge() }
             if let badge = osBadge(host.os) {
                 SmallBadge(text: badge.0, color: badge.1)
-            } else {
+            } else if !host.isTelnet {
                 SmallBadge(text: "SSH", color: Brand.blue)
             }
             if showVault && (vault != nil || host.accountId == nil) { VaultChip(vault: vault) }

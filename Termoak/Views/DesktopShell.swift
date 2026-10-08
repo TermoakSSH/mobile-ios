@@ -62,10 +62,12 @@ enum DesktopSection: String, CaseIterable, Identifiable {
     }
 }
 
-/// Whether the window gets the desktop layout: an iPad (or a Mac running
-/// the iPad app) in a regular-width window.
-func usesDesktopLayout(_ sizeClass: UserInterfaceSizeClass?) -> Bool {
-    UIDevice.current.userInterfaceIdiom == .pad && sizeClass == .regular
+/// Whether the window gets the desktop layout (Settings → Appearance →
+/// "Layout on wide screens"): by default an iPad (or a Mac running the iPad
+/// app) in a regular-width window; "Desktop layout" also an iPhone Plus or
+/// Pro Max in landscape; "Phone layout" never.
+func usesDesktopLayout(_ sizeClass: UserInterfaceSizeClass?, _ choice: WideLayout) -> Bool {
+    choice.usesDesktop(pad: UIDevice.current.userInterfaceIdiom == .pad, regularWidth: sizeClass == .regular)
 }
 
 /// The window in the desktop layout: the tabs on top, and Home or the

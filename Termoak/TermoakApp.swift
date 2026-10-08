@@ -168,7 +168,8 @@ private struct RootContent: View {
     @EnvironmentObject private var account: Accounts
     @EnvironmentObject private var sessions: Sessions
     @EnvironmentObject private var settings: AppSettings
-    /// Regular on an iPad with room: the desktop layout.
+    /// Regular on an iPad with room (or an iPhone Plus/Pro Max in
+    /// landscape): the desktop layout, as Settings says.
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var welcomeDone = false
     /// The welcome screen is on: it stays until it finishes (an account
@@ -183,13 +184,18 @@ private struct RootContent: View {
                         && model.joining == nil && sessions.open.isEmpty {
                 LoginView(welcome: true) { welcomeDone = true }
                     .onAppear { inWelcome = true }
-            } else if usesDesktopLayout(sizeClass) {
+            } else if usesDesktopLayout(sizeClass, settings.wideLayout) {
                 // iPad with room: like the desktop app (tabs on top, sidebar).
                 DesktopShell()
             } else {
                 Home()
                     .overlay(alignment: .top) { ShareToasts(notices: sessions.notices) }
-                    .fullScreenCover(isPresented: $sessions.showing) {
+                    // The terminal closes itself (`sessions.showing = false`).
+                    // The cover also goes away when rotating or a new layout
+                    // setting turns this into the desktop layout: the
+                    // terminal stays on screen there (its connection lives in
+                    // `sessions` either way).
+                    .fullScreenCover(isPresented: Binding(get: { sessions.showing }, set: { _ in })) {
                         TerminalScreenView()
                             .environmentObject(model)
                             .environmentObject(model.account)

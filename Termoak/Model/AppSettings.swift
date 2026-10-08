@@ -39,6 +39,16 @@ enum SuggestionMode: String, CaseIterable, Identifiable {
     }
 }
 
+extension WideLayout {
+    var title: String {
+        switch self {
+        case .automatic: return String(localized: "settings.wide_layout.automatic")
+        case .phone: return String(localized: "settings.wide_layout.phone")
+        case .desktop: return String(localized: "settings.wide_layout.desktop")
+        }
+    }
+}
+
 /// Preferences of this device (not synced).
 /// The UserDefaults keys are kept as they were so existing settings survive.
 @MainActor
@@ -80,6 +90,12 @@ final class AppSettings: ObservableObject {
         didSet { d.set(keyBarWithHardwareKeyboard, forKey: "key_bar_hardware_keyboard") }
     }
 
+    /// Telnet hosts: their username and password answer the first login
+    /// prompts (like the desktop's setting).
+    @Published var telnetAutoLogin: Bool { didSet { d.set(telnetAutoLogin, forKey: "telnet_auto_login") } }
+    /// Layout of regular-width windows (iPad, iPhone Plus/Pro Max in landscape).
+    @Published var wideLayout: WideLayout { didSet { d.set(wideLayout.rawValue, forKey: "wide_layout") } }
+
     /// The user already chose to use the app without a server: do not show the welcome again.
     var noServer: Bool {
         get { d.bool(forKey: "sin_servidor") }
@@ -105,6 +121,8 @@ final class AppSettings: ObservableObject {
         keyBarWithHardwareKeyboard = d.object(forKey: "key_bar_hardware_keyboard") as? Bool ?? false
         gestureMode = GestureMode(rawValue: d.string(forKey: "modo_gestos") ?? "") ?? .hold
         suggestionMode = SuggestionMode(rawValue: d.string(forKey: "modo_sugerencias") ?? "") ?? .cursor
+        telnetAutoLogin = d.object(forKey: "telnet_auto_login") as? Bool ?? true
+        wideLayout = WideLayout(rawValue: d.string(forKey: "wide_layout") ?? "") ?? .automatic
     }
 
     var terminalTheme: TerminalTheme { TerminalTheme.byId(terminalThemeId) }

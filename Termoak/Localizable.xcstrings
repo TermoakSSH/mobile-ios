@@ -3173,6 +3173,22 @@
         }
       }
     },
+    "error.not_supported_for_telnet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Telnet hosts have no SFTP, tunnels, remote commands or server sessions: they need SSH."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los hosts Telnet no tienen SFTP, túneles, comandos remotos ni sesiones en el servidor: necesitan SSH."
+          }
+        }
+      }
+    },
     "error.secret_hidden": {
       "localizations": {
         "en": {
@@ -4405,6 +4421,102 @@
         }
       }
     },
+    "host_editor.logo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Logo"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Logo"
+          }
+        }
+      }
+    },
+    "host_editor.logo.generic": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generic"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Genéricos"
+          }
+        }
+      }
+    },
+    "host_editor.logo.systems": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Systems"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistemas"
+          }
+        }
+      }
+    },
+    "host_editor.logo_automatic": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automático"
+          }
+        }
+      }
+    },
+    "host_editor.logo_automatic_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The logo of the detected system, or the initial"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El logo del sistema detectado, o la inicial"
+          }
+        }
+      }
+    },
+    "host_editor.logo_automatic_with %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic (%@)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automático (%@)"
+          }
+        }
+      }
+    },
     "host_editor.method": {
       "localizations": {
         "en": {
@@ -4561,6 +4673,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Puerto (22)"
+          }
+        }
+      }
+    },
+    "host_editor.protocol": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protocol"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protocolo"
           }
         }
       }
@@ -4737,6 +4865,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Etiquetas (prod, web)"
+          }
+        }
+      }
+    },
+    "host_editor.telnet_login_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Telnet has no keys. The username and password are typed at the host's first login prompts if automatic Telnet login is on (Settings)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Telnet no tiene claves. El usuario y la contraseña se escriben en los primeros avisos de inicio de sesión del host si el inicio automático de Telnet está activado (Ajustes)."
+          }
+        }
+      }
+    },
+    "host_editor.telnet_warning": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Telnet sends everything unencrypted, including passwords"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Telnet lo envía todo sin cifrar, contraseñas incluidas"
           }
         }
       }
@@ -5537,6 +5697,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "puerto %lld"
+          }
+        }
+      }
+    },
+    "hosts.telnet_badge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Telnet: unencrypted"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Telnet: sin cifrar"
           }
         }
       }
@@ -7660,6 +7836,214 @@
         }
       }
     },
+    "logo.cloud": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloud"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nube"
+          }
+        }
+      }
+    },
+    "logo.container": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Container / Docker"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contenedor / Docker"
+          }
+        }
+      }
+    },
+    "logo.database": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Database"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Base de datos"
+          }
+        }
+      }
+    },
+    "logo.firewall": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firewall"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cortafuegos"
+          }
+        }
+      }
+    },
+    "logo.iot": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IoT / chip"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IoT / chip"
+          }
+        }
+      }
+    },
+    "logo.kubernetes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kubernetes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kubernetes"
+          }
+        }
+      }
+    },
+    "logo.mail": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mail"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correo"
+          }
+        }
+      }
+    },
+    "logo.router": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Router / network"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Router / red"
+          }
+        }
+      }
+    },
+    "logo.security": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Security"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguridad"
+          }
+        }
+      }
+    },
+    "logo.server": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Servidor"
+          }
+        }
+      }
+    },
+    "logo.storage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Storage / NAS"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Almacenamiento / NAS"
+          }
+        }
+      }
+    },
+    "logo.terminal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminal"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminal"
+          }
+        }
+      }
+    },
+    "logo.web": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Web"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Web"
+          }
+        }
+      }
+    },
     "nav.account.synced": {
       "localizations": {
         "en": {
@@ -7996,6 +8380,22 @@
         }
       }
     },
+    "quick_connect.connect_to %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect to %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectar a %@"
+          }
+        }
+      }
+    },
     "quick_connect.no_hosts": {
       "localizations": {
         "en": {
@@ -8017,13 +8417,29 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Host name, address or tag"
+            "value": "Host, tag, user@host or telnet://host"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nombre, dirección o etiqueta del host"
+            "value": "Host, etiqueta, usuario@host o telnet://host"
+          }
+        }
+      }
+    },
+    "quick_connect.saved_as_host": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved as a new host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se guarda como host nuevo"
           }
         }
       }
@@ -9332,6 +9748,38 @@
         }
       }
     },
+    "settings.telnet_auto_login": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log in to Telnet hosts automatically"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciar sesión automáticamente en hosts Telnet"
+          }
+        }
+      }
+    },
+    "settings.telnet_auto_login.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When a Telnet host has a username or password, they are typed at its first “login:” and “Password:” prompts (once, during the first 30 seconds)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si un host Telnet tiene usuario o contraseña, se escriben en sus primeros «login:» y «Password:» (una vez, durante los primeros 30 segundos)."
+          }
+        }
+      }
+    },
     "settings.terminal": {
       "localizations": {
         "en": {
@@ -9520,6 +9968,86 @@
           "stringUnit": {
             "state": "translated",
             "value": "Web de Termoak"
+          }
+        }
+      }
+    },
+    "settings.wide_layout": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Layout on wide screens"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diseño en pantallas anchas"
+          }
+        }
+      }
+    },
+    "settings.wide_layout.automatic": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automático"
+          }
+        }
+      }
+    },
+    "settings.wide_layout.desktop": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desktop layout"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diseño de escritorio"
+          }
+        }
+      }
+    },
+    "settings.wide_layout.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic: the desktop layout (tabs on top and a sidebar) on an iPad with a wide window. Desktop layout: also on an iPhone Plus or Pro Max in landscape. Narrow windows always use the phone layout. Open terminals stay connected when the layout changes."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automático: el diseño de escritorio (pestañas arriba y barra lateral) en un iPad con la ventana ancha. Diseño de escritorio: también en un iPhone Plus o Pro Max en horizontal. Las ventanas estrechas siempre usan el diseño de teléfono. Los terminales abiertos siguen conectados al cambiar de diseño."
+          }
+        }
+      }
+    },
+    "settings.wide_layout.phone": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Phone layout"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diseño de teléfono"
           }
         }
       }
@@ -12836,6 +13364,38 @@
         }
       }
     },
+    "telnet.no_server_sessions": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server does not open Telnet sessions: connect to this host from this device"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servidor no abre sesiones Telnet: conéctate a este host desde este dispositivo"
+          }
+        }
+      }
+    },
+    "telnet.strict_vault": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This vault only allows connections through the server, and the server does not open Telnet sessions"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este vault solo permite conectar a través del servidor, y el servidor no abre sesiones Telnet"
+          }
+        }
+      }
+    },
     "terminal.asleep.label": {
       "localizations": {
         "en": {
@@ -13008,6 +13568,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Teclado"
+          }
+        }
+      }
+    },
+    "terminal.latency.accessibility %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Latency: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Latencia: %@"
+          }
+        }
+      }
+    },
+    "terminal.latency.tooltip_host %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Latency to %@ (round trip)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Latencia con %@ (ida y vuelta)"
           }
         }
       }
@@ -13280,6 +13872,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sesión del servidor"
+          }
+        }
+      }
+    },
+    "terminal.subtitle.telnet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Telnet from this device · unencrypted"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Telnet desde este dispositivo · sin cifrar"
           }
         }
       }

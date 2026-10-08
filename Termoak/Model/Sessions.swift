@@ -36,10 +36,15 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         didSet {
             switch state {
             case .connected: if connectedAt == nil { connectedAt = Date() }
-            case .connecting, .closed: connectedAt = nil
+            case .connecting, .closed:
+                connectedAt = nil
+                latency = nil
             }
         }
     }
+    /// Last round trip to the host in milliseconds (`nil`: unknown), shown
+    /// in the bar while the terminal is on screen (`measureLatency`).
+    @Published fileprivate(set) var latency: Double?
     /// When the current connection was made (the time shown in Connections).
     private(set) var connectedAt: Date?
     /// Tab of a server session that was open at launch: it is not attached
@@ -122,6 +127,23 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
 
     /// Lives on the server: closing the tab only detaches it.
     var persistent: Bool { false }
+    /// A Telnet terminal (unencrypted; no SFTP, tunnels or server sessions).
+    var isTelnet: Bool { false }
+    /// Its latency can be measured (terminals of this device).
+    var measuresLatency: Bool { false }
+
+    /// Measures the latency once.
+    func measureLatency() async {}
+
+    /// Measures the latency every few seconds while connected, until the
+    /// task is cancelled (the bar's task, while the terminal is on screen).
+    func pollLatency() async {
+        guard measuresLatency, state == .connected else { return }
+        while !Task.isCancelled {
+            await measureLatency()
+            try? await Task.sleep(nanoseconds: UInt64(Latency.interval * 1_000_000_000))
+        }
+    }
 
     /// Container of `view` on screen: it zooms the terminal out when it
     /// keeps a size bigger than the screen (`followSize`).
@@ -631,11 +653,22 @@ struct CursorPad: Equatable {
 
 final class LocalTerminal: TerminalSession {
     private let address: String
-    /// Connected: to start the automatic tunnels.
+    /// A Telnet host (`SshHost.protocol`).
+    private let telnet: Bool
+    /// Why it cannot be opened from here (shown instead of connecting).
+    private let refusal: String?
+    /// Connected over SSH: to start the automatic tunnels.
     var onConnected: ((String, SshSession) -> Void)?
 
-    /// The SSH connection of this terminal (for SFTP and tunnels without reconnecting).
-    var connection: SshSession? { handle?.session() }
+    /// The SSH connection of this terminal (for SFTP and tunnels without
+    /// reconnecting). Telnet terminals have none.
+    var connection: SshSession? {
+        guard let h = handle, !h.isTelnet() else { return nil }
+        return h.session()
+    }
+
+    override var isTelnet: Bool { telnet }
+    override var measuresLatency: Bool { true }
 
     func connection(for host: String) -> SshSession? {
         hostId == host ? connection : nil
@@ -652,14 +685,21 @@ final class LocalTerminal: TerminalSession {
     /// Id of the relay session, if this terminal is shared.
     var sharedSessionId: String? { shared?.sessionId() }
 
-    init(core: TermoakCore, host: SshHost, settings: AppSettings) {
+    /// `refusal`: the tab only shows it (a host that cannot be opened).
+    init(core: TermoakCore, host: SshHost, settings: AppSettings, refusal: String? = nil) {
         address = host.address
+        telnet = host.isTelnet
+        self.refusal = refusal
         super.init(core: core, label: host.label.isEmpty ? host.address : host.label, hostId: host.id,
                    accountId: host.accountId, settings: settings)
     }
 
     override func start() {
         guard handle == nil, task == nil, let hostId else { return }
+        if let refusal {
+            state = .closed(refusal)
+            return
+        }
         state = .connecting(String(localized: "terminal.state.connecting_to \(address)"))
         let auth = AuthBridge { [weak self] prompt in
             Task { @MainActor in self?.prompt = prompt }
@@ -669,13 +709,18 @@ final class LocalTerminal: TerminalSession {
         task = Task {
             defer { task = nil }
             do {
+                // Telnet hosts open a Telnet terminal (the same handle);
+                // the host's username and password answer its first login
+                // prompts if Settings says so.
                 let h = try await core.connectTerminal(hostId: hostId, cols: cols, rows: rows, auth: auth,
-                                                       listener: listener, accountId: accountId)
+                                                       listener: listener, accountId: accountId,
+                                                       telnetAutoLogin: settings.telnetAutoLogin)
                 handle = h
                 state = .connected
                 let (c, r) = size
                 try? h.resize(cols: c, rows: r)
-                onConnected?(hostId, h.session())
+                // Tunnels go over SSH only.
+                if !h.isTelnet() { onConnected?(hostId, h.session()) }
                 _ = view.becomeFirstResponder()
             } catch {
                 state = .closed(userMessage(error))
@@ -688,6 +733,19 @@ final class LocalTerminal: TerminalSession {
         view.feed(text: "\u{1b}c")
         forgetLine()
         start()
+    }
+
+    /// The SSH keep-alive or the Telnet TIMING-MARK round trip; unknown
+    /// when there is no answer in time.
+    override func measureLatency() async {
+        guard state == .connected, let h = handle else {
+            latency = nil
+            return
+        }
+        let ms = try? await h.latencyMs(timeoutMs: Latency.timeoutMs)
+        // Reconnected or closed meanwhile: that answer is old.
+        guard handle === h, state == .connected else { return }
+        latency = ms
     }
 
     override var shareSessionId: String? { shared?.sessionId() }
@@ -1429,7 +1487,9 @@ final class Sessions: ObservableObject {
             c = Copilot(core: core.api(for: s.accountId))
         } else {
             let current = core.currentAccount()?.id
-            c = Copilot(core: core, sendsHost: s.accountId != nil && s.accountId == current)
+            // The AI cannot run commands on a Telnet host from the server: it
+            // only types in the terminal (shared through the relay).
+            c = Copilot(core: core, sendsHost: s.accountId != nil && s.accountId == current && !s.isTelnet)
         }
         copilots[s.id] = c
         return c
@@ -1545,8 +1605,14 @@ final class Sessions: ObservableObject {
         return new
     }
 
-    /// A persistent session on the host's server (its account).
+    /// A persistent session on the host's server (its account). The server
+    /// does not open Telnet sessions: a Telnet host's tab says so.
     func openOnServer(_ host: SshHost) {
+        if host.isTelnet {
+            let reason = host.isUseOnly ? String(localized: "telnet.strict_vault") : String(localized: "telnet.no_server_sessions")
+            add(LocalTerminal(core: core, host: host, settings: settings, refusal: reason))
+            return
+        }
         add(ServerTerminal(core: core, label: host.label.isEmpty ? host.address : host.label,
                            hostId: host.id, sessionId: nil, accountId: host.accountId, settings: settings))
     }

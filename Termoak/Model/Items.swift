@@ -117,6 +117,8 @@ func userMessage(_ error: Error) -> String {
     case .NotLoggedIn: return String(localized: "error.not_logged_in")
     case .EmailNotVerified: return String(localized: "error.email_not_verified")
     case .Network(let message): return String(localized: "error.network \(message)")
+    // SFTP, tunnels, commands or a server session asked of a Telnet host.
+    case .NotSupportedForTelnet: return String(localized: "error.not_supported_for_telnet")
     default: return errorMessage(error)
     }
 }

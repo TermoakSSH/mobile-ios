@@ -76,7 +76,8 @@ struct PortForwardingView: View {
                 managing = h
             }
         }) {
-            HostPicker(hosts: hosts) { picked = $0 }
+            // Tunnels go over SSH: not through Telnet hosts.
+            HostPicker(hosts: hosts.filter { !$0.isTelnet }) { picked = $0 }
         }
         .sheet(item: Binding(get: { managing.map(SelectedHost.init) }, set: { managing = $0?.host }), onDismiss: load) { e in
             TunnelsView(host: e.host)

@@ -220,7 +220,7 @@ struct SessionStage: View {
     /// Tab of a server session that has not been attached yet.
     private var asleepCard: some View {
         VStack(spacing: 12) {
-            HostTile(name: session.label, os: host?.os, size: tileSize)
+            HostTile(name: session.label, os: host?.os, icon: host?.icon, size: tileSize)
             Text(session.title ?? session.label).font(compact ? Font.headline : Font.title3.weight(.semibold))
             Label("terminal.asleep.label", systemImage: "icloud")
                 .font(.subheadline).foregroundColor(.secondary)
@@ -285,7 +285,7 @@ struct SessionStage: View {
         // In a small pane only the last steps.
         let shownSteps = compact ? Array(steps.suffix(2)) : steps
         return VStack(spacing: 12) {
-            HostTile(name: session.label, os: host?.os, size: tileSize)
+            HostTile(name: session.label, os: host?.os, icon: host?.icon, size: tileSize)
             Text(session.label).font(compact ? Font.headline : Font.title3.weight(.semibold))
             Text(host.map { h in (h.settings.username.map { u in "\(u)@" } ?? "") + h.address }
                  ?? (session.persistent ? String(localized: "terminal.server_session_lower") : ""))

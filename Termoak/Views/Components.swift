@@ -37,41 +37,31 @@ func osBadge(_ os: String?) -> (String, Color)? {
     }
 }
 
-/// Square with the host's initials and the color of its operating system.
-struct HostAvatar: View {
-    let name: String
-    let os: String?
-    var size: CGFloat = 40
-
-    var body: some View {
-        let color = osBadge(os)?.1 ?? Brand.blue
-        let initials = name.split(whereSeparator: { " -_.".contains($0) }).prefix(2)
-            .map { String($0.prefix(1)).uppercased() }.joined()
-        RoundedRectangle(cornerRadius: size / 4)
-            .fill(color.opacity(0.18))
-            .frame(width: size, height: size)
-            .overlay(Text(verbatim: initials.isEmpty ? "?" : initials)
-                .font(.system(size: size * 0.36, weight: .bold))
-                .foregroundColor(color))
-    }
-}
-
-/// Square filled with the color of the host's operating system (like Termius's).
+/// Square filled with the color of the host's logo (like Termius's): its
+/// logo, else the first letters of its system or of its name.
 struct HostTile: View {
     let name: String
     let os: String?
+    var icon: String? = nil
     var size: CGFloat = 42
 
     var body: some View {
+        let logo = HostLogo.resolve(icon: icon, os: os)
         let badge = osBadge(os)
         let text = badge.map { String($0.0.prefix(2)).uppercased() }
             ?? name.split(whereSeparator: { " -_.".contains($0) }).prefix(2).map { String($0.prefix(1)).uppercased() }.joined()
         RoundedRectangle(cornerRadius: size / 4.5, style: .continuous)
-            .fill(badge?.1 ?? Brand.blue)
+            .fill(logo.map { rgb($0.color) } ?? badge?.1 ?? Brand.blue)
             .frame(width: size, height: size)
-            .overlay(Text(verbatim: text.isEmpty ? "?" : text)
-                .font(.system(size: size * 0.34, weight: .bold))
-                .foregroundColor(.white))
+            .overlay(Group {
+                if let logo {
+                    LogoGlyph(logo: logo, size: size * 0.55).foregroundColor(.white)
+                } else {
+                    Text(verbatim: text.isEmpty ? "?" : text)
+                        .font(.system(size: size * 0.34, weight: .bold))
+                        .foregroundColor(.white)
+                }
+            })
     }
 }
 
@@ -92,57 +82,50 @@ private func paletteColor(_ name: String) -> Color {
     return rgb(hostPalette[seed % hostPalette.count])
 }
 
-/// SF Symbol of the systems that have a fitting one; the rest show the
-/// initials of their name.
-private func osSymbol(_ os: String?) -> String? {
-    guard let os = os?.trimmingCharacters(in: .whitespaces).lowercased() else { return nil }
-    switch os {
-    case "macos", "darwin", "ios": return "applelogo"
-    case "windows": return "squareshape.split.2x2"
-    case "linux": return "terminal.fill"
-    default: return nil
-    }
-}
-
-/// Avatar of a host on the home screens, like Termius's: a rounded square in
-/// the host's color (or its system's), with the system's symbol or initials,
-/// or else the first letter of its name.
+/// Avatar of a host on the home screens, like Termius's and the desktop's:
+/// a rounded square in the host's color (or its logo's), with its chosen
+/// logo, else its detected system's logo, else the first letters of its
+/// system or the first letter of its name.
 struct HostIcon: View {
     let label: String
     let os: String?
     let color: String?
+    /// Logo chosen in the host (`SshHost.icon`; `nil`: automatic).
+    let icon: String?
     let size: CGFloat
 
     init(host: SshHost, size: CGFloat = 42) {
         label = host.label.isEmpty ? host.address : host.label
         os = host.os
         color = host.color
+        icon = host.icon
         self.size = size
     }
 
-    init(label: String, os: String?, color: String? = nil, size: CGFloat = 42) {
+    init(label: String, os: String?, color: String? = nil, icon: String? = nil, size: CGFloat = 42) {
         self.label = label
         self.os = os
         self.color = color
+        self.icon = icon
         self.size = size
     }
 
     var body: some View {
+        let logo = HostLogo.resolve(icon: icon, os: os)
         let badge = osBadge(os)
         let shape = RoundedRectangle(cornerRadius: size * 0.26, style: .continuous)
         shape
-            .fill(hexColor(color) ?? badge?.1 ?? paletteColor(label))
+            .fill(hexColor(color) ?? logo.map { rgb($0.color) } ?? badge?.1 ?? paletteColor(label))
             .overlay(shape.fill(LinearGradient(gradient: Gradient(colors: [Color.white.opacity(0.22), Color.white.opacity(0)]),
                                                startPoint: .top, endPoint: .bottom)))
             .frame(width: size, height: size)
-            .overlay(glyph(badge))
+            .overlay(glyph(logo, badge))
             .accessibilityHidden(true)
     }
 
-    @ViewBuilder private func glyph(_ badge: (String, Color)?) -> some View {
-        if let symbol = osSymbol(os) {
-            Image(systemName: symbol)
-                .font(.system(size: size * 0.42, weight: .semibold))
+    @ViewBuilder private func glyph(_ logo: HostLogo?, _ badge: (String, Color)?) -> some View {
+        if let logo {
+            LogoGlyph(logo: logo, size: size * 0.55)
                 .foregroundColor(.white)
         } else if let badge {
             Text(verbatim: String(badge.0.prefix(2)).uppercased())
@@ -160,6 +143,74 @@ struct HostIcon: View {
     }
 }
 
+/// A logo as a monochrome glyph of `size` points that takes the foreground
+/// color: a system's from the asset catalog, a generic one's SF Symbol.
+struct LogoGlyph: View {
+    let logo: HostLogo
+    let size: CGFloat
+
+    var body: some View {
+        switch logo.kind {
+        case .system:
+            Image(logo.assetName)
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(width: size, height: size)
+        case .generic(let symbol):
+            Image(systemName: symbol)
+                .font(.system(size: size * 0.82, weight: .semibold))
+                .frame(width: size, height: size)
+        }
+    }
+}
+
+extension HostLogo {
+    /// Name shown in the picker: the system's, or the translated kind.
+    var title: String {
+        switch id {
+        case "server": return String(localized: "logo.server")
+        case "database": return String(localized: "logo.database")
+        case "router": return String(localized: "logo.router")
+        case "firewall": return String(localized: "logo.firewall")
+        case "cloud": return String(localized: "logo.cloud")
+        case "container": return String(localized: "logo.container")
+        case "kubernetes": return String(localized: "logo.kubernetes")
+        case "web": return String(localized: "logo.web")
+        case "mail": return String(localized: "logo.mail")
+        case "storage": return String(localized: "logo.storage")
+        case "terminal": return String(localized: "logo.terminal")
+        case "iot": return String(localized: "logo.iot")
+        case "security": return String(localized: "logo.security")
+        default: return systemName
+        }
+    }
+
+    var swiftUIColor: Color { rgb(color) }
+}
+
+extension SshHost {
+    /// A Telnet host: unencrypted, without SFTP, tunnels, jump hosts or
+    /// server sessions.
+    var isTelnet: Bool { HostProtocol.isTelnet(`protocol`) }
+    /// The port it connects to (the protocol's default when none is saved).
+    var effectivePort: UInt32 { settings.port ?? HostProtocol.defaultPort(`protocol`) }
+}
+
+/// "Telnet" next to a host's name: it is not encrypted.
+struct TelnetBadge: View {
+    var body: some View {
+        Text(verbatim: "Telnet")
+            .font(.caption2.weight(.semibold))
+            .lineLimit(1)
+            .foregroundColor(Brand.amber)
+            .padding(.horizontal, 6).padding(.vertical, 2)
+            .background(Brand.amber.opacity(0.16), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+            .fixedSize()
+            .accessibilityLabel(Text("hosts.telnet_badge"))
+    }
+}
+
 /// Small gray capsule with a host tag.
 struct TagChip: View {
     let text: String
@@ -174,11 +225,14 @@ struct TagChip: View {
     }
 }
 
-/// "ssh, user" like Termius (with the port if it is not 22).
+/// "ssh, user" like Termius (with the port if it is not the protocol's
+/// default); "telnet, user" for Telnet hosts.
 func hostSubtitle(_ host: SshHost) -> String {
-    var parts = ["ssh"]
+    var parts = [host.isTelnet ? "telnet" : "ssh"]
     if let u = host.settings.username, !u.isEmpty { parts.append(u) }
-    if let p = host.settings.port, p != 22 { parts.append(String(localized: "hosts.subtitle.port \(Int(p))")) }
+    if let p = host.settings.port, p != HostProtocol.defaultPort(host.protocol) {
+        parts.append(String(localized: "hosts.subtitle.port \(Int(p))"))
+    }
     return parts.joined(separator: ", ")
 }
 

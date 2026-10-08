@@ -281,7 +281,9 @@ struct NewTaskView: View {
             // The AI runs on the current account's server: only its hosts.
             let current = model.account.current?.id
             let filter = ItemFilter(accountIds: current.map { [$0] } ?? [], vaultIds: nil, includeDevice: false)
+            // Its tools work over SSH: Telnet hosts are left out.
             hosts = ((try? model.core.listHosts(filter: filter)) ?? [])
+                .filter { !$0.isTelnet }
                 .sorted { $0.label.localizedCaseInsensitiveCompare($1.label) == .orderedAscending }
         }
     }

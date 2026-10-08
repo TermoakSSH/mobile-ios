@@ -187,6 +187,9 @@ private struct TerminalContent: View {
         .onChange(of: settings.keyboard) { _ in sessions.applyKeyboard() }
         .onChange(of: settings.optionAsMeta) { _ in sessions.applyAppearance() }
         .onChange(of: session.id) { _ in finding = false }
+        // The latency every few seconds while this terminal is on screen and
+        // connected (again at once when it connects).
+        .task(id: "\(session.id)/\(session.state == .connected)") { await session.pollLatency() }
         .onChange(of: sessions.copilotOpen) { open in
             // On a phone it covers the terminal: hide the keyboard and the quick panel.
             guard open, !side else { return }
@@ -369,6 +372,7 @@ private struct TerminalContent: View {
                 Text(session.title ?? session.label).font(.subheadline.weight(.semibold)).lineLimit(1)
                 Text(subtitle).font(.caption2).foregroundColor(.secondary).lineLimit(1)
             }
+            if showsLatency { latencyBadge.padding(.leading, 4) }
             Spacer()
             pasteButton
             if sessions.splitAvailable {
@@ -400,6 +404,8 @@ private struct TerminalContent: View {
             }
             .padding(.leading, 4)
             placeBadge
+            if session.isTelnet { TelnetBadge() }
+            if showsLatency { latencyBadge }
             Spacer(minLength: 8)
             if filesSource != nil {
                 Button { showingFiles = true } label: { barIcon("folder") }
@@ -444,6 +450,33 @@ private struct TerminalContent: View {
             .foregroundColor(SwiftUI.Color(hex: theme.accent))
             .background(SwiftUI.Color(hex: theme.accent).opacity(0.16), in: Capsule())
             .fixedSize()
+    }
+
+    /// Terminals of this device measure their latency (SSH or Telnet); the
+    /// server sessions' is not known here.
+    private var showsLatency: Bool {
+        session.measuresLatency && !session.asleep
+    }
+
+    /// Round trip to the host, like the desktop's: gray below 150 ms, amber
+    /// below 400 ms, red above; "—" while unknown.
+    private var latencyBadge: some View {
+        let text = Latency.text(session.latency)
+        let color: SwiftUI.Color
+        switch Latency.level(session.latency) {
+        case .unknown, .good: color = .secondary
+        case .fair: color = Brand.amber
+        case .poor: color = Brand.red
+        }
+        return Text(verbatim: text)
+            .font(.caption2.weight(.semibold).monospacedDigit())
+            .foregroundColor(color)
+            .lineLimit(1)
+            .padding(.horizontal, 6).padding(.vertical, 3)
+            .background(color.opacity(0.12), in: Capsule())
+            .fixedSize()
+            .help(Text("terminal.latency.tooltip_host \(session.label)"))
+            .accessibilityLabel(Text("terminal.latency.accessibility \(text)"))
     }
 
     private var stateColor: SwiftUI.Color {
@@ -531,7 +564,7 @@ private struct TerminalContent: View {
             if filesSource != nil {
                 Button { showingFiles = true } label: { Label("common.files_sftp", systemImage: "folder") }
             }
-            if let h = host {
+            if let h = host, !h.isTelnet, !session.isTelnet {
                 Button { tunnelsHost = h } label: { Label("common.tunnels", systemImage: "point.3.connected.trianglepath.dotted") }
             }
             Divider()
@@ -565,6 +598,7 @@ private struct TerminalContent: View {
             if !session.isOwner {
                 return session.canWrite ? String(localized: "share.bar.you_have_control") : session.access.shareLabel
             }
+            if session.isTelnet { return String(localized: "terminal.subtitle.telnet") }
             return session.persistent ? String(localized: "terminal.subtitle.server") : String(localized: "terminal.subtitle.local")
         case .closed: return session.ended?.title ?? String(localized: "terminal.disconnected")
         }
@@ -632,6 +666,7 @@ private struct TerminalContent: View {
     /// SFTP over this terminal's connection, or from the server if the
     /// session lives there.
     private var filesSource: FileBrowser.Source? {
+        // Telnet terminals have no SFTP (`connection` is nil for them).
         if let local = session as? LocalTerminal, let c = local.connection { return .session(c) }
         if session is ServerTerminal, session.isOwner, let h = session.hostId { return .server(hostId: h, accountId: session.accountId) }
         return nil

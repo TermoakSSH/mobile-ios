@@ -679,11 +679,14 @@ struct HostsView: View {
         if desktop && !sessions.open.isEmpty {
             Button { connectInSplit(host) } label: { Label("hosts.menu.connect_split", systemImage: "rectangle.split.2x1") }
         }
-        if canOpenOnServer(host) {
+        // Telnet hosts: no server sessions, SFTP or tunnels (SSH only).
+        if canOpenOnServer(host) && !host.isTelnet {
             Button { connect(host, onServer: true) } label: { Label("hosts.menu.persistent", systemImage: "icloud") }
         }
-        Button { filesHost = host } label: { Label("common.files_sftp", systemImage: "folder") }
-        if !isStrict(host) {
+        if !host.isTelnet {
+            Button { filesHost = host } label: { Label("common.files_sftp", systemImage: "folder") }
+        }
+        if !isStrict(host) && !host.isTelnet {
             Button { tunnelsHost = host } label: { Label("common.tunnels", systemImage: "arrow.left.arrow.right") }
         }
         Divider()
@@ -1337,6 +1340,7 @@ private struct HostRow: View {
                         Image(systemName: "lock.fill").font(.caption2).foregroundColor(Brand.amber)
                             .accessibilityLabel(Text("vaults.use_only_badge"))
                     }
+                    if host.isTelnet { TelnetBadge() }
                 }
                 Text(hostSubtitle(host)).font(.subheadline).foregroundColor(.secondary).lineLimit(1)
                 if !host.tags.isEmpty || showVault || host.isUseOnly {

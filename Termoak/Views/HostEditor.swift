@@ -94,12 +94,16 @@ private func sameColor(_ a: String?, _ b: String?) -> Bool {
     return clean(a) == clean(b)
 }
 
-/// Host editor like the desktop's (and Termius'): the address first, then
-/// the label, group, tags and color; the SSH user, port and credential with
-/// a "Connect" button; and a collapsible "Advanced" section with jumps,
-/// proxy, agent forwarding, keep-alive, startup snippet, environment and
-/// terminal theme. Errors show under their fields. Return goes to the next
-/// field and saves on the last one; ⌘↩ saves and connects.
+/// Host editor like the desktop's (and Termius'): the address and its
+/// protocol (SSH or Telnet) first, then the label, group, tags, color and
+/// logo; the user, port and credential with a "Connect" button; and a
+/// collapsible "Advanced" section with jumps, proxy, agent forwarding,
+/// keep-alive, startup snippet, environment and terminal theme. Telnet hosts
+/// hide what only SSH has (keys, jumps, agent forwarding, keep-alive,
+/// startup snippet, environment) and warn that Telnet is not encrypted;
+/// switching the protocol moves a default or empty port between 22 and 23.
+/// Errors show under their fields. Return goes to the next field and saves
+/// on the last one; ⌘↩ saves and connects.
 struct HostEditor: View {
     let original: SshHost?
     var initialGroup: String? = nil
@@ -116,6 +120,10 @@ struct HostEditor: View {
 
     @State private var name = ""
     @State private var address = ""
+    /// `ssh`, `telnet` or a later version's protocol (kept as it is).
+    @State private var hostProtocol = HostProtocol.ssh
+    /// Protocol the port field was last adjusted for.
+    @State private var portProtocol = HostProtocol.ssh
     @State private var port = ""
     @State private var username = ""
     @State private var method: AuthMethod = .password
@@ -126,6 +134,8 @@ struct HostEditor: View {
     @State private var groupId: String?
     @State private var tags = ""
     @State private var color: String?
+    /// Logo id (`nil`: automatic).
+    @State private var icon: String?
     @State private var notes = ""
     @State private var favorite = false
     @State private var deviceOnly = false
@@ -208,6 +218,18 @@ struct HostEditor: View {
         .navigationViewStyle(.stack)
         .onAppear(perform: load)
         .onChange(of: place) { _ in loadReferences() }
+        .onChange(of: hostProtocol, perform: protocolChanged)
+    }
+
+    private var telnet: Bool { HostProtocol.isTelnet(hostProtocol) }
+
+    /// The port follows (22 ↔ 23 when it is the default or empty) and a key
+    /// gives way to the password (Telnet has no keys).
+    private func protocolChanged(to: String) {
+        guard to != portProtocol else { return }
+        port = HostProtocol.portAfterSwitch(from: portProtocol, to: to, text: port)
+        portProtocol = to
+        if HostProtocol.isTelnet(to) && method == .key { method = .password }
     }
 
     /// Closes the sheet, or the side panel.
@@ -221,12 +243,13 @@ struct HostEditor: View {
     private var header: some View {
         Section {
             HStack(spacing: 14) {
-                HostIcon(label: displayName, os: original?.os, color: color, size: 52)
+                HostIcon(label: displayName, os: original?.os, color: color, icon: icon, size: 52)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(verbatim: name.isEmpty ? (address.isEmpty ? String(localized: "common.new_host") : address) : name)
                         .font(.title3.weight(.semibold))
                         .lineLimit(1)
-                    Text(verbatim: username.isEmpty ? "ssh" : "ssh, \(username)").foregroundColor(.secondary)
+                    let kind = telnet ? "telnet" : "ssh"
+                    Text(verbatim: username.isEmpty ? kind : "\(kind), \(username)").foregroundColor(.secondary)
                 }
             }
             .padding(.vertical, 4)
@@ -243,16 +266,28 @@ struct HostEditor: View {
     private var general: some View {
         let p = problems
         return Section {
-            TextField("host_editor.address", text: $address)
-                .keyboardType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled()
-                .font(.body.weight(.medium))
-                .focused($focus, equals: .address)
-                .submitLabel(.next)
-                .onSubmit {
-                    splitAddress()
-                    focus = .label
-                }
+            HStack(spacing: 8) {
+                TextField("host_editor.address", text: $address)
+                    .keyboardType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled()
+                    .font(.body.weight(.medium))
+                    .focused($focus, equals: .address)
+                    .submitLabel(.next)
+                    .onSubmit {
+                        splitAddress()
+                        focus = .label
+                    }
+                protocolPicker
+            }
             if let e = p.address { errorRow(e) }
+            if telnet {
+                Label {
+                    Text("host_editor.telnet_warning")
+                } icon: {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                }
+                .font(.footnote)
+                .foregroundColor(Brand.amber)
+            }
             TextField("host_editor.label", text: $name)
                 .focused($focus, equals: .label)
                 .submitLabel(.next)
@@ -262,6 +297,22 @@ struct HostEditor: View {
         } footer: {
             Text("host_editor.address.footer")
         }
+    }
+
+    /// SSH or Telnet, next to the address (a later version's protocol is
+    /// kept and shown as it is).
+    private var protocolPicker: some View {
+        Picker("host_editor.protocol", selection: $hostProtocol) {
+            Text(verbatim: "SSH").tag(HostProtocol.ssh)
+            Text(verbatim: "Telnet").tag(HostProtocol.telnet)
+            if hostProtocol != HostProtocol.ssh && hostProtocol != HostProtocol.telnet {
+                Text(verbatim: hostProtocol.uppercased()).tag(hostProtocol)
+            }
+        }
+        .pickerStyle(.menu)
+        .labelsHidden()
+        .fixedSize()
+        .accessibilityLabel(Text("host_editor.protocol"))
     }
 
     private var organize: some View {
@@ -277,7 +328,33 @@ struct HostEditor: View {
                 .submitLabel(.next)
                 .onSubmit { focus = .username }
             colorRow
+            logoRow
         }
+    }
+
+    /// The logo: Automatic (the detected system's, else the initial), a
+    /// system's or a generic one, chosen in its own screen.
+    private var logoRow: some View {
+        NavigationLink {
+            LogoPicker(icon: $icon, label: displayName, os: original?.os, color: color)
+        } label: {
+            HStack(spacing: 10) {
+                Text("host_editor.logo")
+                Spacer()
+                Text(verbatim: logoSummary).foregroundColor(.secondary).lineLimit(1)
+                HostIcon(label: displayName, os: original?.os, color: color, icon: icon, size: 26)
+            }
+        }
+    }
+
+    private var logoSummary: String {
+        if let icon {
+            return HostLogo.byId(icon)?.title ?? icon
+        }
+        if let detected = original?.os.flatMap(HostLogo.forOs) {
+            return String(localized: "host_editor.logo_automatic_with \(detected.title)")
+        }
+        return String(localized: "host_editor.logo_automatic")
     }
 
     /// The vault: chosen for a new host (when there is more than one place);
@@ -354,7 +431,9 @@ struct HostEditor: View {
                 }
             if let e = p.port { errorRow(e) }
             Picker("host_editor.method", selection: $method) {
-                ForEach(AuthMethod.allCases) { Text($0.title).tag($0) }
+                // Telnet has no keys: only the password or an identity's
+                // username and password.
+                ForEach(AuthMethod.allCases.filter { !telnet || $0 != .key }) { Text($0.title).tag($0) }
             }
             .pickerStyle(.segmented)
             switch method {
@@ -389,9 +468,13 @@ struct HostEditor: View {
                 }
             }
         } header: {
-            Text(verbatim: "SSH")
+            Text(verbatim: telnet ? "Telnet" : "SSH")
         } footer: {
-            Text("host_editor.credentials.footer")
+            if telnet {
+                Text("host_editor.telnet_login_hint")
+            } else {
+                Text("host_editor.credentials.footer")
+            }
         }
     }
 
@@ -442,8 +525,8 @@ struct HostEditor: View {
         }
     }
 
-    @ViewBuilder private var advanced: some View {
-        let p = problems
+    /// Hosts to jump through first, in order.
+    private var jumpSection: some View {
         Section {
             ForEach(Array(jumps.enumerated()), id: \.offset) { i, id in
                 HStack {
@@ -458,7 +541,8 @@ struct HostEditor: View {
             }
             .onDelete { jumps.remove(atOffsets: $0) }
             .onMove { jumps.move(fromOffsets: $0, toOffset: $1) }
-            let candidates = others.filter { !jumps.contains($0.id) }
+            // A Telnet host is not an SSH server to jump through.
+            let candidates = others.filter { !jumps.contains($0.id) && !$0.isTelnet }
             if !candidates.isEmpty {
                 Menu {
                     ForEach(candidates, id: \.id) { h in Button(h.label) { jumps.append(h.id) } }
@@ -468,6 +552,12 @@ struct HostEditor: View {
             Text(jumps.isEmpty ? String(localized: "host_editor.jump_chain.footer_empty")
                  : String(localized: "host_editor.jump_chain.footer"))
         }
+    }
+
+    @ViewBuilder private var advanced: some View {
+        let p = problems
+        // A Telnet host cannot go through jump hosts.
+        if !telnet { jumpSection }
 
         Section {
             Picker("common.type", selection: $proxyKind) {
@@ -502,18 +592,21 @@ struct HostEditor: View {
         }
 
         Section {
-            Toggle("host_editor.agent_forwarding", isOn: $agentForwarding)
-            HStack {
-                Text("host_editor.keepalive")
-                Spacer()
-                TextField(text: $keepalive, prompt: Text(verbatim: "30")) { Text("host_editor.keepalive") }
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.trailing)
-                    .frame(maxWidth: 90)
-                    .focused($focus, equals: .keepalive)
-                    .onSubmit { save(connect: false) }
+            // SSH only: agent forwarding and keep-alive.
+            if !telnet {
+                Toggle("host_editor.agent_forwarding", isOn: $agentForwarding)
+                HStack {
+                    Text("host_editor.keepalive")
+                    Spacer()
+                    TextField(text: $keepalive, prompt: Text(verbatim: "30")) { Text("host_editor.keepalive") }
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(maxWidth: 90)
+                        .focused($focus, equals: .keepalive)
+                        .onSubmit { save(connect: false) }
+                }
+                if let e = p.keepalive { errorRow(e) }
             }
-            if let e = p.keepalive { errorRow(e) }
             HStack {
                 Text("host_editor.term")
                 Spacer()
@@ -531,6 +624,27 @@ struct HostEditor: View {
             Text("host_editor.connection.footer")
         }
 
+        // SSH only: the startup snippet and the environment.
+        if !telnet { sshSessionSections(p) }
+
+        Section {
+            Picker("host_editor.theme", selection: $hostTheme) {
+                Text("host_editor.theme.follow").tag(String?.none)
+                Text("host_editor.theme.dark").tag(Optional("dark"))
+                Text("host_editor.theme.light").tag(Optional("light"))
+                ForEach(TerminalTheme.all) { t in Text(t.name).tag(Optional(t.id)) }
+                // A theme of another version of the app is kept.
+                if let v = hostTheme, v != "dark", v != "light", !TerminalTheme.all.contains(where: { $0.id == v }) {
+                    Text(verbatim: v).tag(Optional(v))
+                }
+            }
+        } footer: {
+            Text("host_editor.theme.footer")
+        }
+    }
+
+    /// The startup snippet and the environment (SSH only).
+    @ViewBuilder private func sshSessionSections(_ p: FormProblems) -> some View {
         Section {
             Picker("host_editor.startup_snippet", selection: $startupSnippetId) {
                 Text("common.none").tag(String?.none)
@@ -555,21 +669,6 @@ struct HostEditor: View {
             Text("host_editor.env")
         } footer: {
             Text("host_editor.env.footer")
-        }
-
-        Section {
-            Picker("host_editor.theme", selection: $hostTheme) {
-                Text("host_editor.theme.follow").tag(String?.none)
-                Text("host_editor.theme.dark").tag(Optional("dark"))
-                Text("host_editor.theme.light").tag(Optional("light"))
-                ForEach(TerminalTheme.all) { t in Text(t.name).tag(Optional(t.id)) }
-                // A theme of another version of the app is kept.
-                if let v = hostTheme, v != "dark", v != "light", !TerminalTheme.all.contains(where: { $0.id == v }) {
-                    Text(verbatim: v).tag(Optional(v))
-                }
-            }
-        } footer: {
-            Text("host_editor.theme.footer")
         }
     }
 
@@ -596,11 +695,12 @@ struct HostEditor: View {
         if !port.trimmingCharacters(in: .whitespaces).isEmpty && parsePort(port) == nil {
             p.port = String(localized: "host_editor.error.port")
         }
+        // Hidden for Telnet hosts: not checked then (and kept as they were).
         let k = keepalive.trimmingCharacters(in: .whitespaces)
-        if !k.isEmpty && UInt32(k) == nil {
+        if !telnet && !k.isEmpty && UInt32(k) == nil {
             p.keepalive = String(localized: "host_editor.error.keepalive")
         }
-        if case .failure(let e) = parseEnv(envText) {
+        if !telnet, case .failure(let e) = parseEnv(envText) {
             p.env = String(localized: "host_editor.error.env \(e.line)")
         }
         if proxyKind != nil {
@@ -619,6 +719,13 @@ struct HostEditor: View {
     /// the port (if they are empty).
     private func splitAddress() {
         var addr = address.trimmingCharacters(in: .whitespaces)
+        // `telnet://` or `ssh://` in front chooses the protocol.
+        for (scheme, proto) in [("telnet://", HostProtocol.telnet), ("ssh://", HostProtocol.ssh)]
+            where addr.lowercased().hasPrefix(scheme) {
+            addr = String(addr.dropFirst(scheme.count))
+            while addr.hasSuffix("/") { addr.removeLast() }
+            if hostProtocol != proto { hostProtocol = proto }
+        }
         if let at = addr.lastIndex(of: "@") {
             let user = String(addr[..<at])
             let rest = String(addr[addr.index(after: at)...])
@@ -677,6 +784,9 @@ struct HostEditor: View {
         }
         name = h.label
         address = h.address
+        hostProtocol = h.protocol
+        portProtocol = h.protocol
+        icon = h.icon
         port = h.settings.port.map(String.init) ?? ""
         username = h.settings.username ?? ""
         keyId = h.settings.keyId
@@ -714,7 +824,8 @@ struct HostEditor: View {
         attempted = true
         splitAddress()
         let p = problems
-        guard p.isEmpty, case .success(let env) = parseEnv(envText) else {
+        let parsedEnv = try? parseEnv(envText).get()
+        guard p.isEmpty, let env = parsedEnv ?? (telnet ? original?.settings.env ?? [:] : nil) else {
             if p.inAdvanced { showAdvanced = true }
             focus = p.firstField
             return
@@ -729,6 +840,8 @@ struct HostEditor: View {
         host.color = color
         host.notes = notes
         host.favorite = favorite
+        host.protocol = hostProtocol
+        host.icon = icon
         if account.list.isEmpty {
             host.syncMode = deviceOnly ? .deviceOnly : .synced
         } else if original == nil {
@@ -744,8 +857,9 @@ struct HostEditor: View {
         s.username = user.isEmpty ? nil : user
         s.keyId = method == .key ? keyId : nil
         s.identityId = method == .identity ? identityId : nil
-        s.jumpHostIds = jumps.isEmpty ? nil : jumps
-        s.agentForwarding = agentForwarding ? true : nil
+        // Telnet cannot go through jump hosts or forward the agent.
+        s.jumpHostIds = jumps.isEmpty || telnet ? nil : jumps
+        s.agentForwarding = agentForwarding && !telnet ? true : nil
         let k = keepalive.trimmingCharacters(in: .whitespaces)
         s.keepaliveSecs = k.isEmpty ? nil : UInt32(k)
         let t = term.trimmingCharacters(in: .whitespaces)
@@ -804,5 +918,79 @@ struct HostEditor: View {
         } catch {
             self.error = userMessage(error)
         }
+    }
+}
+
+/// The logo of a host, like the desktop's picker: Automatic (the detected
+/// system's logo, else the initial), the systems' logos and generic icons.
+private struct LogoPicker: View {
+    @Binding var icon: String?
+    /// For the Automatic preview.
+    let label: String
+    let os: String?
+    let color: String?
+
+    var body: some View {
+        List {
+            Section {
+                Button { icon = nil } label: {
+                    HStack(spacing: 12) {
+                        HostIcon(label: label, os: os, color: color, icon: nil, size: 36)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("host_editor.logo_automatic").foregroundColor(.primary)
+                            Text("host_editor.logo_automatic_hint").font(.caption).foregroundColor(.secondary)
+                        }
+                        Spacer(minLength: 0)
+                        if icon == nil { Image(systemName: "checkmark").foregroundColor(.accentColor) }
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(icon == nil ? .isSelected : [])
+                // A logo of a later version of the app is kept until changed.
+                if let icon, HostLogo.byId(icon) == nil {
+                    HStack {
+                        Text(verbatim: icon)
+                        Spacer()
+                        Image(systemName: "checkmark").foregroundColor(.accentColor)
+                    }
+                }
+            }
+            Section("host_editor.logo.systems") { grid(HostLogo.systems) }
+            Section("host_editor.logo.generic") { grid(HostLogo.generics) }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle("host_editor.logo")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func grid(_ logos: [HostLogo]) -> some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 76, maximum: 110), spacing: 8)], spacing: 12) {
+            ForEach(logos) { logo in
+                let selected = icon.flatMap(HostLogo.byId)?.id == logo.id
+                Button { icon = logo.id } label: {
+                    VStack(spacing: 6) {
+                        RoundedRectangle(cornerRadius: 11, style: .continuous)
+                            .fill(logo.swiftUIColor)
+                            .frame(width: 44, height: 44)
+                            .overlay(LogoGlyph(logo: logo, size: 24).foregroundColor(.white))
+                            .padding(3)
+                            .overlay(RoundedRectangle(cornerRadius: 13, style: .continuous)
+                                .stroke(selected ? Color.accentColor : .clear, lineWidth: 2))
+                        Text(verbatim: logo.title)
+                            .font(.caption2)
+                            .foregroundColor(.primary)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel(Text(verbatim: logo.title))
+                .accessibilityAddTraits(selected ? .isSelected : [])
+            }
+        }
+        .padding(.vertical, 6)
     }
 }
