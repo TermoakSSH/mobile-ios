@@ -124,7 +124,22 @@ func userMessage(_ error: Error) -> String {
     case .Network(let message): return String(localized: "error.network \(message)")
     // SFTP, tunnels, commands or a server session asked of a Telnet host.
     case .NotSupportedForTelnet: return String(localized: "error.not_supported_for_telnet")
+    case .HostKey(let message): return hostKeyMessage(message)
     default: return errorMessage(error)
+    }
+}
+
+/// The engine's host key messages, translated (others stay as they are).
+func hostKeyMessage(_ message: String) -> String {
+    switch HostKeyProblem.parse(message) {
+    case .changed(let host, let expected, let actual):
+        return String(localized: "error.host_key.changed \(host) \(expected) \(actual)")
+    case .unknown(let host, let fingerprint):
+        return String(localized: "error.host_key.unknown \(host) \(fingerprint)")
+    case .rejected(let host):
+        return String(localized: "error.host_key.rejected \(host)")
+    case nil:
+        return message
     }
 }
 

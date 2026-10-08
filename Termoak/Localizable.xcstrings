@@ -3157,6 +3157,54 @@
         }
       }
     },
+    "error.host_key.changed %@ %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key of %1$@ has CHANGED: it was %2$@ and now it is %3$@. Someone could be impersonating the server. If you know why it changed (the server was reinstalled), forget it in Known hosts and connect again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave de %1$@ ha CAMBIADO: era %2$@ y ahora es %3$@. Alguien podría estar suplantando al servidor. Si sabes por qué ha cambiado (se reinstaló el servidor), olvídala en Hosts conocidos y vuelve a conectar."
+          }
+        }
+      }
+    },
+    "error.host_key.rejected %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You did not trust the key of %@: not connected."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No confiaste en la clave de %@: no se ha conectado."
+          }
+        }
+      }
+    },
+    "error.host_key.unknown %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ is not a known host (fingerprint %2$@): confirm its fingerprint before connecting."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ no es un host conocido (huella %2$@): confirma su huella antes de conectar."
+          }
+        }
+      }
+    },
     "error.network %@": {
       "localizations": {
         "en": {
@@ -9477,6 +9525,70 @@
       }
     },
     "sessions.state.running": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Running"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En marcha"
+          }
+        }
+      }
+    },
+    "sessions.status.closed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Closed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerrada"
+          }
+        }
+      }
+    },
+    "sessions.status.connecting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connecting"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectando"
+          }
+        }
+      }
+    },
+    "sessions.status.failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Falló"
+          }
+        }
+      }
+    },
+    "sessions.status.running": {
       "localizations": {
         "en": {
           "stringUnit": {

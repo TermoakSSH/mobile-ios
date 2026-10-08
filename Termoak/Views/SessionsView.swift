@@ -171,7 +171,7 @@ struct ConnectionsView: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(verbatim: title)
-                            Text([r.status, relativeTime(r.endedAt ?? r.createdAt), r.error ?? ""]
+                            Text([recentStatusTitle(r.status), relativeTime(r.endedAt ?? r.createdAt), r.error ?? ""]
                                 .filter { !$0.isEmpty }.joined(separator: " · "))
                                 .font(.caption).foregroundColor(.secondary).lineLimit(1)
                         }
@@ -194,6 +194,18 @@ struct ConnectionsView: View {
             } header: {
                 sectionTitle(String(localized: "sessions.section.recent"), item, several)
             }
+        }
+    }
+
+    /// Status of a finished session (`connecting`, `running`, `closed` or
+    /// `failed`), translated when known.
+    private func recentStatusTitle(_ status: String) -> String {
+        switch status {
+        case "connecting": return String(localized: "sessions.status.connecting")
+        case "running": return String(localized: "sessions.status.running")
+        case "closed": return String(localized: "sessions.status.closed")
+        case "failed": return String(localized: "sessions.status.failed")
+        default: return status
         }
     }
 

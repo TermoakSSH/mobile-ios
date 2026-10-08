@@ -252,7 +252,9 @@ struct LoginView: View {
         }
         VStack(spacing: 12) {
             if needsTotp {
-                LoginField(icon: "number", title: String(localized: "login.code"), text: $totp, keyboard: .numberPad)
+                // Six digits or a recovery code (xxxx-xxxx, letters too): a text keyboard.
+                LoginField(icon: "number", title: String(localized: "login.code"), text: $totp, keyboard: .asciiCapable,
+                           contentType: .oneTimeCode)
                 Text("login.recovery_hint").font(.caption).foregroundColor(.secondary)
             } else {
                 LoginField(icon: "envelope", title: String(localized: "login.email"), text: $email, keyboard: .emailAddress)
@@ -367,7 +369,8 @@ struct LoginView: View {
             .padding(14)
             .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
             if verifyNeedsTotp {
-                LoginField(icon: "number", title: String(localized: "login.code"), text: $verifyTotp, keyboard: .numberPad)
+                LoginField(icon: "number", title: String(localized: "login.code"), text: $verifyTotp, keyboard: .asciiCapable,
+                           contentType: .oneTimeCode)
                 Text("login.code_hint").font(.caption).foregroundColor(.secondary)
                 Text("login.recovery_hint").font(.caption).foregroundColor(.secondary)
             }
@@ -598,6 +601,7 @@ struct LoginField: View {
     @Binding var text: String
     var keyboard: UIKeyboardType = .default
     var secure = false
+    var contentType: UITextContentType? = nil
 
     var body: some View {
         HStack(spacing: 12) {
@@ -608,6 +612,7 @@ struct LoginField: View {
                 } else {
                     TextField(title, text: $text)
                         .keyboardType(keyboard)
+                        .textContentType(contentType)
                         .textInputAutocapitalization(keyboard == .default ? .words : .never)
                         .autocorrectionDisabled()
                 }
