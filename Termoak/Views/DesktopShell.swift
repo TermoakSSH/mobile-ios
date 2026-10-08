@@ -207,7 +207,7 @@ private struct DesktopTabBar: View {
         let selected = sessions.showing && (s.id == sessions.current?.id)
         // Next to the terminal on screen (split view), when it is not there.
         let canSplit = sessions.splitAvailable && !inPane && sessions.current.map { $0.id != s.id } == true
-            && sessions.panes.count < PaneLayout.maxPanes
+            && sessions.panes.count < sessions.paneLimit
         return DesktopTab(session: s, selected: selected, inPane: inPane,
                           canMoveLeft: index > 0, canMoveRight: index < sessions.open.count - 1,
                           onShow: { sessions.show(s.id) },

@@ -9,6 +9,15 @@ enum PaneLayout {
     /// Most panes on screen (a 2 × 2 grid).
     static let maxPanes = 4
 
+    /// Panes a window can show side by side: 4 on an iPad (or a Mac) with a
+    /// regular-width window, 2 on an iPhone Plus/Pro Max in landscape in the
+    /// desktop layout, and 1 (no split view) otherwise.
+    static func paneLimit(pad: Bool, regularWidth: Bool, desktopLayout: Bool) -> Int {
+        guard regularWidth else { return 1 }
+        if pad { return maxPanes }
+        return desktopLayout ? 2 : 1
+    }
+
     /// Panes per row, from top to bottom: 2 side by side, 3 as 2 + 1, 4 as
     /// 2 × 2... The columns are `ceil(sqrt(n))` and the leftover cells are
     /// taken from the last rows, so the wider rows are on top.

@@ -1436,9 +1436,26 @@ final class Sessions: ObservableObject {
     @Published var broadcasting = false
     /// Panes that do not take part in the broadcast.
     @Published private(set) var broadcastExcluded: Set<UUID> = []
-    /// The screen is wide enough for several panes (iPad, regular width);
-    /// otherwise it shows only the focused one and keeps the others.
-    @Published var splitAvailable = false
+    /// The screen is wide enough for several panes (iPad, regular width;
+    /// iPhone Plus/Pro Max in landscape in the desktop layout); otherwise it
+    /// shows only the focused one and keeps the others.
+    var splitAvailable: Bool { paneLimit >= 2 }
+    /// Panes this window can show side by side (`PaneLayout.paneLimit`):
+    /// panes beyond it are kept as tabs.
+    @Published var paneLimit = 1 {
+        didSet {
+            guard paneLimit != oldValue, paneLimit >= 2, panes.count > paneLimit else { return }
+            let keep = activeId.flatMap { panes.firstIndex(of: $0) }.map { min($0, panes.count - paneLimit) } ?? 0
+            panes = Array(panes[keep..<(keep + paneLimit)])
+        }
+    }
+
+    /// Panes kept in the split: an iPad keeps up to four also while its
+    /// window is narrow (they come back when it widens); an iPhone only what
+    /// its screen shows.
+    private var paneCapacity: Int {
+        UIDevice.current.userInterfaceIdiom == .pad ? PaneLayout.maxPanes : paneLimit
+    }
     /// The next terminal opened goes next to the focused one ("New terminal"
     /// in the split menu, ⌘D with nothing else open).
     var splitOnNextOpen = false
@@ -1522,7 +1539,7 @@ final class Sessions: ObservableObject {
     func addPane(_ id: UUID? = nil) -> Bool {
         guard let cur = current else { return false }
         var list = panes.count >= 2 ? panes : [cur.id]
-        guard list.count < PaneLayout.maxPanes else { return false }
+        guard list.count < paneCapacity else { return false }
         let candidate = id
             ?? open.first(where: { !list.contains($0.id) && !$0.asleep })?.id
             ?? open.first(where: { !list.contains($0.id) })?.id
@@ -1715,8 +1732,8 @@ final class Sessions: ObservableObject {
             prepare(s)
             open.append(s)
         }
-        if split && UIDevice.current.userInterfaceIdiom == .pad && new.count >= 2 {
-            panes = new.prefix(PaneLayout.maxPanes).map(\.id)
+        if split && paneCapacity >= 2 && new.count >= 2 {
+            panes = new.prefix(paneCapacity).map(\.id)
             focusMode = false
             broadcasting = false
             broadcastExcluded = []
@@ -1791,7 +1808,7 @@ final class Sessions: ObservableObject {
         if splitOnNextOpen, panes.count < 2, let previous {
             panes = [previous, s.id]
         } else if panes.count >= 2 {
-            if panes.count < PaneLayout.maxPanes {
+            if panes.count < paneCapacity {
                 panes.append(s.id)
             } else if let slot = activeId.flatMap({ panes.firstIndex(of: $0) }) {
                 broadcastExcluded.remove(panes[slot])

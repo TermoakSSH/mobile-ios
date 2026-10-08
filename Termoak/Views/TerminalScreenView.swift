@@ -14,8 +14,11 @@ struct TerminalScreenView: View {
     @EnvironmentObject private var settings: AppSettings
     @Environment(\.horizontalSizeClass) private var sizeClass
 
-    private var splitAvailable: Bool {
-        UIDevice.current.userInterfaceIdiom == .pad && sizeClass == .regular
+    /// 4 panes on an iPad with room, 2 on an iPhone Plus/Pro Max in
+    /// landscape in the desktop layout, none otherwise.
+    private var paneLimit: Int {
+        PaneLayout.paneLimit(pad: UIDevice.current.userInterfaceIdiom == .pad, regularWidth: sizeClass == .regular,
+                             desktopLayout: desktop != nil)
     }
 
     var body: some View {
@@ -29,8 +32,8 @@ struct TerminalScreenView: View {
                 Color.clear.onAppear { sessions.showing = false }
             }
         }
-        .onAppear { sessions.splitAvailable = splitAvailable }
-        .onChange(of: splitAvailable) { sessions.splitAvailable = $0 }
+        .onAppear { sessions.paneLimit = paneLimit }
+        .onChange(of: paneLimit) { sessions.paneLimit = $0 }
     }
 }
 

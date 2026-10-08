@@ -392,7 +392,7 @@ struct SplitMenu: View {
             let split = sessions.splitActive
             let others = sessions.open.filter { s in split ? !sessions.panes.contains(s.id) : s.id != session.id }
             if split {
-                if sessions.panes.count < PaneLayout.maxPanes {
+                if sessions.panes.count < sessions.paneLimit {
                     Menu {
                         ForEach(others) { s in
                             Button(s.displayTitle) { sessions.addPane(s.id) }
@@ -465,7 +465,7 @@ struct SplitShortcuts: View {
                     .keyboardShortcut(.downArrow, modifiers: [.command, .option])
                 Button("split.add_pane") {
                     // Nothing else open: pick a host for the new pane.
-                    if !sessions.addPane() && sessions.panes.count < PaneLayout.maxPanes {
+                    if !sessions.addPane() && sessions.panes.count < sessions.paneLimit {
                         sessions.splitOnNextOpen = true
                         sessions.showing = false
                     }

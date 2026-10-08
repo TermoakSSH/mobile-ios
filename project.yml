@@ -90,6 +90,7 @@ targets:
       - path: Termoak/Model/HostProtocols.swift
       - path: Termoak/Model/HostLogos.swift
       - path: Termoak/Model/Layouts.swift
+      - path: Termoak/Model/Panes.swift
       - path: Termoak/Model/RemotePaths.swift
       - path: Termoak/Model/TerminalMath.swift
       - path: Termoak/Model/ShareJson.swift
