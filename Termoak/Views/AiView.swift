@@ -488,6 +488,12 @@ struct TaskView: View {
     /// Sending failed for a reason fixed in Settings → AI.
     @State private var problem: AiAccessProblem?
     @State private var showingAiSettings = false
+    /// What the task's JSON says beyond `AiTask` (hosts, plan, mode...).
+    @State private var extras = AiTaskExtras()
+    @State private var savingRunbook = false
+    @State private var runbookSaved = false
+    @State private var deleting = false
+    @Environment(\.dismiss) private var dismiss
     @FocusState private var typing: Bool
 
     private var api: AccountApi { model.core.api(for: accountId) }
@@ -504,6 +510,7 @@ struct TaskView: View {
                 ScrollViewReader { reader in
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 8) {
+                            taskHeader
                             let conversation = turns(t)
                             if conversation.isEmpty { TurnView(turn: .user(0, stripContext(t.prompt))) }
                             ForEach(conversation) { TurnView(turn: $0, running: t.isActive) }
@@ -552,7 +559,26 @@ struct TaskView: View {
                     Button("common.cancel") { Task { try? await api.cancelAiTask(taskId: taskId); await load() } }
                 }
             }
+            ToolbarItem(placement: .primaryAction) {
+                if let t = task {
+                    TaskActionsMenu(active: t.isActive, mode: AiPermissionMode(apiName: extras.mode) ?? t.mode,
+                                    ranSteps: extras.steps > 0 || extras.fanOut,
+                                    onMode: setMode, onRunbook: { savingRunbook = true }, onDelete: { deleting = true })
+                }
+            }
         }
+        .sheet(isPresented: $savingRunbook) {
+            RunbookSheet(taskId: taskId, api: api) {
+                runbookSaved = true
+                account.sync()
+            }
+        }
+        .confirmationDialog("ai.delete.title", isPresented: $deleting, titleVisibility: .visible) {
+            Button("ai.delete_task", role: .destructive, action: delete)
+        } message: { Text("ai.delete.message") }
+        .alert("ai.runbook.saved", isPresented: $runbookSaved) {
+            Button("common.ok", role: .cancel) {}
+        } message: { Text("ai.runbook.saved.message") }
         .task {
             // While it works it refreshes by itself (and with the server events).
             while !Task.isCancelled {
@@ -601,9 +627,44 @@ struct TaskView: View {
         .background(.bar)
     }
 
+    /// The approved plan and, for one conversation per host, the hosts' table.
+    @ViewBuilder private var taskHeader: some View {
+        if let plan = extras.plan, extras.planApproved, !plan.isEmpty {
+            ApprovedPlan(plan: plan).padding(.horizontal)
+        }
+        if !extras.hosts.isEmpty {
+            HostRunsTable(runs: extras.hosts, accountId: accountId).padding(.horizontal)
+        }
+    }
+
+    private func setMode(_ mode: AiPermissionMode) {
+        Task {
+            do {
+                try await api.setAiTaskMode(taskId: taskId, mode: mode)
+            } catch {
+                self.error = userMessage(error)
+            }
+            await load()
+        }
+    }
+
+    private func delete() {
+        Task {
+            do {
+                try await api.deleteAiTask(taskId: taskId)
+                await account.refreshApprovals()
+                dismiss()
+            } catch {
+                self.error = userMessage(error)
+            }
+        }
+    }
+
     private func load() async {
         do {
-            task = try await api.getAiTask(taskId: taskId)
+            let t = try await api.getAiTask(taskId: taskId)
+            task = t
+            extras = AiTaskExtras.parse(t.rawJson)
         } catch {
             self.error = userMessage(error)
         }

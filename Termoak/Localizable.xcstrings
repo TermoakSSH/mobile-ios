@@ -1189,6 +1189,54 @@
         }
       }
     },
+    "ai.delete.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Its conversation and results are deleted from the server. This can't be undone."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Su conversación y resultados se borran del servidor. No se puede deshacer."
+          }
+        }
+      }
+    },
+    "ai.delete.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this task?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Borrar esta tarea?"
+          }
+        }
+      }
+    },
+    "ai.delete_task": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete task"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar tarea"
+          }
+        }
+      }
+    },
     "ai.effort": {
       "localizations": {
         "en": {
@@ -1417,6 +1465,62 @@
           "stringUnit": {
             "state": "translated",
             "value": "Una sola conversación recorre todos los hosts."
+          }
+        }
+      }
+    },
+    "ai.hosts.approvals %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld approval"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld approvals"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld aprobación"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld aprobaciones"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ai.hosts.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap a host to see its conversation and answer what it asks."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca un host para ver su conversación y responder a lo que pida."
           }
         }
       }
@@ -1841,6 +1945,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Todos los hosts con esta etiqueta."
+          }
+        }
+      }
+    },
+    "ai.plan.approved": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan"
           }
         }
       }
@@ -2357,6 +2477,86 @@
         }
       }
     },
+    "ai.runbook.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This task ran no commands to save."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta tarea no ejecutó comandos que guardar."
+          }
+        }
+      }
+    },
+    "ai.runbook.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turns the commands this task ran into a snippet in your personal vault, with comments and {{host}} for the host."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Convierte los comandos que ejecutó esta tarea en un snippet de tu vault personal, con comentarios y {{host}} para el host."
+          }
+        }
+      }
+    },
+    "ai.runbook.save": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save as runbook"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardar como runbook"
+          }
+        }
+      }
+    },
+    "ai.runbook.saved": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Runbook saved"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Runbook guardado"
+          }
+        }
+      }
+    },
+    "ai.runbook.saved.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It is in your snippets, with the tags ai and runbook."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Está en tus snippets, con las etiquetas ai y runbook."
+          }
+        }
+      }
+    },
     "ai.section.approvals": {
       "localizations": {
         "en": {
@@ -2481,6 +2681,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Espera tu aprobación"
+          }
+        }
+      }
+    },
+    "ai.task.actions": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Task actions"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acciones de la tarea"
           }
         }
       }
