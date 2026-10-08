@@ -39,6 +39,8 @@ struct HostsView: View {
     @State private var generatingKey = false
     @State private var importingKey = false
     @State private var importingConfig = false
+    /// Quick connect (the bolt button or the + menu).
+    @State private var quickConnecting = false
     @State private var transferring: TransferRequest?
     @State private var addingAccount = false
     /// An account to sign in again, or whose email code is pending.
@@ -75,6 +77,14 @@ struct HostsView: View {
     private var group: HostGroup? { groups.first { $0.id == groupId && $0.accountId == groupAccountId } }
 
     private var searching: Bool { !query.trimmingCharacters(in: .whitespaces).isEmpty }
+
+    /// An address typed in the search (`user@host:port`, `ssh://…`,
+    /// `telnet://…`, `telnet host port`) that matches no host: quick connect
+    /// to it.
+    private var quickTarget: QuickTarget? {
+        guard searching, visible.isEmpty else { return nil }
+        return QuickTarget.parse(query)
+    }
 
     /// Groups whose hosts are shown inside them (of the same account).
     private func hasGroup(_ h: SshHost) -> Bool {
@@ -176,6 +186,10 @@ struct HostsView: View {
                         }
                     }
                     ToolbarItemGroup(placement: .primaryAction) {
+                        if isRoot {
+                            Button { quickConnecting = true } label: { Image(systemName: "bolt.horizontal") }
+                                .accessibilityLabel("quick_connect.title")
+                        }
                         if account.syncing {
                             ProgressView()
                         } else if account.list.contains(where: { $0.status == .active }) && isRoot {
@@ -234,6 +248,14 @@ struct HostsView: View {
         }
         .sheet(item: Binding(get: { tunnelsHost.map(SelectedHost.init) }, set: { tunnelsHost = $0?.host }), onDismiss: load) { e in
             TunnelsView(host: e.host)
+        }
+        .sheet(isPresented: $quickConnecting, onDismiss: load) {
+            QuickConnectView { host, strict in
+                // After the sheet has gone, the terminal comes up.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { sessions.connect(host, strict: strict) }
+            }
+            .environmentObject(model)
+            .environmentObject(account)
         }
         .sheet(isPresented: $importingConfig, onDismiss: load) {
             ImportConfigView().environmentObject(model).environmentObject(account)
@@ -307,6 +329,9 @@ struct HostsView: View {
             if hosts.isEmpty && groups.isEmpty && !searching {
                 Section { emptyState }
             }
+            if let target = quickTarget {
+                Section { quickConnectRow(target) }
+            }
             if !subgroups.isEmpty && !selecting {
                 Section("hosts.groups") {
                     ForEach(subgroups, id: \.key) { g in
@@ -363,7 +388,7 @@ struct HostsView: View {
         .listStyle(.insetGrouped)
         .environment(\.editMode, $editMode)
         .overlay {
-            if searching && visible.isEmpty {
+            if searching && visible.isEmpty && quickTarget == nil {
                 Text("hosts.search.no_results \(query)")
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -372,6 +397,8 @@ struct HostsView: View {
         }
         .background(HostsKeyboard(active: keysActive, newHost: newHostShortcut, find: nil, onKey: handleKey))
         .searchable(text: $query, prompt: Text("hosts.search.prompt"))
+        // Return in the search connects to a typed address no host matches.
+        .onSubmit(of: .search) { if let target = quickTarget { quickConnect(target) } }
         .refreshable {
             account.sync()
             load()
@@ -385,7 +412,7 @@ struct HostsView: View {
     private var covered: Bool {
         // One element at a time (a long || chain is slow to type-check).
         let shown: [Bool] = [
-            sessions.showing, editing != nil, editedGroup != nil, generatingKey, importingKey, importingConfig,
+            sessions.showing, editing != nil, editedGroup != nil, generatingKey, importingKey, importingConfig, quickConnecting,
             transferring != nil, addingAccount, resuming != nil, managingAccounts, showingVaults,
             filesHost != nil, tunnelsHost != nil, deleting != nil, deletingGroup != nil, deletingSelection, notice != nil,
         ]
@@ -591,6 +618,7 @@ struct HostsView: View {
     private var addMenu: some View {
         Menu {
             Button { editing = HostEdit(host: nil) } label: { Label("common.new_host", systemImage: "server.rack") }
+            Button { quickConnecting = true } label: { Label("quick_connect.title", systemImage: "bolt.horizontal") }
             Button(action: newGroup) {
                 Label("hosts.group.new", systemImage: "folder.badge.plus")
             }
@@ -695,6 +723,39 @@ struct HostsView: View {
             }
         }
         .accessibilityElement(children: .combine)
+    }
+
+    /// "Connect to user@host:2222": saved as a new host the first time.
+    private func quickConnectRow(_ t: QuickTarget) -> some View {
+        Button { quickConnect(t) } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "bolt.horizontal.circle.fill")
+                    .font(.system(size: 24))
+                    .foregroundColor(t.isTelnet ? Brand.amber : .accentColor)
+                    .frame(width: 30, height: 30)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("quick_connect.connect_to \(t.display)")
+                        .font(.subheadline.weight(.medium)).foregroundColor(.primary).lineLimit(1)
+                    Text(t.isTelnet ? LocalizedStringKey("quick_connect.saved_as_host_telnet") : LocalizedStringKey("quick_connect.saved_as_host"))
+                        .font(.caption).foregroundColor(.secondary).lineLimit(2)
+                }
+                Spacer(minLength: 0)
+                if t.isTelnet { TelnetBadge() }
+            }
+        }
+        .accessibilityIdentifier("quick-connect-search")
+    }
+
+    /// Connects to an address typed in the search (a saved host with it, or a new one).
+    private func quickConnect(_ t: QuickTarget) {
+        do {
+            let host = try account.quickConnectHost(t, among: hosts)
+            query = ""
+            load()
+            connect(host, onServer: false)
+        } catch {
+            show(error)
+        }
     }
 
     /// "☁ N sessions running on the server", with a button to go to them.
@@ -990,7 +1051,11 @@ private extension HostsView {
     var searchField: some View {
         // Return goes to the first result (Return again connects).
         DesktopSearchField(prompt: String(localized: "desktop.hosts.search"), text: $query, focused: $searchFocused) {
-            cursor = gridSections.first?.hosts.first?.key
+            if let target = quickTarget {
+                quickConnect(target)
+            } else {
+                cursor = gridSections.first?.hosts.first?.key
+            }
             searchFocused = false
         }
     }
@@ -1068,7 +1133,13 @@ private extension HostsView {
         return LazyVStack(alignment: .leading, spacing: 22) {
             if !searching && !selecting { gridNotices }
             if hosts.isEmpty && groups.isEmpty && !searching { emptyState }
-            if searching && visible.isEmpty {
+            if let target = quickTarget {
+                quickConnectRow(target)
+                    .buttonStyle(.plain)
+                    .padding(12)
+                    .frame(maxWidth: 520, alignment: .leading)
+                    .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            } else if searching && visible.isEmpty {
                 Text("hosts.search.no_results \(query)")
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity)

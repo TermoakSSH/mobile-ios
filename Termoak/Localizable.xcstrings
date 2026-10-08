@@ -9628,6 +9628,22 @@
         }
       }
     },
+    "quick_connect.saved_as_host_telnet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Telnet, unencrypted · saved as a new host the first time"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Telnet, sin cifrar · se guarda como host nuevo la primera vez"
+          }
+        }
+      }
+    },
     "quick_connect.title": {
       "localizations": {
         "en": {

@@ -286,6 +286,37 @@ final class Accounts: ObservableObject {
         vaultChanged.send()
     }
 
+    // ----- Quick connect -----
+
+    /// The host to connect to for an address typed in a search or in quick
+    /// connect: the saved one with that address, protocol, user and port if
+    /// there is one; otherwise it is saved as a new host first (so its
+    /// password, fingerprint and history have a place), like the desktop.
+    func quickConnectHost(_ t: QuickTarget, among hosts: [SshHost]) throws -> SshHost {
+        let existing = hosts.first { h in
+            h.address.caseInsensitiveCompare(t.host) == .orderedSame
+                && h.isTelnet == t.isTelnet
+                && (t.user == nil || h.settings.username == t.user)
+                && h.effectivePort == t.effectivePort
+        }
+        if let existing { return existing }
+        var host = SshHost(label: t.display, address: t.host)
+        host.protocol = t.protocol
+        host.settings.username = t.user
+        // Telnet hosts keep their port written out (like the editor).
+        host.settings.port = t.port ?? (t.isTelnet ? HostProtocol.defaultPort(t.protocol) : nil)
+        if !list.isEmpty {
+            let place = defaultPlace
+            host.accountId = place.accountId
+            host.vaultId = place.vaultId
+            host.syncMode = place.accountId == nil ? .deviceOnly : .synced
+        }
+        let saved = try core.saveHost(host: host, password: .keep)
+        vaultChanged.send()
+        sync()
+        return saved
+    }
+
     // ----- Start -----
 
     /// On launch and when coming back to the foreground: the accounts, their

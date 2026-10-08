@@ -399,31 +399,8 @@ struct QuickConnectView: View {
     /// new host first (so its password, fingerprint and history have a
     /// place), like the desktop's quick connect.
     private func quickConnect(_ t: QuickTarget) {
-        let existing = hosts.first { h in
-            h.address.caseInsensitiveCompare(t.host) == .orderedSame
-                && h.isTelnet == t.isTelnet
-                && (t.user == nil || h.settings.username == t.user)
-                && h.effectivePort == t.effectivePort
-        }
-        if let existing {
-            connect(existing)
-            return
-        }
-        var host = SshHost(label: t.display, address: t.host)
-        host.protocol = t.protocol
-        host.settings.username = t.user
-        // Telnet hosts keep their port written out (like the editor).
-        host.settings.port = t.port ?? (t.isTelnet ? HostProtocol.defaultPort(t.protocol) : nil)
-        if !account.list.isEmpty {
-            let place = account.defaultPlace
-            host.accountId = place.accountId
-            host.vaultId = place.vaultId
-            host.syncMode = place.accountId == nil ? .deviceOnly : .synced
-        }
         do {
-            let saved = try model.core.saveHost(host: host, password: .keep)
-            account.sync()
-            connect(saved)
+            connect(try account.quickConnectHost(t, among: hosts))
         } catch {
             self.error = userMessage(error)
         }
