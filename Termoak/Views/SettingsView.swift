@@ -45,6 +45,11 @@ struct SettingsView: View {
                                 Label("vaults.title", systemImage: "lock.shield")
                             }
                         }
+                        if account.loggedIn == true {
+                            NavigationLink { TeamsView() } label: {
+                                Label("desktop.section.teams", systemImage: "person.3")
+                            }
+                        }
                         if account.loggedIn == true, let url = URL(string: "\(current.serverUrl)/app/account") {
                             Button { openURL(url) } label: { Label("settings.web_account", systemImage: "arrow.up.right.square") }
                         }

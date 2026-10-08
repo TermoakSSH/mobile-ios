@@ -17532,6 +17532,342 @@
         }
       }
     },
+    "teams.add_member": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add member"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir miembro"
+          }
+        }
+      }
+    },
+    "teams.add_member_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "They must have an account on this server. Team admins manage the members; only owners appoint owners and delete the team."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiene que tener cuenta en este servidor. Los administradores del equipo gestionan los miembros; solo los propietarios nombran propietarios y borran el equipo."
+          }
+        }
+      }
+    },
+    "teams.create": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear"
+          }
+        }
+      }
+    },
+    "teams.delete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete team"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar equipo"
+          }
+        }
+      }
+    },
+    "teams.delete.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Its members will lose access to the sessions shared with it, and its vaults are deleted with their items."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sus miembros perderán el acceso a las sesiones compartidas con él, y se eliminan sus bóvedas con sus elementos."
+          }
+        }
+      }
+    },
+    "teams.delete.title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete the team “%@”?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Eliminar el equipo «%@»?"
+          }
+        }
+      }
+    },
+    "teams.email_placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "email@example.com"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "correo@ejemplo.com"
+          }
+        }
+      }
+    },
+    "teams.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open a team of the current account to manage its members. Teams of other accounts are managed there (make it current) or on the web."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre un equipo de la cuenta actual para gestionar sus miembros. Los equipos de otras cuentas se gestionan desde ellas (hazlas actuales) o en la web."
+          }
+        }
+      }
+    },
+    "teams.leave": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave team"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salir del equipo"
+          }
+        }
+      }
+    },
+    "teams.leave.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You will no longer see the sessions shared with the team. If you are its only owner, appoint another one or delete the team first."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dejarás de ver las sesiones compartidas con el equipo. Si eres su único propietario, nombra a otro o elimina el equipo antes."
+          }
+        }
+      }
+    },
+    "teams.leave.title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave “%@”?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Salir de «%@»?"
+          }
+        }
+      }
+    },
+    "teams.members": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Members"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Miembros"
+          }
+        }
+      }
+    },
+    "teams.name_placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Operations, Support, Customers…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Operaciones, Soporte, Clientes…"
+          }
+        }
+      }
+    },
+    "teams.new": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New team"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuevo equipo"
+          }
+        }
+      }
+    },
+    "teams.new_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You will be its owner. Then you can add other users of this server by their email and share sessions and vaults with the whole team."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serás su propietario. Después podrás añadir a otros usuarios de este servidor por su correo y compartir sesiones y bóvedas con todo el equipo."
+          }
+        }
+      }
+    },
+    "teams.remove": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove from team"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar del equipo"
+          }
+        }
+      }
+    },
+    "teams.remove.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "They will immediately lose access to the sessions shared with it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perderá al momento el acceso a las sesiones compartidas con él."
+          }
+        }
+      }
+    },
+    "teams.remove.title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove %@ from the team?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Quitar a %@ del equipo?"
+          }
+        }
+      }
+    },
+    "teams.rename": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename team"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renombrar equipo"
+          }
+        }
+      }
+    },
+    "teams.role": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Role"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rol"
+          }
+        }
+      }
+    },
+    "teams.you": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "you"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tú"
+          }
+        }
+      }
+    },
     "telnet.no_server_sessions": {
       "localizations": {
         "en": {
