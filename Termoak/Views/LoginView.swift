@@ -257,8 +257,10 @@ struct LoginView: View {
                            contentType: .oneTimeCode)
                 Text("login.recovery_hint").font(.caption).foregroundColor(.secondary)
             } else {
-                LoginField(icon: "envelope", title: String(localized: "login.email"), text: $email, keyboard: .emailAddress)
-                LoginField(icon: "lock", title: String(localized: "common.password"), text: $password, secure: true)
+                LoginField(icon: "envelope", title: String(localized: "login.email"), text: $email, keyboard: .emailAddress,
+                           contentType: .username)
+                LoginField(icon: "lock", title: String(localized: "common.password"), text: $password, secure: true,
+                           contentType: .password, onSubmit: signIn)
             }
         }
         errorBanner
@@ -292,9 +294,11 @@ struct LoginView: View {
         Text("login.sign_up.title").font(.title2.bold())
         serverHeader
         VStack(spacing: 12) {
-            LoginField(icon: "person", title: String(localized: "login.name"), text: $name)
-            LoginField(icon: "envelope", title: String(localized: "login.email"), text: $email, keyboard: .emailAddress)
-            LoginField(icon: "lock", title: String(localized: "login.new_password"), text: $password, secure: true)
+            LoginField(icon: "person", title: String(localized: "login.name"), text: $name, contentType: .name)
+            LoginField(icon: "envelope", title: String(localized: "login.email"), text: $email, keyboard: .emailAddress,
+                       contentType: .username)
+            LoginField(icon: "lock", title: String(localized: "login.new_password"), text: $password, secure: true,
+                       contentType: .newPassword)
             if let c = custom, !c.registrationOpen {
                 LoginField(icon: "ticket", title: String(localized: "login.invite"), text: $invite, keyboard: .asciiCapable)
             }
@@ -364,6 +368,11 @@ struct LoginView: View {
                     .onChange(of: emailCode) { value in
                         let digits = String(value.filter { $0.isASCII && $0.isNumber }.prefix(6))
                         if digits != value { emailCode = digits }
+                        // The sixth digit sends it (like Android), unless a
+                        // two-step code is still missing.
+                        if digits == value && digits.count == 6 {
+                            autoVerify(accountId, digits)
+                        }
                     }
             }
             .padding(14)
@@ -402,6 +411,9 @@ struct LoginView: View {
         }
         Button("login.verify_email.different_email") { differentEmail(accountId) }
             .padding(.top, 12)
+        // The account waits for its code ("Enter the email code" in the vault).
+        Button("login.verify_email.later_button") { done() }
+            .disabled(busy)
         Text("login.verify_email.later")
             .font(.footnote).foregroundColor(.secondary)
             .multilineTextAlignment(.center)
@@ -413,7 +425,10 @@ struct LoginView: View {
     // MARK: Actions
 
     private func start() {
-        guard let r = resume else { return }
+        guard let r = resume else {
+            if email.isEmpty { email = UserDefaults.standard.string(forKey: Self.lastEmailKey) ?? "" }
+            return
+        }
         email = r.email
         if !r.official {
             serverText = r.serverUrl
@@ -492,6 +507,7 @@ struct LoginView: View {
             defer { busy = false }
             do {
                 let info = try await account.signIn(server: choice, email: mail, password: password, totp: code)
+                UserDefaults.standard.set(mail, forKey: Self.lastEmailKey)
                 finishOrVerify(info)
             } catch TermoakError.TotpRequired {
                 needsTotp = true
@@ -515,6 +531,7 @@ struct LoginView: View {
                                                     name: name.trimmingCharacters(in: .whitespaces),
                                                     password: password, invite: code.isEmpty ? nil : code,
                                                     acceptTerms: details?.termsUrl != nil && acceptTerms)
+                UserDefaults.standard.set(mail, forKey: Self.lastEmailKey)
                 finishOrVerify(info)
             } catch {
                 self.error = userMessage(error)
@@ -536,6 +553,15 @@ struct LoginView: View {
     private func done() {
         onFinish()
         if !welcome { dismiss() }
+    }
+
+    /// The last email signed in with (prefilled next time, like Android).
+    static let lastEmailKey = "last_login_email"
+
+    /// Sends the code once its sixth digit is typed or pasted.
+    private func autoVerify(_ accountId: String, _ code: String) {
+        guard !busy, !verifyNeedsTotp, code.count == 6 else { return }
+        verify(accountId)
     }
 
     private func verify(_ accountId: String) {
@@ -601,24 +627,47 @@ struct LoginField: View {
     @Binding var text: String
     var keyboard: UIKeyboardType = .default
     var secure = false
+    /// For autofill and password managers (`.username`, `.password`,
+    /// `.newPassword`, `.oneTimeCode`...).
     var contentType: UITextContentType? = nil
+    var onSubmit: (() -> Void)? = nil
+    /// A password shown as text (the eye button).
+    @State private var revealed = false
 
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon).foregroundColor(.secondary).frame(width: 22)
-            Group {
-                if secure {
-                    SecureField(title, text: $text)
-                } else {
-                    TextField(title, text: $text)
-                        .keyboardType(keyboard)
-                        .textContentType(contentType)
-                        .textInputAutocapitalization(keyboard == .default ? .words : .never)
-                        .autocorrectionDisabled()
+            if secure {
+                passwordField
+                Button { revealed.toggle() } label: {
+                    Image(systemName: revealed ? "eye.slash" : "eye").foregroundColor(.secondary)
                 }
+                .buttonStyle(.borderless)
+                .accessibilityLabel(revealed ? Text("login.password.hide") : Text("login.password.show"))
+            } else {
+                TextField(title, text: $text)
+                    .keyboardType(keyboard)
+                    .textContentType(contentType)
+                    .textInputAutocapitalization(keyboard == .default && contentType != .username ? .words : .never)
+                    .autocorrectionDisabled()
+                    .onSubmit { onSubmit?() }
             }
         }
         .padding(14)
         .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    @ViewBuilder private var passwordField: some View {
+        if revealed {
+            TextField(title, text: $text)
+                .textContentType(contentType)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .onSubmit { onSubmit?() }
+        } else {
+            SecureField(title, text: $text)
+                .textContentType(contentType)
+                .onSubmit { onSubmit?() }
+        }
     }
 }

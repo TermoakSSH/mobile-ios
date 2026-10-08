@@ -10564,6 +10564,38 @@
         }
       }
     },
+    "login.password.hide": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide password"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ocultar contraseña"
+          }
+        }
+      }
+    },
+    "login.password.show": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show password"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar contraseña"
+          }
+        }
+      }
+    },
     "login.password_rules": {
       "localizations": {
         "en": {
@@ -10960,6 +10992,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Puedes cerrar la app y terminar más tarde desde Cuentas."
+          }
+        }
+      }
+    },
+    "login.verify_email.later_button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Later"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más tarde"
           }
         }
       }

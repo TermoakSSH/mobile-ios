@@ -61,6 +61,10 @@ final class Accounts: ObservableObject {
     @Published var notice: AppNotice?
     /// Offer to upload the This-device items to the first account.
     @Published var uploadOffer: UploadOffer?
+    /// The current account's server says its email is not verified yet:
+    /// the code step opens (once per launch and account).
+    @Published var verifyPrompt: VerifyPrompt?
+    private var verifyPrompted: Set<String> = []
     /// Account chosen in the AI section (`nil`: the current one).
     @Published var aiAccountId: String?
 
@@ -446,6 +450,7 @@ final class Accounts: ObservableObject {
             } catch TermoakError.EmailNotVerified {
                 reload()
                 accountsChanged.send()
+                askForCode(accountId)
             } catch {
                 syncErrors[accountId] = userMessage(error)
                 reload()
@@ -479,6 +484,14 @@ final class Accounts: ObservableObject {
         n += (try? core.listIdentities(filter: f).count) ?? 0
         n += (try? core.listSnippets(filter: f).count) ?? 0
         return n
+    }
+
+    /// Opens the code step of the current account when its server asks for
+    /// the email code (like Android), once per launch.
+    private func askForCode(_ accountId: String) {
+        guard let info = account(accountId), info.isCurrent || list.count == 1,
+              verifyPrompt == nil, verifyPrompted.insert(accountId).inserted else { return }
+        verifyPrompt = VerifyPrompt(account: info)
     }
 
     // ----- Notices -----
@@ -612,6 +625,12 @@ final class Accounts: ObservableObject {
             break
         }
     }
+}
+
+/// The email-code step to open for an account (`LoginView(resume:)`).
+struct VerifyPrompt: Identifiable, Equatable {
+    let account: AccountInfo
+    var id: String { account.id }
 }
 
 /// An event of an AI task (`{"type":"ai","task_id":…,"event":{…}}`).

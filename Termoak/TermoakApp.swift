@@ -266,6 +266,12 @@ private struct RootContent: View {
                                                                set: { if !$0 { account.noticeDismissed() } })) {
             Button("common.ok", role: .cancel) {}
         } message: { Text(account.notice?.message ?? "") }
+        // The server asks for the email code of the current account.
+        .sheet(item: $account.verifyPrompt) { p in
+            LoginView(welcome: false, resume: p.account) {}
+                .environmentObject(account)
+                .environmentObject(settings)
+        }
         .sheet(item: $account.uploadOffer) { offer in
             UploadDeviceItemsView(accountId: offer.accountId)
                 .environmentObject(model)
