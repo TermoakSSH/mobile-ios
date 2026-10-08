@@ -413,6 +413,11 @@ struct SnippetsView: View {
                         }
                         if !sn.description.isEmpty { Text(sn.description).font(.caption).foregroundColor(.secondary) }
                         Text(sn.script).font(.system(.caption, design: .monospaced)).foregroundColor(.secondary).lineLimit(3)
+                        if !sn.tags.isEmpty {
+                            HStack(spacing: 4) {
+                                ForEach(Array(sn.tags.prefix(4).enumerated()), id: \.offset) { _, tag in TagChip(text: tag) }
+                            }
+                        }
                     }
                 }
                 .swipeActions {
@@ -490,6 +495,7 @@ private struct SnippetEditor: View {
     @State private var name = ""
     @State private var script = ""
     @State private var summary = ""
+    @State private var tags = ""
     @State private var place: ItemPlace = .device
     @State private var error: String?
 
@@ -506,6 +512,13 @@ private struct SnippetEditor: View {
                         .autocorrectionDisabled()
                 } header: { Text("snippets.editor.command") } footer: { Text("snippets.editor.variables") }
                 TextField("snippets.editor.description", text: $summary)
+                Section {
+                    TextField("snippets.editor.tags", text: $tags)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                } footer: {
+                    Text("snippets.editor.tags_footer")
+                }
                 if let error { Text(error).foregroundColor(Brand.red) }
             }
             .navigationTitle(original.id.isEmpty ? String(localized: "snippets.editor.new") : String(localized: "snippets.editor.edit"))
@@ -518,6 +531,7 @@ private struct SnippetEditor: View {
                         sn.name = name.trimmingCharacters(in: .whitespaces)
                         sn.script = script
                         sn.description = summary
+                        sn.tags = parseTags(tags)
                         if sn.id.isEmpty && !account.list.isEmpty {
                             sn.accountId = place.accountId
                             sn.vaultId = place.vaultId
@@ -540,6 +554,7 @@ private struct SnippetEditor: View {
             name = original.name
             script = original.script
             summary = original.description
+            tags = original.tags.joined(separator: ", ")
             place = account.defaultPlace
         }
     }

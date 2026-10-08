@@ -16028,6 +16028,38 @@
         }
       }
     },
+    "snippets.editor.tags": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tags (deploy, logs)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Etiquetas (deploy, logs)"
+          }
+        }
+      }
+    },
+    "snippets.editor.tags_footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Separated by commas. In the terminal's quick panel, snippets are grouped by tag."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Separadas por comas. En el panel rápido del terminal, los snippets se agrupan por etiqueta."
+          }
+        }
+      }
+    },
     "snippets.editor.variables": {
       "localizations": {
         "en": {

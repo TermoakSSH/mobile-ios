@@ -70,7 +70,7 @@ private struct EnvLineError: Error {
 }
 
 /// Comma-separated tags, without empty ones or repetitions.
-private func parseTags(_ text: String) -> [String] {
+func parseTags(_ text: String) -> [String] {
     var tags: [String] = []
     for tag in text.split(separator: ",").map({ $0.trimmingCharacters(in: .whitespaces) }) where !tag.isEmpty {
         if !tags.contains(tag) { tags.append(tag) }
