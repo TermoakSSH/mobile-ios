@@ -8892,6 +8892,150 @@
         }
       }
     },
+    "lock.canceled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelled. Termoak stays locked."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelado. Termoak sigue bloqueado."
+          }
+        }
+      }
+    },
+    "lock.detail %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use %@ or your device passcode to open it. Your terminals keep running."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa %@ o el código del dispositivo para abrirlo. Tus terminales siguen funcionando."
+          }
+        }
+      }
+    },
+    "lock.failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not verify you. Try again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ha podido verificar tu identidad. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "lock.method.passcode": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "your passcode"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tu código"
+          }
+        }
+      }
+    },
+    "lock.reason_enable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn the Termoak lock on or off"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activar o desactivar el bloqueo de Termoak"
+          }
+        }
+      }
+    },
+    "lock.reason_open": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock Termoak"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desbloquear Termoak"
+          }
+        }
+      }
+    },
+    "lock.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termoak is locked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termoak está bloqueado"
+          }
+        }
+      }
+    },
+    "lock.unavailable %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is not set up on this device: set a passcode to use the lock."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ no está configurado en este dispositivo: pon un código para usar el bloqueo."
+          }
+        }
+      }
+    },
+    "lock.unlock %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock with %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desbloquear con %@"
+          }
+        }
+      }
+    },
     "login.back": {
       "localizations": {
         "en": {
@@ -11568,6 +11712,134 @@
           "stringUnit": {
             "state": "translated",
             "value": "El idioma de la app se elige en los Ajustes del sistema para Termoak."
+          }
+        }
+      }
+    },
+    "settings.lock.after": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock after"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloquear tras"
+          }
+        }
+      }
+    },
+    "settings.lock.after_background": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leaving the app"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salir de la app"
+          }
+        }
+      }
+    },
+    "settings.lock.after_hour": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 hour in the background"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 hora en segundo plano"
+          }
+        }
+      }
+    },
+    "settings.lock.after_minutes %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld min in the background"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld min en segundo plano"
+          }
+        }
+      }
+    },
+    "settings.lock.enabled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock Termoak"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloquear Termoak"
+          }
+        }
+      }
+    },
+    "settings.lock.enabled_hint %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask for %@ (or your device passcode) to open Termoak and after it has been in the background. Turning it on or off asks once."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pedir %@ (o el código del dispositivo) para abrir Termoak y cuando haya estado en segundo plano. Al activarlo o desactivarlo se pide una vez."
+          }
+        }
+      }
+    },
+    "settings.lock.lock_now": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock now"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloquear ahora"
+          }
+        }
+      }
+    },
+    "settings.lock.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloqueo"
           }
         }
       }

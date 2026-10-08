@@ -93,6 +93,7 @@ targets:
       - path: Termoak/Model/EngineMessages.swift
       - path: Termoak/Model/NoticeDeduper.swift
       - path: Termoak/Model/ApprovalPreview.swift
+      - path: Termoak/Model/LockPolicy.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

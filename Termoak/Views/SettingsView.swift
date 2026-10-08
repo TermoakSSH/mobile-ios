@@ -116,6 +116,8 @@ struct SettingsView: View {
                     Text("settings.hardware_keyboard.footer")
                 }
 
+                AppLockSection(lock: AppLock.shared)
+
                 Section {
                     Picker("common.theme", selection: $settings.appTheme) {
                         ForEach(AppTheme.allCases) { Text($0.title).tag($0) }

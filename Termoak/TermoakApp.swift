@@ -6,6 +6,8 @@ import SwiftUI
 struct TermoakApp: App {
     @StateObject private var vault = LocalVault()
     @StateObject private var settings = AppSettings()
+    @ObservedObject private var lock = AppLock.shared
+    @Environment(\.scenePhase) private var phase
     /// Link that opened the app (also before the vault is open).
     @State private var pendingURL: URL?
 
@@ -40,6 +42,11 @@ struct TermoakApp: App {
                 }
             }
             .tint(Brand.blue)
+            // The app lock covers everything (also the sign-in screens).
+            .overlay { AppLockOverlay(lock: lock) }
+            .animation(.easeOut(duration: 0.15), value: lock.locked || lock.covered)
+            .onAppear { lock.unlock() }
+            .onChange(of: phase) { lock.scenePhaseChanged($0) }
             .preferredColorScheme(settings.appTheme.colorScheme)
             .task { vault.open() }
             .onOpenURL { url in receive(url) }
