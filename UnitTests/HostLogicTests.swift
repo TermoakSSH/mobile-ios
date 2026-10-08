@@ -33,7 +33,7 @@ final class HostLogicTests: XCTestCase {
         XCTAssertEqual(HostProtocol.portAfterSwitch(from: "ssh", to: "telnet", text: "70000"), "70000")
     }
 
-    // MARK: Quick connect addresses
+    // MARK: Quick connect addresses (read by the engine's parseQuickConnect)
 
     private func telnet(_ user: String?, _ host: String, _ port: UInt32?) -> QuickTarget {
         QuickTarget(protocol: "telnet", user: user, host: host, port: port)
@@ -41,35 +41,6 @@ final class HostLogicTests: XCTestCase {
 
     private func ssh(_ user: String?, _ host: String, _ port: UInt32?) -> QuickTarget {
         QuickTarget(protocol: "ssh", user: user, host: host, port: port)
-    }
-
-    func testTelnetUrls() {
-        XCTAssertEqual(QuickTarget.parse("telnet://10.0.0.1"), telnet(nil, "10.0.0.1", nil))
-        XCTAssertEqual(QuickTarget.parse(" TELNET://admin@switch1:2323/ "), telnet("admin", "switch1", 2323))
-        XCTAssertEqual(QuickTarget.parse("telnet://router"), telnet(nil, "router", nil))
-        XCTAssertEqual(QuickTarget.parse("telnet://[2001:db8::1]:23"), telnet(nil, "2001:db8::1", 23))
-        XCTAssertEqual(QuickTarget.parse("telnet towel.blinkenlights.nl 23"), telnet(nil, "towel.blinkenlights.nl", 23))
-        XCTAssertEqual(QuickTarget.parse("telnet bbs"), telnet(nil, "bbs", nil))
-    }
-
-    func testWrongTelnetUrls() {
-        XCTAssertNil(QuickTarget.parse("telnet://"))
-        XCTAssertNil(QuickTarget.parse("telnet://h:0"))
-        XCTAssertNil(QuickTarget.parse("telnet://h:99999"))
-        XCTAssertNil(QuickTarget.parse("telnet://@h"))
-        XCTAssertNil(QuickTarget.parse("telnet h 23 extra"))
-        XCTAssertNil(QuickTarget.parse("telnet h port"))
-    }
-
-    func testSshAddresses() {
-        XCTAssertEqual(QuickTarget.parse("root@web1.example.com"), ssh("root", "web1.example.com", nil))
-        XCTAssertEqual(QuickTarget.parse("web1:2222"), ssh(nil, "web1", 2222))
-        XCTAssertEqual(QuickTarget.parse("ssh deploy@10.0.0.5 -p 2200"), ssh("deploy", "10.0.0.5", 2200))
-        XCTAssertEqual(QuickTarget.parse("ssh://bastion"), ssh(nil, "bastion", nil))
-        XCTAssertEqual(QuickTarget.parse("[::1]:22"), ssh(nil, "::1", 22))
-        // A search word is not an address.
-        XCTAssertNil(QuickTarget.parse("production"))
-        XCTAssertNil(QuickTarget.parse(""))
     }
 
     func testDisplayAndPorts() {

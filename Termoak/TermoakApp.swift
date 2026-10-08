@@ -117,31 +117,41 @@ final class AppModel: ObservableObject {
         await sessions.restoreFromServer(accounts: active)
     }
 
-    /// A link was opened (`termoak://join?…` or `https://…/join/<token>`).
-    /// Returns whether it was an invitation link.
+    /// A link was opened (`termoak://join?…`, `https://…/join/<token>`,
+    /// `termoak://invite?…` or `https://…/invite/<code>`), read by the
+    /// engine's `parseLink`. Returns whether it was one of ours.
     @discardableResult
     func handleURL(_ url: URL) -> Bool {
-        if let invite = InviteLink.parse(url) {
-            // The terminal covers the home screen: close it first.
-            let covered = sessions.showing
-            sessions.showing = false
-            DispatchQueue.main.asyncAfter(deadline: .now() + (covered ? 0.6 : 0)) { [weak self] in
-                self?.inviting = invite
+        switch AppLink(url) {
+        case .invite(let invite)?:
+            openInvite(invite)
+            return true
+        case .join(let link)?:
+            if sessions.showing {
+                // The terminal covers the home screen: close it first so the
+                // sheet can be shown.
+                sessions.showing = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+                    self?.joining = JoinSheetItem(link: link)
+                }
+            } else {
+                joining = JoinSheetItem(link: link)
             }
             return true
+        case .quickConnect?, nil:
+            return false
         }
-        guard let link = JoinLink.parse(url) else { return false }
-        if sessions.showing {
-            // The terminal covers the home screen: close it first so the
-            // sheet can be shown.
-            sessions.showing = false
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
-                self?.joining = JoinSheetItem(link: link)
-            }
-        } else {
-            joining = JoinSheetItem(link: link)
+    }
+
+    /// The sign-up form of an invitation's server with its code.
+    func openInvite(_ invite: InviteLink) {
+        // The terminal (or the join sheet) covers the home screen: close it first.
+        let covered = sessions.showing || joining != nil
+        sessions.showing = false
+        joining = nil
+        DispatchQueue.main.asyncAfter(deadline: .now() + (covered ? 0.6 : 0)) { [weak self] in
+            self?.inviting = invite
         }
-        return true
     }
 
     /// Joins after the sheet closes (the terminal opens over the home screen).

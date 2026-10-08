@@ -297,11 +297,10 @@ final class Accounts: ObservableObject {
     /// there is one; otherwise it is saved as a new host first (so its
     /// password, fingerprint and history have a place), like the desktop.
     func quickConnectHost(_ t: QuickTarget, among hosts: [SshHost]) throws -> SshHost {
-        let existing = hosts.first { h in
-            h.address.caseInsensitiveCompare(t.host) == .orderedSame
-                && h.isTelnet == t.isTelnet
-                && (t.user == nil || h.settings.username == t.user)
-                && h.effectivePort == t.effectivePort
+        let existing = hosts.first { (h: SshHost) -> Bool in
+            guard h.address.caseInsensitiveCompare(t.host) == .orderedSame, h.isTelnet == t.isTelnet else { return false }
+            let sameUser: Bool = t.user == nil || h.settings.username == t.user
+            return sameUser && h.effectivePort == t.effectivePort
         }
         if let existing { return existing }
         var host = SshHost(label: t.display, address: t.host)

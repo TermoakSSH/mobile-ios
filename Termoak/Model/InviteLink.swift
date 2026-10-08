@@ -1,34 +1,30 @@
 import Foundation
 
-/// A `termoak://invite?server=…&token=…` link: an invitation to create an
-/// account on a server (and join a team), like the desktop's. Without the
-/// engine's types so the unit tests compile this file on its own.
+/// An invitation to create an account on a server (and join a team), from a
+/// `termoak://invite?server=…&token=…` link or `https://<server>/invite/<code>`,
+/// like the desktop's. It is read by the engine's `parseLink` (Links.swift).
 struct InviteLink: Equatable, Identifiable {
     /// Base URL of the server (http or https, no trailing slash).
     let server: String
     let token: String
     var id: String { "\(server)#\(token)" }
+}
 
-    static func parse(_ text: String) -> InviteLink? {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let url = URL(string: trimmed) else { return nil }
-        return parse(url)
-    }
-
-    static func parse(_ url: URL) -> InviteLink? {
-        guard let c = URLComponents(url: url, resolvingAgainstBaseURL: false),
-              let scheme = c.scheme?.lowercased(), scheme == "termoak" || scheme == "aceitunoak",
-              c.host?.lowercased() == "invite" else { return nil }
-        let items = c.queryItems ?? []
-        func value(_ name: String) -> String? {
-            items.first(where: { $0.name == name })?.value?.trimmingCharacters(in: .whitespaces)
+/// The server of a link, as the app keeps it.
+enum LinkServer {
+    /// Without spaces or trailing slashes, and without the website's language
+    /// when it is the whole path: the site also serves its links under
+    /// `/es/join/<token>` (scripts/apple-app-site-association.sh), and `/es`
+    /// is not where the server lives. A real path (`/termoak`) stays.
+    static func clean(_ server: String) -> String {
+        var s = server.trimmingCharacters(in: .whitespacesAndNewlines)
+        while s.hasSuffix("/") { s.removeLast() }
+        guard var c = URLComponents(string: s) else { return s }
+        let parts = c.path.split(separator: "/")
+        if parts.count == 1, parts[0].count == 2, parts[0].allSatisfy({ $0.isASCII && $0.isLetter }) {
+            c.path = ""
+            return c.string ?? s
         }
-        guard var server = value("server"), let token = value("token"), !token.isEmpty,
-              let serverURL = URL(string: server), let s = serverURL.scheme?.lowercased(), s == "https" || s == "http",
-              serverURL.host?.isEmpty == false else { return nil }
-        while server.hasSuffix("/") { server.removeLast() }
-        guard token.unicodeScalars.allSatisfy({ $0.isASCII && (CharacterSet.alphanumerics.contains($0) || "-_.".unicodeScalars.contains($0)) })
-        else { return nil }
-        return InviteLink(server: server, token: token)
+        return s
     }
 }

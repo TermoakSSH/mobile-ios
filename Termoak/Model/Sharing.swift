@@ -283,46 +283,12 @@ extension SessionShareInfo {
 
 /// An invitation link: `termoak://join?server=…&token=…` (the app link) or
 /// the web one, `https://server/join/<token>` (also `/api/v1/join/<token>`),
-/// which is what a universal link would bring.
+/// which is what a universal link would bring. Read by the engine's
+/// `parseLink` (Links.swift).
 struct JoinLink: Equatable {
     /// Base URL of the server (no trailing slash).
     let server: String
     let token: String
-
-    static func parse(_ text: String) -> JoinLink? {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, let url = URL(string: trimmed) else { return nil }
-        return parse(url)
-    }
-
-    static func parse(_ url: URL) -> JoinLink? {
-        guard let c = URLComponents(url: url, resolvingAgainstBaseURL: false),
-              let scheme = c.scheme?.lowercased() else { return nil }
-        let parts = c.path.split(separator: "/").map(String.init)
-        if scheme == "termoak" {
-            guard c.host?.lowercased() == "join" else { return nil }
-            let items = c.queryItems ?? []
-            guard let server = items.first(where: { $0.name == "server" })?.value,
-                  let serverURL = URL(string: server), let s = serverURL.scheme?.lowercased(), s == "https" || s == "http",
-                  let token = items.first(where: { $0.name == "token" })?.value ?? parts.last,
-                  valid(token) else { return nil }
-            return JoinLink(server: normalize(server), token: token)
-        }
-        guard scheme == "https" || scheme == "http", let host = c.host,
-              let i = parts.lastIndex(of: "join"), i + 1 < parts.count, valid(parts[i + 1]) else { return nil }
-        // What comes before `/join` is the server's own path (if it lives under
-        // one), without `/api/v1` nor the language of the website (`/es`).
-        var prefix = Array(parts[..<i])
-        if prefix.suffix(2) == ["api", "v1"] { prefix.removeLast(2) }
-        if prefix.count == 1, prefix[0].count == 2 { prefix = [] }
-        var base = URLComponents()
-        base.scheme = scheme
-        base.host = host
-        base.port = c.port
-        base.path = prefix.isEmpty ? "" : "/" + prefix.joined(separator: "/")
-        guard let server = base.string else { return nil }
-        return JoinLink(server: normalize(server), token: parts[i + 1])
-    }
 
     /// Server URLs compared without case or trailing slash.
     static func normalize(_ server: String) -> String {
@@ -334,10 +300,6 @@ struct JoinLink: Equatable {
     static func sameServer(_ a: String?, _ b: String) -> Bool {
         guard let a else { return false }
         return normalize(a).lowercased() == normalize(b).lowercased()
-    }
-
-    private static func valid(_ token: String) -> Bool {
-        !token.isEmpty && token.unicodeScalars.allSatisfy { $0.isASCII && (CharacterSet.alphanumerics.contains($0) || $0 == "-" || $0 == "_") }
     }
 }
 

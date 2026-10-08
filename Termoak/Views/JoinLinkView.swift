@@ -148,13 +148,17 @@ struct JoinLinkView: View {
     }
 
     private func check() {
-        guard let l = JoinLink.parse(text) else {
+        switch AppLink(text) {
+        case .join(let l)?:
+            load(l)
+        case .invite(let invite)?:
+            // An invitation to sign up, not to a session: its form.
+            model.openInvite(invite)
+        default:
             info = nil
             current = nil
             error = String(localized: "join.invalid_link")
-            return
         }
-        load(l)
     }
 
     private func load(_ l: JoinLink) {

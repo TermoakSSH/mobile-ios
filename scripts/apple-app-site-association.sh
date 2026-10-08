@@ -24,7 +24,9 @@ json=$(cat <<JSON
         "appIDs": ["$team.$bundle"],
         "components": [
           { "/": "/join/*", "comment": "Invitation to a shared session" },
-          { "/": "/*/join/*", "comment": "Same, under a language (/es/join/…) or a server path" }
+          { "/": "/*/join/*", "comment": "Same, under a language (/es/join/…) or a server path" },
+          { "/": "/invite/*", "comment": "Invitation to create an account" },
+          { "/": "/*/invite/*", "comment": "Same, under a server path" }
         ]
       }
     ]
