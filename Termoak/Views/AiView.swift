@@ -1,7 +1,8 @@
 import TermoakKit
 import SwiftUI
 
-private func statusStyle(_ s: AiTaskStatus) -> (String, Color) {
+/// A task's state with its colour.
+func statusStyle(_ s: AiTaskStatus) -> (String, Color) {
     switch s {
     case .queued: return (String(localized: "ai.status.queued"), .secondary)
     case .running: return (String(localized: "ai.status.running"), Brand.blue)
@@ -24,8 +25,6 @@ struct AiView: View {
     @EnvironmentObject private var account: Accounts
     @State private var tasks: [AiTask] = []
     @State private var approvals: [AiApproval] = []
-    /// What each pending approval shows (server 0.6), by id.
-    @State private var previews: [String: ApprovalPreview] = [:]
     @State private var creating = false
     @State private var loggingIn = false
     @State private var error: String?
@@ -98,7 +97,7 @@ struct AiView: View {
             if !approvals.isEmpty {
                 Section("ai.section.approvals") {
                     ForEach(approvals, id: \.id) { a in
-                        ApprovalCard(approval: a, task: tasks.first { $0.id == a.taskId }?.title, preview: previews[a.id]) { choice in
+                        ApprovalCard(approval: a, task: tasks.first { $0.id == a.taskId }?.title, preview: a.shownPreview) { choice in
                             decide(a, choice)
                         }
                     }
@@ -127,7 +126,6 @@ struct AiView: View {
         do {
             tasks = try await api.listAiTasks(limit: 50)
             approvals = try await api.listPendingApprovals()
-            previews = approvals.isEmpty ? [:] : await api.approvalPreviews()
             await account.refreshApprovals()
         } catch {
             self.error = userMessage(error)
@@ -491,8 +489,6 @@ struct TaskView: View {
     /// Sending failed for a reason fixed in Settings → AI.
     @State private var problem: AiAccessProblem?
     @State private var showingAiSettings = false
-    /// What the task's JSON says beyond `AiTask` (hosts, plan, mode...).
-    @State private var extras = AiTaskExtras()
     @State private var savingRunbook = false
     @State private var runbookSaved = false
     @State private var deleting = false
@@ -500,12 +496,6 @@ struct TaskView: View {
     @FocusState private var typing: Bool
 
     private var api: AccountApi { model.core.api(for: accountId) }
-
-    /// What the task's pending approvals show (server 0.6), by id.
-    private var previews: [String: ApprovalPreview] {
-        guard let t = task, !t.pendingApprovals.isEmpty else { return [:] }
-        return ApprovalPreview.byApproval(json: t.rawJson)
-    }
 
     var body: some View {
         Group {
@@ -517,9 +507,8 @@ struct TaskView: View {
                             let conversation = turns(t)
                             if conversation.isEmpty { TurnView(turn: .user(0, stripContext(t.prompt))) }
                             ForEach(conversation) { TurnView(turn: $0, running: t.isActive) }
-                            let shown = previews
                             ForEach(t.pendingApprovals, id: \.id) { a in
-                                ApprovalCard(approval: a, task: nil, preview: shown[a.id]) { choice in
+                                ApprovalCard(approval: a, task: nil, preview: a.shownPreview) { choice in
                                     Task {
                                         do {
                                             try await api.decide(taskId: a.taskId, approvalId: a.id, choice)
@@ -564,8 +553,8 @@ struct TaskView: View {
             }
             ToolbarItem(placement: .primaryAction) {
                 if let t = task {
-                    TaskActionsMenu(active: t.isActive, mode: AiPermissionMode(apiName: extras.mode) ?? t.mode,
-                                    ranSteps: extras.steps > 0 || extras.fanOut,
+                    TaskActionsMenu(active: t.isActive, mode: t.mode,
+                                    ranSteps: !t.steps.isEmpty || t.fanOut,
                                     onMode: setMode, onRunbook: { savingRunbook = true }, onDelete: { deleting = true })
                 }
             }
@@ -632,11 +621,11 @@ struct TaskView: View {
 
     /// The approved plan and, for one conversation per host, the hosts' table.
     @ViewBuilder private var taskHeader: some View {
-        if let plan = extras.plan, extras.planApproved, !plan.isEmpty {
-            ApprovedPlan(plan: plan).padding(.horizontal)
+        if let plan = task?.plan, plan.approved, !plan.text.isEmpty {
+            ApprovedPlan(plan: plan.text, edited: plan.edited).padding(.horizontal)
         }
-        if !extras.hosts.isEmpty {
-            HostRunsTable(runs: extras.hosts, accountId: accountId).padding(.horizontal)
+        if let runs = task?.hosts, !runs.isEmpty {
+            HostRunsTable(runs: runs, accountId: accountId).padding(.horizontal)
         }
     }
 
@@ -665,9 +654,7 @@ struct TaskView: View {
 
     private func load() async {
         do {
-            let t = try await api.getAiTask(taskId: taskId)
-            task = t
-            extras = AiTaskExtras.parse(t.rawJson)
+            task = try await api.getAiTask(taskId: taskId)
         } catch {
             self.error = userMessage(error)
         }

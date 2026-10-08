@@ -16,7 +16,7 @@ struct HostRunsTable: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("ai.hosts_count \(runs.count)").font(.headline)
             Text("ai.hosts.hint").font(.caption).foregroundColor(.secondary)
-            ForEach(runs) { run in
+            ForEach(runs, id: \.taskId) { run in
                 NavigationLink { TaskView(taskId: run.taskId, accountId: accountId) } label: { HostRunRow(run: run) }
                     .buttonStyle(.plain)
             }
@@ -34,10 +34,10 @@ private struct HostRunRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Text(verbatim: run.label.isEmpty ? run.hostId : run.label).font(.subheadline.weight(.semibold)).lineLimit(1)
-                    let (text, color) = aiRunStatus(run.status)
+                    let (text, color) = statusStyle(run.status)
                     Chip(text, color)
                     if run.pendingApprovals > 0 {
-                        Chip(String(localized: "ai.hosts.approvals \(run.pendingApprovals)"), Brand.amber)
+                        Chip(String(localized: "ai.hosts.approvals \(Int(run.pendingApprovals))"), Brand.amber)
                     }
                 }
                 if let line = run.error ?? run.summary, !line.isEmpty {
@@ -61,26 +61,18 @@ private struct HostRunRow: View {
     }
 }
 
-/// A task's state as the server writes it (`queued`, `running`...).
-func aiRunStatus(_ status: String) -> (String, Color) {
-    switch status {
-    case "queued": return (String(localized: "ai.status.queued"), .secondary)
-    case "running": return (String(localized: "ai.status.running"), Brand.blue)
-    case "waiting_approval": return (String(localized: "ai.status.waiting_approval"), Brand.amber)
-    case "completed": return (String(localized: "ai.status.completed"), Brand.green)
-    case "failed": return (String(localized: "ai.status.failed"), Brand.red)
-    case "cancelled": return (String(localized: "ai.status.cancelled"), .secondary)
-    default: return (status, .secondary)
-    }
-}
-
 /// The plan the task follows (approved, or edited and approved).
 struct ApprovedPlan: View {
     let plan: String
+    /// You changed it before approving it.
+    var edited = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Label("ai.plan.approved", systemImage: "list.number").font(.subheadline.weight(.semibold))
+            HStack(spacing: 6) {
+                Label("ai.plan.approved", systemImage: "list.number").font(.subheadline.weight(.semibold))
+                if edited { Chip(String(localized: "ai.plan.edited"), Brand.blue) }
+            }
             Text(plan)
                 .font(.system(.footnote, design: .monospaced))
                 .textSelection(.enabled)
@@ -122,19 +114,6 @@ struct TaskActionsMenu: View {
     }
 }
 
-extension AiPermissionMode {
-    /// From the server's name (`read_only`, `ask`, `confirm`, `auto`).
-    init?(apiName: String?) {
-        switch apiName {
-        case "read_only": self = .readOnly
-        case "ask": self = .ask
-        case "confirm": self = .confirm
-        case "auto": self = .auto
-        default: return nil
-        }
-    }
-}
-
 /// "Save as runbook": the commands the task ran as a snippet (tags ai and
 /// runbook) in your personal vault, with a name to review first.
 struct RunbookSheet: View {
@@ -143,7 +122,7 @@ struct RunbookSheet: View {
     /// Saved: the account syncs to get the new snippet.
     let onSaved: () -> Void
     @Environment(\.dismiss) private var dismiss
-    @State private var runbook: AiRunbook?
+    @State private var runbook: TermoakFFI.AiRunbook?
     @State private var name = ""
     @State private var saving = false
     @State private var error: String?
@@ -173,7 +152,7 @@ struct RunbookSheet: View {
         .task { await load() }
     }
 
-    @ViewBuilder private func content(_ r: AiRunbook) -> some View {
+    @ViewBuilder private func content(_ r: TermoakFFI.AiRunbook) -> some View {
         if r.steps == 0 {
             Section { Text("ai.runbook.empty").foregroundColor(.secondary) }
         } else {
@@ -196,7 +175,7 @@ struct RunbookSheet: View {
 
     private func load() async {
         do {
-            let r = try await api.aiRunbook(taskId: taskId)
+            let r = try await api.getRunbook(taskId: taskId)
             runbook = r
             name = r.name
         } catch {
@@ -210,7 +189,7 @@ struct RunbookSheet: View {
         Task {
             defer { saving = false }
             do {
-                try await api.saveAiRunbook(taskId: taskId, name: name)
+                _ = try await api.saveRunbook(taskId: taskId, name: name)
                 onSaved()
                 dismiss()
             } catch {

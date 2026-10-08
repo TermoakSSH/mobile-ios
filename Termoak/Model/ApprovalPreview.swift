@@ -2,8 +2,9 @@ import Foundation
 
 // What an AI approval shows (server 0.6 `preview`: the risk and its reasons,
 // the exact command, the file's diff or the plan) and the decision with an
-// edit or a reason. Read from the server's JSON (the typed API is C3), without
-// the engine's types so the unit tests compile this file on its own.
+// edit or a reason. Without the engine's types so the unit tests compile this
+// file on its own: AiEngine.swift makes one from the engine's
+// `AiApprovalPreview` (typed calls) and `parse` reads the live events' JSON.
 
 struct ApprovalPreview: Equatable {
     struct Reason: Equatable {
@@ -39,6 +40,7 @@ struct ApprovalPreview: Equatable {
         return kind == "plan" ? plan : command
     }
 
+    /// From an `approval_requested` event's `preview` (server events are JSON).
     static func parse(_ v: [String: Any]) -> ApprovalPreview {
         var p = ApprovalPreview()
         p.kind = v["kind"] as? String ?? "other"
@@ -59,27 +61,6 @@ struct ApprovalPreview: Equatable {
         p.plan = v["plan"] as? String
         p.editable = v["editable"] as? Bool ?? false
         return p
-    }
-
-    /// The previews of some approvals by id: from `GET /ai/approvals` (an
-    /// array) or a task's JSON (its `pending_approvals`). Approvals from
-    /// before server 0.6 have none.
-    static func byApproval(json: String) -> [String: ApprovalPreview] {
-        guard let value = try? JSONSerialization.jsonObject(with: Data(json.utf8)) else { return [:] }
-        let rows: [[String: Any]]
-        if let list = value as? [[String: Any]] {
-            rows = list
-        } else if let task = value as? [String: Any] {
-            rows = task["pending_approvals"] as? [[String: Any]] ?? []
-        } else {
-            rows = []
-        }
-        var out: [String: ApprovalPreview] = [:]
-        for r in rows {
-            guard let id = r["id"] as? String, let preview = r["preview"] as? [String: Any] else { continue }
-            out[id] = parse(preview)
-        }
-        return out
     }
 
     /// `system_path`'s folder ("writes to /etc" → "/etc").
@@ -129,15 +110,15 @@ struct ApprovalChoice: Equatable {
     /// Why it was denied (sent to the AI).
     var reason: String?
 
-    /// Only approve/deny/always: the engine's typed call does it.
-    var isPlain: Bool { edited == nil && reason == nil }
+    /// The edit to send: only when approving, `nil` when empty.
+    var cleanEdited: String? {
+        guard approve, let e = edited?.trimmingCharacters(in: .whitespacesAndNewlines), !e.isEmpty else { return nil }
+        return e
+    }
 
-    /// `POST /ai/tasks/{id}/approvals/{approval_id}`: the edit only when
-    /// approving, empty texts left out.
-    var body: [String: Any] {
-        var b: [String: Any] = ["approve": approve, "always": always]
-        if approve, let e = edited?.trimmingCharacters(in: .whitespacesAndNewlines), !e.isEmpty { b["edited"] = e }
-        if let r = reason?.trimmingCharacters(in: .whitespacesAndNewlines), !r.isEmpty { b["reason"] = r }
-        return b
+    /// The reason to send (`nil` when empty).
+    var cleanReason: String? {
+        guard let r = reason?.trimmingCharacters(in: .whitespacesAndNewlines), !r.isEmpty else { return nil }
+        return r
     }
 }

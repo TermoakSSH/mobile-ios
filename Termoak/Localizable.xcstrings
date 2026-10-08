@@ -2109,6 +2109,22 @@
         }
       }
     },
+    "ai.plan.edited": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edited"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editado"
+          }
+        }
+      }
+    },
     "ai.plan_first": {
       "localizations": {
         "en": {
@@ -2153,6 +2169,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "Proveedor"
+          }
+        }
+      }
+    },
+    "ai.provider.reason.not_configured": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not set up on this server."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No está configurado en este servidor."
+          }
+        }
+      }
+    },
+    "ai.provider.reason.own_key_required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It needs your own API key: add it in Settings → AI."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Necesita tu propia clave de API: añádela en Ajustes → IA."
+          }
+        }
+      }
+    },
+    "ai.provider.reason.plan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your plan doesn't include it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu plan no lo incluye."
           }
         }
       }

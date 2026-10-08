@@ -21,7 +21,7 @@ struct NewTaskView: View {
     @State private var tag: String?
     @State private var fanOut = false
     @State private var planFirst = false
-    @State private var providers: AiProviderList?
+    @State private var providers: AiProviders?
     @State private var providerKey: String?
     @State private var providerModel: String?
     @State private var effort: String?
@@ -53,13 +53,13 @@ struct NewTaskView: View {
                 ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(busy ? String(localized: "ai.new.creating") : String(localized: "ai.new.start"), action: create)
-                        .disabled(prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || busy)
+                        .disabled(prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || busy || providerUnavailable)
                 }
             }
         }
         .sheet(isPresented: $showingAiSettings) { AiSettingsSheet().environmentObject(model) }
         .onAppear(perform: loadHosts)
-        .task { providers = try? await api.aiProviders() }
+        .task { providers = try? await api.listAiProviders() }
     }
 
     private var promptSection: some View {
@@ -176,12 +176,13 @@ struct NewTaskView: View {
 
     // MARK: Provider, model and effort
 
-    private func providerSection(_ list: AiProviderList) -> some View {
+    private func providerSection(_ list: AiProviders) -> some View {
         Section {
             Picker("ai.provider", selection: $providerKey) {
                 Text(defaultProviderTitle(list)).tag(String?.none)
-                ForEach(list.shown) { p in
+                ForEach(list.shown, id: \.key) { p in
                     Text(p.available ? p.label : String(localized: "ai.provider_unavailable \(p.label)")).tag(Optional(p.key))
+                        .disabled(!p.available)
                 }
             }
             .pickerStyle(.menu)
@@ -204,14 +205,20 @@ struct NewTaskView: View {
         } header: {
             Text("ai.new.provider_section")
         } footer: {
-            if let p = list.providers.first(where: { $0.key == providerKey }), !p.available, let reason = p.reason {
+            if let p = list.providers.first(where: { $0.key == providerKey }), let reason = p.unavailableReason {
                 Text(verbatim: reason)
             }
         }
     }
 
-    private func defaultProviderTitle(_ list: AiProviderList) -> String {
-        guard let d = list.defaultProvider else { return String(localized: "ai.provider_default") }
+    /// The chosen provider can't be used (its reason is under the picker).
+    private var providerUnavailable: Bool {
+        guard let providerKey, let p = providers?.providers.first(where: { $0.key == providerKey }) else { return false }
+        return !p.available
+    }
+
+    private func defaultProviderTitle(_ list: AiProviders) -> String {
+        guard let d = list.defaultEntry else { return String(localized: "ai.provider_default") }
         return String(localized: "ai.provider_default_named \(d.label)")
     }
 
@@ -260,7 +267,7 @@ struct NewTaskView: View {
     }
 
     private func create() {
-        var request = NewAiTask(prompt: prompt, mode: mode.apiName)
+        var request = NewAiTask(prompt: prompt)
         request.provider = NewAiTask.provider(providerKey, model: providerModel)
         request.effort = effort
         switch target {
@@ -276,24 +283,12 @@ struct NewTaskView: View {
         Task {
             defer { busy = false }
             do {
-                _ = try await api.createAiTask(request)
+                _ = try await api.createAiTask(request, mode: mode)
                 dismiss()
             } catch {
                 problem = AiAccessProblem(error)
                 self.error = problem?.message ?? userMessage(error)
             }
-        }
-    }
-}
-
-extension AiPermissionMode {
-    /// As the server writes it.
-    var apiName: String {
-        switch self {
-        case .readOnly: return "read_only"
-        case .ask: return "ask"
-        case .confirm: return "confirm"
-        case .auto: return "auto"
         }
     }
 }

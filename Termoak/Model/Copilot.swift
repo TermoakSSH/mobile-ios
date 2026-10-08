@@ -278,8 +278,7 @@ final class Copilot: ObservableObject {
     /// What an approval shows: from the saved task, or as it arrived live.
     func preview(for approvalId: String) -> ApprovalPreview? {
         if let p = livePreviews[approvalId] { return p }
-        guard let t = task, t.pendingApprovals.contains(where: { $0.id == approvalId }) else { return nil }
-        return ApprovalPreview.byApproval(json: t.rawJson)[approvalId]
+        return approvals.first { $0.id == approvalId }?.shownPreview
     }
 
     func decide(_ a: AiApproval, _ choice: ApprovalChoice) {
