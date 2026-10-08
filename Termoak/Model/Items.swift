@@ -45,6 +45,11 @@ extension PortForward {
 
 extension KnownHost {
     var key: String { itemKey(accountId, id) }
+    /// "host" or "host:port".
+    var display: String { port == 22 ? host : "\(host):\(port)" }
+    /// It can be forgotten: a This-device one, or one of a vault you can
+    /// change (not Use only).
+    var canForget: Bool { access != .useOnly && access != .unknown }
 }
 
 extension AccountInfo {

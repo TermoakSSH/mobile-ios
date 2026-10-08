@@ -1493,6 +1493,22 @@
         }
       }
     },
+    "common.delete_named %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete “%@”?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Borrar «%@»?"
+          }
+        }
+      }
+    },
     "common.deny": {
       "localizations": {
         "en": {
@@ -6237,6 +6253,22 @@
         }
       }
     },
+    "identities.delete.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hosts that use it will have to use another one."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los hosts que la usan tendrán que usar otra."
+          }
+        }
+      }
+    },
     "identities.edit": {
       "localizations": {
         "en": {
@@ -7508,6 +7540,22 @@
         }
       }
     },
+    "known_hosts.copy_fingerprint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy fingerprint"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar la huella"
+          }
+        }
+      }
+    },
     "known_hosts.empty.text": {
       "localizations": {
         "en": {
@@ -7552,6 +7600,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Olvidar"
+          }
+        }
+      }
+    },
+    "known_hosts.forget.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next time you connect you'll be asked again whether you trust its fingerprint."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La próxima vez que te conectes se te volverá a preguntar si confías en su huella."
+          }
+        }
+      }
+    },
+    "known_hosts.forget.title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forget %@?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Olvidar %@?"
           }
         }
       }
@@ -12872,6 +12952,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tamaño de letra normal"
+          }
+        }
+      }
+    },
+    "snippets.delete.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It is deleted on all your devices when syncing."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se borra en todos tus dispositivos al sincronizar."
           }
         }
       }

@@ -225,6 +225,8 @@ struct SnippetsView: View {
     @State private var list: [Snippet] = []
     @State private var editing: SnippetEdit?
     @State private var sending: SnippetSendItem?
+    @State private var deleting: Snippet?
+    @State private var error: String?
 
     var body: some View {
         List {
@@ -251,7 +253,7 @@ struct SnippetsView: View {
                     }
                 }
                 .swipeActions {
-                    if sn.canEdit { Button("common.delete", role: .destructive) { delete(sn) } }
+                    if sn.canEdit { Button("common.delete", role: .destructive) { deleting = sn } }
                 }
                 .swipeActions(edge: .leading) {
                     Button { sending = SnippetSendItem(snippet: sn, target: .servers) } label: {
@@ -271,7 +273,7 @@ struct SnippetsView: View {
                     if sn.canEdit {
                         Divider()
                         Button { editing = SnippetEdit(snippet: sn) } label: { Label("common.edit", systemImage: "pencil") }
-                        Button(role: .destructive) { delete(sn) } label: { Label("common.delete", systemImage: "trash") }
+                        Button(role: .destructive) { deleting = sn } label: { Label("common.delete", systemImage: "trash") }
                     }
                 }
             }
@@ -283,6 +285,14 @@ struct SnippetsView: View {
             }
         }
         .sheet(item: $editing, onDismiss: load) { e in SnippetEditor(original: e.snippet).environmentObject(model).environmentObject(account) }
+        .confirmationDialog(Text("common.delete_named \(deleting?.name ?? "")"),
+                            isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
+                            titleVisibility: .visible) {
+            Button("common.delete", role: .destructive) { if let sn = deleting { delete(sn) } }
+        } message: { Text("snippets.delete.message") }
+        .alert("common.error", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
+            Button("common.ok", role: .cancel) {}
+        } message: { Text(error ?? "") }
         .sheet(item: $sending) { e in
             SnippetSendView(snippet: e.snippet, initialTarget: e.target)
                 .environmentObject(model)
@@ -293,7 +303,7 @@ struct SnippetsView: View {
     }
 
     private func delete(_ sn: Snippet) {
-        try? model.core.deleteSnippet(id: sn.id, accountId: sn.accountId)
+        do { try model.core.deleteSnippet(id: sn.id, accountId: sn.accountId) } catch { self.error = userMessage(error) }
         load()
         account.sync()
     }
@@ -379,6 +389,8 @@ private struct IdentityList: View {
     @EnvironmentObject private var account: Accounts
     @State private var list: [SshIdentity] = []
     @State private var editing: IdentityEdit?
+    @State private var deleting: SshIdentity?
+    @State private var error: String?
 
     var body: some View {
         Group {
@@ -404,11 +416,13 @@ private struct IdentityList: View {
                 }
                 .swipeActions {
                     if !i.isUseOnly {
-                        Button("common.delete", role: .destructive) {
-                            try? model.core.deleteIdentity(id: i.id, accountId: i.accountId)
-                            load()
-                            account.sync()
-                        }
+                        Button("common.delete", role: .destructive) { deleting = i }
+                    }
+                }
+                .contextMenu {
+                    if !i.isUseOnly {
+                        Button { editing = IdentityEdit(identity: i) } label: { Label("common.edit", systemImage: "pencil") }
+                        Button(role: .destructive) { deleting = i } label: { Label("common.delete", systemImage: "trash") }
                     }
                 }
             }
@@ -419,8 +433,22 @@ private struct IdentityList: View {
         .sheet(item: $editing, onDismiss: load) { e in
             IdentityEditor(original: e.identity, keys: keys).environmentObject(model).environmentObject(account)
         }
+        .confirmationDialog(Text("common.delete_named \(deleting?.label ?? "")"),
+                            isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
+                            titleVisibility: .visible) {
+            Button("common.delete", role: .destructive) { if let i = deleting { delete(i) } }
+        } message: { Text("identities.delete.message") }
+        .alert("common.error", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
+            Button("common.ok", role: .cancel) {}
+        } message: { Text(error ?? "") }
         .onAppear(perform: load)
         .onReceive(account.vaultChanged) { load() }
+    }
+
+    private func delete(_ i: SshIdentity) {
+        do { try model.core.deleteIdentity(id: i.id, accountId: i.accountId) } catch { self.error = userMessage(error) }
+        load()
+        account.sync()
     }
 
     private func load() {
@@ -508,6 +536,8 @@ struct KnownHostsView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Accounts
     @State private var list: [KnownHost] = []
+    @State private var forgetting: KnownHost?
+    @State private var error: String?
 
     var body: some View {
         List {
@@ -522,7 +552,7 @@ struct KnownHostsView: View {
             ForEach(list, id: \.key) { k in
                 VStack(alignment: .leading, spacing: 3) {
                     HStack {
-                        Text(k.port == 22 ? k.host : "\(k.host):\(k.port)").font(.headline)
+                        Text(verbatim: k.display).font(.headline)
                         Spacer()
                         ItemPlaceBadge(accountId: k.accountId, vaultId: k.vaultId, useOnly: false, deviceOnly: false)
                     }
@@ -531,17 +561,39 @@ struct KnownHostsView: View {
                         .lineLimit(1).textSelection(.enabled)
                 }
                 .swipeActions {
-                    Button("known_hosts.forget", role: .destructive) {
-                        try? model.core.deleteKnownHost(id: k.id, accountId: k.accountId)
-                        load()
-                        account.sync()
+                    if k.canForget {
+                        Button("known_hosts.forget", role: .destructive) { forgetting = k }
+                    }
+                }
+                .contextMenu {
+                    Button { UIPasteboard.general.string = k.fingerprint } label: {
+                        Label("known_hosts.copy_fingerprint", systemImage: "doc.on.doc")
+                    }
+                    if k.canForget {
+                        Button(role: .destructive) { forgetting = k } label: { Label("known_hosts.forget", systemImage: "trash") }
                     }
                 }
             }
         }
         .navigationTitle("nav.known_hosts")
+        .confirmationDialog(Text("known_hosts.forget.title \(forgetting.map(\.display) ?? "")"),
+                            isPresented: Binding(get: { forgetting != nil }, set: { if !$0 { forgetting = nil } }),
+                            titleVisibility: .visible) {
+            Button("known_hosts.forget", role: .destructive) { if let k = forgetting { forget(k) } }
+        } message: { Text("known_hosts.forget.message") }
+        .alert("common.error", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
+            Button("common.ok", role: .cancel) {}
+        } message: { Text(error ?? "") }
         .onAppear(perform: load)
         .onReceive(account.vaultChanged) { load() }
+    }
+
+    /// Only with access to its vault (not Use only); the engine checks it too.
+    private func forget(_ k: KnownHost) {
+        guard k.canForget else { return }
+        do { try model.core.deleteKnownHost(id: k.id, accountId: k.accountId) } catch { self.error = userMessage(error) }
+        load()
+        account.sync()
     }
 
     private func load() {
