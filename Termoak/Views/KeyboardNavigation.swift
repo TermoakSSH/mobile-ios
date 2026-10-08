@@ -145,12 +145,12 @@ final class KeyField: UITextField {
     var onEscape: (() -> Void)?
     var onArrow: ((Bool) -> Void)?
     var onShiftReturn: (() -> Void)?
-    private var focused = false
+    private var didFocusOnce = false
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
-        guard window != nil, !focused else { return }
-        focused = true
+        guard window != nil, !didFocusOnce else { return }
+        didFocusOnce = true
         DispatchQueue.main.async { [weak self] in _ = self?.becomeFirstResponder() }
     }
 

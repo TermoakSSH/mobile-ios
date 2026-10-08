@@ -138,39 +138,58 @@ struct HostsView: View {
     }
 
     var body: some View {
-        content
-        .toolbar {
-            if selecting {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(selectAllTitle) { toggleSelectAll() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("common.done") { endSelection() }
-                }
-                ToolbarItemGroup(placement: .bottomBar) { selectionActions }
-            } else {
-                if isRoot {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        AccountSwitcher(onAdd: { addingAccount = true },
-                                        onManage: { managingAccounts = true },
-                                        onVaults: { showingVaults = true })
-                    }
-                }
-                ToolbarItemGroup(placement: .primaryAction) {
-                    if account.syncing {
-                        ProgressView()
-                    } else if account.list.contains(where: { $0.status == .active }) && isRoot {
-                        Button { account.sync() } label: { Image(systemName: "arrow.triangle.2.circlepath") }
-                            .accessibilityLabel("settings.sync")
-                    }
-                    if !hosts.isEmpty {
-                        Button { startSelection(nil) } label: { Image(systemName: "checkmark.circle") }
-                            .accessibilityLabel("hosts.select")
-                    }
-                    addMenu
+        // Split in parts: as one expression it is too much for the type checker.
+        withDialogs(withSheets(content.toolbar { hostsToolbar }))
+        .onAppear {
+            load()
+            if isRoot { account.sync() }
+        }
+        .onReceive(account.vaultChanged) { load() }
+        .onChange(of: account.vaultFilter) { _ in load() }
+        .task {
+            if isRoot { await sessions.refreshServer(accounts: activeAccounts) }
+        }
+        .onReceive(account.changes) { kind in
+            guard isRoot, kind == "session" || kind == "lagged" else { return }
+            Task { await sessions.refreshServer(accounts: activeAccounts) }
+        }
+    }
+
+    @ToolbarContentBuilder private var hostsToolbar: some ToolbarContent {
+        if selecting {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(selectAllTitle) { toggleSelectAll() }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                Button("common.done") { endSelection() }
+            }
+            ToolbarItemGroup(placement: .bottomBar) { selectionActions }
+        } else {
+            if isRoot {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    AccountSwitcher(onAdd: { addingAccount = true },
+                                    onManage: { managingAccounts = true },
+                                    onVaults: { showingVaults = true })
                 }
             }
+            ToolbarItemGroup(placement: .primaryAction) {
+                if account.syncing {
+                    ProgressView()
+                } else if account.list.contains(where: { $0.status == .active }) && isRoot {
+                    Button { account.sync() } label: { Image(systemName: "arrow.triangle.2.circlepath") }
+                        .accessibilityLabel("settings.sync")
+                }
+                if !hosts.isEmpty {
+                    Button { startSelection(nil) } label: { Image(systemName: "checkmark.circle") }
+                        .accessibilityLabel("hosts.select")
+                }
+                addMenu
+            }
         }
+    }
+
+    private func withSheets<V: View>(_ view: V) -> some View {
+        view
         // In the desktop layout the editor is a panel on the right.
         .sheet(item: Binding(get: { desktop ? nil : editing }, set: { editing = $0 }), onDismiss: load) { e in
             HostEditor(original: e.host, initialGroup: groupId, initialPlace: newPlace) { saved in
@@ -215,6 +234,10 @@ struct HostsView: View {
         .fileImporter(isPresented: $importingConfig, allowedContentTypes: [.item]) { result in
             importSshConfig(result)
         }
+    }
+
+    private func withDialogs<V: View>(_ view: V) -> some View {
+        view
         .confirmationDialog(Text("hosts.delete.title \(deleting?.label ?? "")"),
                             isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
                             titleVisibility: .visible) {
@@ -238,19 +261,6 @@ struct HostsView: View {
         .alert(notice?.title ?? "", isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } })) {
             Button("common.ok", role: .cancel) {}
         } message: { Text(notice?.message ?? "") }
-        .onAppear {
-            load()
-            if isRoot { account.sync() }
-        }
-        .onReceive(account.vaultChanged) { load() }
-        .onChange(of: account.vaultFilter) { _ in load() }
-        .task {
-            if isRoot { await sessions.refreshServer(accounts: activeAccounts) }
-        }
-        .onReceive(account.changes) { kind in
-            guard isRoot, kind == "session" || kind == "lagged" else { return }
-            Task { await sessions.refreshServer(accounts: activeAccounts) }
-        }
     }
 
     @ViewBuilder private var content: some View {
