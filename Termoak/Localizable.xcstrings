@@ -14452,6 +14452,22 @@
         }
       }
     },
+    "share.link.qr": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show QR code"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar código QR"
+          }
+        }
+      }
+    },
     "share.link.share": {
       "localizations": {
         "en": {

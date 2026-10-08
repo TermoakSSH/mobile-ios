@@ -43,6 +43,7 @@ struct ShareSessionView: View {
     @State private var created: ShareInvite?
     @State private var copied = false
     @State private var showingActivity = false
+    @State private var showingQR = false
     @State private var shares: [SessionShareInfo] = []
     @State private var editing: SessionShareInfo?
     @State private var stopping = false
@@ -121,6 +122,9 @@ struct ShareSessionView: View {
             }
             .sheet(isPresented: $showingActivity) {
                 if let link { ActivityView(items: [link]) }
+            }
+            .sheet(isPresented: $showingQR) {
+                if let link { QRCodeSheet(title: String(localized: "share.link.qr"), text: link.absoluteString) }
             }
             .confirmationDialog("share.stop.title", isPresented: $stopping, titleVisibility: .visible) {
                 Button("share.stop", role: .destructive) { stopSharing() }
@@ -219,6 +223,7 @@ struct ShareSessionView: View {
                 }
             }
             shareButton(url)
+            Button { showingQR = true } label: { Label("share.link.qr", systemImage: "qrcode") }
             if let app = created?.appLink, app != url.absoluteString {
                 Button {
                     UIPasteboard.general.string = app
