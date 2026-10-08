@@ -6,10 +6,25 @@ import Foundation
 /// one that is closed when the last tunnel stops. iOS freezes the app shortly
 /// after leaving it, so local tunnels work while the app is open (plus a few
 /// minutes of grace).
+/// A tunnel started without saving it (it only lives while it runs).
+struct AdHocTunnel: Identifiable, Equatable {
+    /// `adhoc:<uuid>`, its key in `Tunnels.running` and `stats`.
+    let id: String
+    let hostId: String
+    let label: String
+    let kind: ForwardKind
+    let bindAddress: String
+    let bindPort: UInt32
+    let destHost: String?
+    let destPort: UInt32?
+}
+
 @MainActor
 final class Tunnels: ObservableObject {
-    /// Running tunnels by saved tunnel id.
+    /// Running tunnels by saved tunnel id (and `adhoc:…` for unsaved ones).
     @Published private(set) var running: [String: ActiveForward] = [:]
+    /// Unsaved tunnels that are running, in the order they started.
+    @Published private(set) var adHoc: [AdHocTunnel] = []
     @Published private(set) var stats: [String: ForwardStats] = [:]
     @Published var prompt: AuthPrompt?
     @Published var error: String?
@@ -37,6 +52,35 @@ final class Tunnels: ObservableObject {
             self.error = userMessage(error)
             releaseIfUnused(f.hostId)
         }
+    }
+
+    /// Starts a tunnel to a host without saving it (the engine's
+    /// `startForwardSpec`); it goes away when stopped or when its
+    /// connection closes.
+    func startAdHoc(host: SshHost, label: String, kind: ForwardKind, bindAddress: String, bindPort: UInt32,
+                    destHost: String?, destPort: UInt32?) async {
+        do {
+            let s = try await connection(host.id, accountId: host.accountId)
+            let a = try await s.startForwardSpec(kind: kind, bindAddress: bindAddress, bindPort: bindPort,
+                                                 destHost: destHost, destPort: destPort)
+            let id = "adhoc:\(UUID().uuidString)"
+            running[id] = a
+            hostOf[id] = host.id
+            adHoc.append(AdHocTunnel(id: id, hostId: host.id, label: label, kind: kind, bindAddress: bindAddress,
+                                     bindPort: bindPort, destHost: destHost, destPort: destPort))
+            measure()
+        } catch {
+            self.error = userMessage(error)
+            releaseIfUnused(host.id)
+        }
+    }
+
+    func stopAdHoc(_ t: AdHocTunnel) async {
+        if let a = running.removeValue(forKey: t.id) { try? await a.stop() }
+        stats[t.id] = nil
+        hostOf[t.id] = nil
+        adHoc.removeAll { $0.id == t.id }
+        releaseIfUnused(t.hostId)
     }
 
     func stop(_ f: PortForward) async {
@@ -101,6 +145,7 @@ final class Tunnels: ObservableObject {
             } else {
                 running[id] = nil
                 stats[id] = nil
+                adHoc.removeAll { $0.id == id }
                 if let h = hostOf.removeValue(forKey: id) { releaseIfUnused(h) }
             }
         }

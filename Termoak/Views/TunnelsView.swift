@@ -26,6 +26,13 @@ struct TunnelsView: View {
                         .padding(.vertical, 6)
                     }
                 }
+                if !unsaved.isEmpty {
+                    Section {
+                        ForEach(unsaved) { t in adHocRow(t) }
+                    } header: {
+                        Text("tunnels.adhoc.header")
+                    }
+                }
                 Section {
                     ForEach(list, id: \.id) { f in row(f) }
                 } footer: {
@@ -39,12 +46,17 @@ struct TunnelsView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("common.close") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .primaryAction) {
-                    Button { editing = TunnelEdit(tunnel: nil) } label: { Image(systemName: "plus") }
-                        .accessibilityLabel("tunnels.new")
+                    Menu {
+                        Button { editing = TunnelEdit(tunnel: nil) } label: { Label("tunnels.new", systemImage: "plus") }
+                        Button { editing = TunnelEdit(tunnel: nil, startOnly: true) } label: {
+                            Label("tunnels.adhoc.new", systemImage: "bolt")
+                        }
+                    } label: { Image(systemName: "plus") }
+                    .accessibilityLabel("tunnels.new")
                 }
             }
             .sheet(item: $editing, onDismiss: load) { e in
-                TunnelEditor(host: host, original: e.tunnel)
+                TunnelEditor(host: host, original: e.tunnel, startOnly: e.startOnly).environmentObject(tunnels)
             }
             .sheet(item: $tunnels.prompt) { p in
                 AuthPromptView(prompt: p) { tunnels.prompt = nil }.interactiveDismissDisabled()
@@ -114,6 +126,46 @@ struct TunnelsView: View {
         }
     }
 
+    /// Unsaved tunnels of this host that are running.
+    private var unsaved: [AdHocTunnel] { tunnels.adHoc.filter { $0.hostId == host.id } }
+
+    /// An unsaved tunnel: what it does, its statistics and Stop.
+    private func adHocRow(_ t: AdHocTunnel) -> some View {
+        let active = tunnels.running[t.id]
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 12) {
+                Image(systemName: icon(t.kind)).foregroundColor(Brand.green).frame(width: 26)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(t.label.isEmpty ? String(localized: "tunnels.adhoc.unnamed") : t.label)
+                        .font(.body.weight(.medium)).lineLimit(1)
+                    Text(adHocSummary(t, port: active?.boundPort())).font(.caption.monospaced()).foregroundColor(.secondary).lineLimit(1)
+                }
+                Spacer()
+                Button { Task { await tunnels.stopAdHoc(t) } } label: { Text("tunnels.adhoc.stop") }
+                    .buttonStyle(.bordered)
+            }
+            if let active, let st = tunnels.stats[t.id] {
+                HStack(spacing: 12) {
+                    Label("tunnels.stats.connections \(Int(st.activeConnections)) \(Int(st.totalConnections))", systemImage: "link")
+                    Label(bytes(st.bytesIn), systemImage: "arrow.down")
+                    Label(bytes(st.bytesOut), systemImage: "arrow.up")
+                }
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                if t.kind == .local, let url = URL(string: "http://127.0.0.1:\(active.boundPort())") {
+                    Button { openURL(url) } label: { Label("tunnels.open_browser", systemImage: "safari") }
+                        .font(.caption)
+                        .buttonStyle(.borderless)
+                }
+            }
+        }
+        .padding(.vertical, 2)
+    }
+
+    private func adHocSummary(_ t: AdHocTunnel, port: UInt32?) -> String {
+        tunnelSummary(kind: t.kind, bindAddress: t.bindAddress, bindPort: port ?? t.bindPort, destHost: t.destHost, destPort: t.destPort)
+    }
+
     private func load() {
         // The host's account and This device (a This-device host may have
         // older tunnels in an account).
@@ -136,14 +188,7 @@ struct TunnelsView: View {
 
     /// `L 127.0.0.1:8080 → db:5432` (with the real port if a free one was requested).
     private func summary(_ f: PortForward, port: UInt32?) -> String {
-        let p = port ?? f.bindPort
-        let listen = "\(f.bindAddress):\(p == 0 ? "auto" : String(p))"
-        let destination = "\(f.destHost ?? "?"):\(f.destPort.map(String.init) ?? "?")"
-        switch f.kind {
-        case .local: return "L \(listen) → \(destination)"
-        case .remote: return String(localized: "tunnels.summary.remote \(listen) \(destination)")
-        case .dynamic: return "D SOCKS \(listen)"
-        }
+        tunnelSummary(kind: f.kind, bindAddress: f.bindAddress, bindPort: port ?? f.bindPort, destHost: f.destHost, destPort: f.destPort)
     }
 
     private func bytes(_ n: UInt64) -> String {
@@ -151,16 +196,32 @@ struct TunnelsView: View {
     }
 }
 
+/// `L 127.0.0.1:8080 → db:5432` (`auto` for a free port not known yet).
+func tunnelSummary(kind: ForwardKind, bindAddress: String, bindPort: UInt32, destHost: String?, destPort: UInt32?) -> String {
+    let listen = "\(bindAddress):\(bindPort == 0 ? "auto" : String(bindPort))"
+    let destination = "\(destHost ?? "?"):\(destPort.map(String.init) ?? "?")"
+    switch kind {
+    case .local: return "L \(listen) → \(destination)"
+    case .remote: return String(localized: "tunnels.summary.remote \(listen) \(destination)")
+    case .dynamic: return "D SOCKS \(listen)"
+    }
+}
+
 private struct TunnelEdit: Identifiable {
     let id = UUID()
     let tunnel: PortForward?
+    /// Start it without saving it.
+    var startOnly = false
 }
 
 /// Create or edit a saved tunnel.
 private struct TunnelEditor: View {
     let host: SshHost
     let original: PortForward?
+    /// Start it now without saving it (it goes away when stopped).
+    var startOnly = false
     @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var tunnels: Tunnels
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @State private var kind: ForwardKind = .local
@@ -199,21 +260,32 @@ private struct TunnelEditor: View {
                         TextField("common.port", text: $destinationPort).keyboardType(.numberPad)
                     }
                 }
-                Section {
-                    Toggle("tunnels.editor.auto_start", isOn: $autoStart)
+                if startOnly {
+                    Section { Text("tunnels.adhoc.explanation").font(.footnote).foregroundColor(.secondary) }
+                } else {
+                    Section {
+                        Toggle("tunnels.editor.auto_start", isOn: $autoStart)
+                    }
                 }
                 if let error {
                     Section { Text(error).foregroundColor(Brand.red) }
                 }
             }
-            .navigationTitle(original == nil ? String(localized: "tunnels.new") : String(localized: "tunnels.edit"))
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
-                ToolbarItem(placement: .confirmationAction) { Button("common.save", action: save) }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(startOnly ? String(localized: "tunnels.adhoc.start") : String(localized: "common.save"), action: save)
+                }
             }
             .onAppear(perform: fill)
         }
+    }
+
+    private var title: String {
+        if startOnly { return String(localized: "tunnels.adhoc.new") }
+        return original == nil ? String(localized: "tunnels.new") : String(localized: "tunnels.edit")
     }
 
     private var explanation: String {
@@ -247,6 +319,18 @@ private struct TunnelEditor: View {
         if kind != .dynamic {
             guard let d = number(destinationPort), let d else { error = String(localized: "tunnels.error.destination_port"); return }
             dp = d
+        }
+        let address = listenAddress.trimmingCharacters(in: .whitespaces).isEmpty ? "127.0.0.1" : listenAddress.trimmingCharacters(in: .whitespaces)
+        let target = kind == .dynamic ? nil : (destination.trimmingCharacters(in: .whitespaces).isEmpty ? "localhost" : destination.trimmingCharacters(in: .whitespaces))
+        if startOnly {
+            let label = name.trimmingCharacters(in: .whitespaces)
+            let (k, bindPort) = (kind, p ?? 0)
+            dismiss()
+            Task {
+                await tunnels.startAdHoc(host: host, label: label, kind: k, bindAddress: address, bindPort: bindPort,
+                                         destHost: target, destPort: dp)
+            }
+            return
         }
         // A new tunnel goes where its host is.
         var f = original ?? PortForward(label: "", hostId: host.id, kind: kind, accountId: host.accountId, vaultId: host.vaultId)
