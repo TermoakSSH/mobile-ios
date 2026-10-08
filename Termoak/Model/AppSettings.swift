@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import TermoakKit
 
 /// App appearance. Raw values are stored in UserDefaults: keep them.
 enum AppTheme: String, CaseIterable, Identifiable {
@@ -99,6 +100,25 @@ final class AppSettings: ObservableObject {
     /// Layout of regular-width windows (iPad, iPhone Plus/Pro Max in landscape).
     @Published var wideLayout: WideLayout { didSet { d.set(wideLayout.rawValue, forKey: "wide_layout") } }
 
+    /// Settings → Privacy: the emails of your accounts are masked
+    /// (`maskEmail`) wherever they show (switcher, sidebar, sharing...).
+    @Published var hideEmails: Bool { didSet { d.set(hideEmails, forKey: "hide_emails") } }
+    /// Names you give your accounts ("Work", "Personal"), by account id.
+    /// On this device only, like the desktop's (not synced).
+    @Published var accountAliases: [String: String] {
+        didSet { d.set(accountAliases, forKey: "account_aliases") }
+    }
+    /// Reachability dots on the hosts lists (`probeHosts`), off by default
+    /// like the desktop's "Check host status".
+    @Published var hostStatusChecks: Bool { didSet { d.set(hostStatusChecks, forKey: "host_status_checks") } }
+    /// Hosts (`SshHost.key`) whose status is never checked.
+    @Published var hostStatusOff: [String] { didSet { d.set(hostStatusOff, forKey: "host_status_off") } }
+    /// "Command failed · Explain · Fix" under a command that failed in a
+    /// terminal (the AI is only asked when tapped; nothing runs by itself).
+    @Published var aiFixChip: Bool { didSet { d.set(aiFixChip, forKey: "ai_fix_chip") } }
+    /// Keys of the command palette's entries chosen last (`paletteRemember`).
+    @Published var paletteRecent: [String] { didSet { d.set(paletteRecent, forKey: "palette_recent") } }
+
     /// The user already chose to use the app without a server: do not show the welcome again.
     var noServer: Bool {
         get { d.bool(forKey: "sin_servidor") }
@@ -127,10 +147,18 @@ final class AppSettings: ObservableObject {
         telnetAutoLogin = d.object(forKey: "telnet_auto_login") as? Bool ?? true
         bellFeedback = d.object(forKey: "bell_feedback") as? Bool ?? true
         wideLayout = WideLayout(rawValue: d.string(forKey: "wide_layout") ?? "") ?? .automatic
+        hideEmails = d.bool(forKey: "hide_emails")
+        accountAliases = d.dictionary(forKey: "account_aliases") as? [String: String] ?? [:]
+        hostStatusChecks = d.bool(forKey: "host_status_checks")
+        hostStatusOff = d.stringArray(forKey: "host_status_off") ?? []
+        aiFixChip = d.object(forKey: "ai_fix_chip") as? Bool ?? true
+        paletteRecent = d.stringArray(forKey: "palette_recent") ?? []
     }
 
     var terminalTheme: TerminalTheme { TerminalTheme.byId(terminalThemeId) }
     var terminalFont: TerminalFont { TerminalFont.byId(fontId) }
+    /// The engine's rules for account names and emails take these.
+    var accountNames: AccountNames { AccountNames(aliases: accountAliases, hideEmails: hideEmails) }
 
     func changeFontSize(_ delta: Double) {
         fontSize = min(AppSettings.maxFontSize, max(AppSettings.minFontSize, fontSize + delta))
