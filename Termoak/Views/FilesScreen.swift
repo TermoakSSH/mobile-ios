@@ -1,4 +1,5 @@
 import TermoakKit
+import PhotosUI
 import QuickLook
 import SwiftUI
 import UniformTypeIdentifiers
@@ -15,6 +16,13 @@ struct FilesScreen: View {
     @State private var deleting: RemoteFile?
     @State private var changingPermissions: RemoteFile?
     @State private var showingInfo: RemoteFile?
+    @State private var newFile = false
+    @State private var goingTo = false
+    @State private var moving: RemoteFile?
+    /// The folder typed in "Go to" or "Move to".
+    @State private var typedPath = ""
+    @State private var editingText: EditedText?
+    @State private var pickingPhotos = false
     @State private var name = ""
     @State private var preview: URL?
     @State private var sharing: URL?
@@ -108,7 +116,12 @@ struct FilesScreen: View {
     private var actionsMenu: some View {
         Menu {
             Button { uploading = true } label: { Label("files.upload", systemImage: "arrow.up.doc") }
+            Button { pickingPhotos = true } label: { Label("files.upload_photos", systemImage: "photo.on.rectangle") }
             Button { name = ""; newFolder = true } label: { Label("files.new_folder", systemImage: "folder.badge.plus") }
+            if browser.canEdit {
+                Button { name = ""; newFile = true } label: { Label("files.new_file", systemImage: "doc.badge.plus") }
+            }
+            Button { typedPath = browser.path; goingTo = true } label: { Label("files.go_to", systemImage: "arrow.right.circle") }
             Divider()
             sortMenu
             Toggle(isOn: $browser.showHidden) { Label("files.show_hidden", systemImage: "eye") }
@@ -165,6 +178,12 @@ struct FilesScreen: View {
             .sheet(item: Binding(get: { showingInfo.map(IdentifiableFile.init) }, set: { showingInfo = $0?.file })) { e in
                 FileInfoView(file: e.file)
             }
+            .sheet(item: $editingText) { e in
+                TextFileEditor(file: e) { text in try await browser.saveText(text, to: e.path) }
+            }
+            .sheet(isPresented: $pickingPhotos) {
+                PhotoPicker { urls in browser.pickedForUpload(urls) }.ignoresSafeArea()
+            }
     }
 
     private func withDialogs<V: View>(_ view: V) -> some View {
@@ -214,6 +233,23 @@ struct FilesScreen: View {
                 }
                 .disabled(RemotePaths.invalidName(name))
             }
+            .alert("files.new_file", isPresented: $newFile) {
+                TextField("common.name", text: $name).textInputAutocapitalization(.never).autocorrectionDisabled()
+                Button("common.cancel", role: .cancel) {}
+                Button("files.create") { let n = name; Task { await browser.createFile(n) } }
+                    .disabled(RemotePaths.invalidName(name))
+            }
+            .alert("files.go_to", isPresented: $goingTo) {
+                TextField("files.path_placeholder", text: $typedPath).textInputAutocapitalization(.never).autocorrectionDisabled()
+                Button("common.cancel", role: .cancel) {}
+                Button("common.open") { let p = typedPath; Task { await browser.goTo(typed: p) } }
+            } message: { Text("files.go_to.message") }
+            .alert(Text("files.move.title \(moving?.name ?? "")"),
+                   isPresented: Binding(get: { moving != nil }, set: { if !$0 { moving = nil } })) {
+                TextField("files.path_placeholder", text: $typedPath).textInputAutocapitalization(.never).autocorrectionDisabled()
+                Button("common.cancel", role: .cancel) {}
+                Button("files.move") { if let f = moving { let p = typedPath; Task { await browser.move(f, toFolder: p) } } }
+            } message: { Text("files.move.message") }
             .alert("common.error", isPresented: Binding(get: { browser.error != nil }, set: { if !$0 { browser.error = nil } })) {
                 Button("common.ok", role: .cancel) {}
             } message: { Text(browser.error ?? "") }
@@ -226,7 +262,7 @@ struct FilesScreen: View {
         let shown: [Bool] = [
             uploading, newFolder, renaming != nil, deleting != nil, changingPermissions != nil, showingInfo != nil,
             preview != nil, sharing != nil, saving != nil, browser.prompt != nil, browser.error != nil,
-            browser.uploadAsk != nil,
+            browser.uploadAsk != nil, newFile, goingTo, moving != nil, editingText != nil, pickingPhotos,
         ]
         return shown.contains(true)
     }
@@ -335,13 +371,26 @@ struct FilesScreen: View {
                     Label("files.save_to_files", systemImage: "folder")
                 }
             }
+            if f.kind == .file && browser.canEdit {
+                Button { edit(f) } label: { Label("files.edit", systemImage: "square.and.pencil") }
+            }
             Button { showingInfo = f } label: { Label("files.info", systemImage: "info.circle") }
             Button { name = f.name; renaming = f } label: { Label("common.rename", systemImage: "pencil") }
+            Button { typedPath = browser.path; moving = f } label: { Label("files.move_to", systemImage: "folder") }
             if browser.canChmod {
                 Button { changingPermissions = f } label: { Label("common.permissions", systemImage: "lock") }
             }
             Button { UIPasteboard.general.string = f.path } label: { Label("common.copy_path", systemImage: "doc.on.doc") }
             Button(role: .destructive) { deleting = f } label: { Label("common.delete", systemImage: "trash") }
+        }
+    }
+
+    /// Opens a text file in the editor (read whole, up to 1 MiB).
+    private func edit(_ f: RemoteFile) {
+        Task {
+            if let text = await browser.readText(f) {
+                editingText = EditedText(path: f.path, name: f.name, text: text)
+            }
         }
     }
 
@@ -727,5 +776,137 @@ private struct SaveToFiles: UIViewControllerRepresentable {
         init(onDone: @escaping () -> Void) { self.onDone = onDone }
         func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) { onDone() }
         func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) { onDone() }
+    }
+}
+
+/// A text file open in the editor.
+struct EditedText: Identifiable {
+    let id = UUID()
+    let path: String
+    let name: String
+    let text: String
+}
+
+/// A plain text editor for a remote file: Save writes it whole; closing with
+/// changes asks first.
+private struct TextFileEditor: View {
+    let file: EditedText
+    let save: (String) async throws -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var text = ""
+    @State private var saving = false
+    @State private var error: String?
+    @State private var discarding = false
+
+    private var changed: Bool { text != file.text }
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 0) {
+                if let error {
+                    Text(error).font(.footnote).foregroundColor(Brand.red)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(8)
+                }
+                TextEditor(text: $text)
+                    .font(.system(.footnote, design: .monospaced))
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+            }
+            .navigationTitle(file.name)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("common.cancel") { if changed { discarding = true } else { dismiss() } }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(action: write) {
+                        if saving { ProgressView() } else { Text("common.save") }
+                    }
+                    .disabled(!changed || saving)
+                    .keyboardShortcut("s", modifiers: .command)
+                }
+            }
+        }
+        .navigationViewStyle(.stack)
+        .interactiveDismissDisabled(changed)
+        .onAppear { text = file.text }
+        .confirmationDialog("files.edit.discard", isPresented: $discarding, titleVisibility: .visible) {
+            Button("files.edit.discard_action", role: .destructive) { dismiss() }
+        }
+    }
+
+    private func write() {
+        saving = true
+        error = nil
+        let value = text
+        Task {
+            defer { saving = false }
+            do {
+                try await save(value)
+                dismiss()
+            } catch {
+                self.error = userMessage(error)
+            }
+        }
+    }
+}
+
+/// Photos and videos from the library to upload (PHPicker: no permission
+/// needed). Each one is copied to a temporary file with its name first.
+private struct PhotoPicker: UIViewControllerRepresentable {
+    let onPicked: ([URL]) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    func makeUIViewController(context: Context) -> PHPickerViewController {
+        var config = PHPickerConfiguration()
+        config.selectionLimit = 0
+        let picker = PHPickerViewController(configuration: config)
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ vc: PHPickerViewController, context: Context) {}
+    func makeCoordinator() -> Coordinator { Coordinator(onPicked: onPicked, close: { dismiss() }) }
+
+    final class Coordinator: NSObject, PHPickerViewControllerDelegate {
+        let onPicked: ([URL]) -> Void
+        let close: () -> Void
+        init(onPicked: @escaping ([URL]) -> Void, close: @escaping () -> Void) {
+            self.onPicked = onPicked
+            self.close = close
+        }
+
+        func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+            close()
+            guard !results.isEmpty else { return }
+            let folder = FileManager.default.temporaryDirectory.appendingPathComponent("photos-\(UUID().uuidString)", isDirectory: true)
+            try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            let group = DispatchGroup()
+            let lock = NSLock()
+            var urls: [(Int, URL)] = []
+            for (i, r) in results.enumerated() {
+                let provider = r.itemProvider
+                guard let type = provider.registeredTypeIdentifiers.first else { continue }
+                group.enter()
+                provider.loadFileRepresentation(forTypeIdentifier: type) { url, _ in
+                    defer { group.leave() }
+                    // The file only exists during this call: copy it.
+                    guard let url else { return }
+                    let base = provider.suggestedName ?? url.deletingPathExtension().lastPathComponent
+                    let ext = url.pathExtension
+                    let name = RemotePaths.uploadName(ext.isEmpty ? base : "\(base).\(ext)")
+                    let target = folder.appendingPathComponent("\(i)", isDirectory: true).appendingPathComponent(name)
+                    try? FileManager.default.createDirectory(at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
+                    guard (try? FileManager.default.copyItem(at: url, to: target)) != nil else { return }
+                    lock.lock()
+                    urls.append((i, target))
+                    lock.unlock()
+                }
+            }
+            group.notify(queue: .main) { [onPicked] in
+                onPicked(urls.sorted { $0.0 < $1.0 }.map(\.1))
+            }
+        }
     }
 }

@@ -6,6 +6,11 @@ import Foundation
 protocol RemoteFileSystem: AnyObject {
     /// Permissions can be changed (only over direct SSH).
     var canChmod: Bool { get }
+    /// Text files can be read and written whole (only over direct SSH: the
+    /// server has no such calls yet).
+    var canEdit: Bool { get }
+    func read(_ path: String, maxBytes: UInt64) async throws -> Data
+    func write(_ path: String, data: Data) async throws
     func home() async throws -> String
     func list(_ path: String) async throws -> [RemoteFile]
     func download(_ remote: String, to local: URL, progress: TransferListener) async throws
@@ -29,7 +34,10 @@ final class SshFileSystem: RemoteFileSystem {
     }
 
     var canChmod: Bool { true }
+    var canEdit: Bool { true }
     func home() async throws -> String { try await session.sftpHome() }
+    func read(_ path: String, maxBytes: UInt64) async throws -> Data { try await session.sftpRead(path: path, maxBytes: maxBytes) }
+    func write(_ path: String, data: Data) async throws { try await session.sftpWrite(path: path, data: data) }
     func list(_ path: String) async throws -> [RemoteFile] { try await session.sftpList(path: path) }
     func download(_ remote: String, to local: URL, progress: TransferListener) async throws {
         _ = try await session.sftpDownload(remotePath: remote, localPath: local.path, listener: progress)
@@ -61,7 +69,14 @@ final class ServerFileSystem: RemoteFileSystem {
     }
 
     var canChmod: Bool { false }
+    var canEdit: Bool { false }
     func home() async throws -> String { try await core.serverSftpHome(hostId: hostId, accountId: accountId) }
+    func read(_ path: String, maxBytes: UInt64) async throws -> Data {
+        throw TermoakError.Invalid(message: String(localized: "files.error.edit_ssh_only"))
+    }
+    func write(_ path: String, data: Data) async throws {
+        throw TermoakError.Invalid(message: String(localized: "files.error.edit_ssh_only"))
+    }
     func list(_ path: String) async throws -> [RemoteFile] { try await core.serverSftpList(hostId: hostId, path: path, accountId: accountId) }
     func download(_ remote: String, to local: URL, progress: TransferListener) async throws {
         _ = try await core.serverSftpDownload(hostId: hostId, remotePath: remote, localPath: local.path, listener: progress, accountId: accountId)
@@ -192,6 +207,9 @@ final class FileBrowser: ObservableObject {
     }
 
     var canChmod: Bool { fileSystem?.canChmod ?? false }
+    var canEdit: Bool { fileSystem?.canEdit ?? false }
+    /// The home folder (for "Go to" `~`).
+    private(set) var home = ""
 
     /// The folder as shown: hidden files as chosen, filtered by `query`,
     /// folders first and in the chosen order.
@@ -222,7 +240,7 @@ final class FileBrowser: ObservableObject {
                 }
                 fileSystem = SshFileSystem(session: try await core.connect(hostId: hostId, auth: auth, accountId: accountId), own: true)
             }
-            let home = try await fileSystem!.home()
+            home = try await fileSystem!.home()
             await go(to: home)
         } catch {
             loading = false
@@ -273,6 +291,58 @@ final class FileBrowser: ObservableObject {
 
     func delete(_ f: RemoteFile) async {
         await perform { try await $0.delete(f.path, recursive: f.kind == .dir) }
+    }
+
+    /// "Go to…": a typed path (absolute, `~/…` or inside this folder).
+    func goTo(typed: String) async {
+        guard let target = TextFiles.resolve(typed, current: path, home: home) else { return }
+        await go(to: target)
+    }
+
+    /// An empty file in this folder (only over direct SSH).
+    func createFile(_ name: String) async {
+        let n = name.trimmingCharacters(in: .whitespaces)
+        guard !entries.contains(where: { $0.name == n }) else {
+            error = String(localized: "files.new_file.exists \(n)")
+            return
+        }
+        await perform { try await $0.write(self.inside(n), data: Data()) }
+    }
+
+    /// Moves a file or folder into another folder (typed like in "Go to").
+    func move(_ f: RemoteFile, toFolder typed: String) async {
+        guard let folder = TextFiles.resolve(typed, current: path, home: home) else { return }
+        let target = RemotePaths.child(folder, f.name)
+        guard target != f.path else { return }
+        await perform { try await $0.rename(f.path, to: target) }
+    }
+
+    /// The text of a file to edit; `nil` (and the reason in `error`) if it
+    /// is too big or not text.
+    func readText(_ f: RemoteFile) async -> String? {
+        guard let fileSystem else { return nil }
+        if f.size > TextFiles.maxBytes {
+            error = String(localized: "files.edit.too_big")
+            return nil
+        }
+        do {
+            let data = try await fileSystem.read(f.path, maxBytes: TextFiles.maxBytes)
+            guard let text = TextFiles.decode(data) else {
+                error = String(localized: "files.edit.not_text")
+                return nil
+            }
+            return text
+        } catch {
+            self.error = userMessage(error)
+            return nil
+        }
+    }
+
+    /// Saves an edited file (whole); throws so the editor stays open.
+    func saveText(_ text: String, to path: String) async throws {
+        guard let fileSystem else { return }
+        try await fileSystem.write(path, data: Data(text.utf8))
+        await reload()
     }
 
     func setPermissions(_ f: RemoteFile, mode: UInt32) async {

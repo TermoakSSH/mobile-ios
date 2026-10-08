@@ -4085,6 +4085,86 @@
         }
       }
     },
+    "files.edit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editar"
+          }
+        }
+      }
+    },
+    "files.edit.discard": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard your changes?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Descartar los cambios?"
+          }
+        }
+      }
+    },
+    "files.edit.discard_action": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard changes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descartar los cambios"
+          }
+        }
+      }
+    },
+    "files.edit.not_text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This isn't a text file."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esto no es un archivo de texto."
+          }
+        }
+      }
+    },
+    "files.edit.too_big": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This file is too big to edit here (more than 1 MB)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este archivo es demasiado grande para editarlo aquí (más de 1 MB)."
+          }
+        }
+      }
+    },
     "files.empty_folder": {
       "localizations": {
         "en": {
@@ -4113,6 +4193,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "Los permisos solo se pueden cambiar por SSH desde el dispositivo"
+          }
+        }
+      }
+    },
+    "files.error.edit_ssh_only": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Files can only be edited over a direct SSH connection."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los archivos solo se pueden editar con una conexión SSH directa."
+          }
+        }
+      }
+    },
+    "files.go_to": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go to…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ir a…"
+          }
+        }
+      }
+    },
+    "files.go_to.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A path like /etc/nginx, ~/logs or a folder inside this one."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una ruta como /etc/nginx, ~/logs o una carpeta dentro de esta."
           }
         }
       }
@@ -4293,6 +4421,102 @@
         }
       }
     },
+    "files.move": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mover"
+          }
+        }
+      }
+    },
+    "files.move.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The folder it goes into (/srv/www, ~/backups, or a folder inside this one)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La carpeta adonde va (/srv/www, ~/backups, o una carpeta dentro de esta)."
+          }
+        }
+      }
+    },
+    "files.move.title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move “%@” to"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mover «%@» a"
+          }
+        }
+      }
+    },
+    "files.move_to": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move to…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mover a…"
+          }
+        }
+      }
+    },
+    "files.new_file": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New file"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuevo archivo"
+          }
+        }
+      }
+    },
+    "files.new_file.exists %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” already exists in this folder."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%@» ya existe en esta carpeta."
+          }
+        }
+      }
+    },
     "files.new_folder": {
       "localizations": {
         "en": {
@@ -4337,6 +4561,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Carpeta superior"
+          }
+        }
+      }
+    },
+    "files.path_placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Path"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ruta"
           }
         }
       }
@@ -4857,6 +5097,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Subir archivo"
+          }
+        }
+      }
+    },
+    "files.upload_photos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upload from Photos"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subir desde Fotos"
           }
         }
       }
