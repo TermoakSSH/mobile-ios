@@ -4,8 +4,8 @@
 # `codesign` + provisioning profile...).
 #
 # Requirements: macOS with Xcode, rustup and XcodeGen (`brew install xcodegen`).
-# If the engine xcframework is missing, it is built with core/scripts/build-ios.sh
-# (core/ is the TermoakSSH/core submodule).
+# The engine xcframework is built with core/scripts/build-ios.sh when it is
+# missing or out of date (core/ is the TermoakSSH/core submodule).
 #
 # Usage: scripts/build-ipa.sh
 set -euo pipefail
@@ -23,8 +23,17 @@ if [ ! -f core/scripts/build-ios.sh ]; then
   echo "the core submodule is missing: git submodule update --init" >&2
   exit 1
 fi
-if [ ! -d core/bindings/swift/termoak_ffiFFI.xcframework ]; then
+# The engine is rebuilt when it is missing or was built from another core
+# commit (after `git submodule update` or a new core tag), or with
+# REBUILD_ENGINE=1 (e.g. after changing TERMOAK_OFFICIAL_SERVER).
+xcf=core/bindings/swift/termoak_ffiFFI.xcframework
+stamp="$root/target/ios-engine.commit"
+core_commit="$(git -C core rev-parse HEAD):${TERMOAK_OFFICIAL_SERVER:-}"
+if [ ! -d "$xcf" ] || [ "${REBUILD_ENGINE:-0}" = 1 ] || [ "$(cat "$stamp" 2>/dev/null)" != "$core_commit" ]; then
+  echo "==> engine (core $(git -C core describe --tags --always))"
   core/scripts/build-ios.sh release
+  mkdir -p "$(dirname "$stamp")"
+  echo "$core_commit" >"$stamp"
 fi
 
 xcodegen generate --quiet
