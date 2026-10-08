@@ -235,8 +235,8 @@ struct HostsView: View {
         .sheet(item: Binding(get: { tunnelsHost.map(SelectedHost.init) }, set: { tunnelsHost = $0?.host }), onDismiss: load) { e in
             TunnelsView(host: e.host)
         }
-        .fileImporter(isPresented: $importingConfig, allowedContentTypes: [.item]) { result in
-            importSshConfig(result)
+        .sheet(isPresented: $importingConfig, onDismiss: load) {
+            ImportConfigView().environmentObject(model).environmentObject(account)
         }
     }
 
@@ -893,27 +893,6 @@ struct HostsView: View {
             try model.core.deleteHost(id: host.id, accountId: host.accountId)
             load()
             account.sync()
-        } catch {
-            show(error)
-        }
-    }
-
-    /// Imports the hosts of an `ssh_config` picked in Files.
-    private func importSshConfig(_ result: Result<URL, Error>) {
-        do {
-            let url = try result.get()
-            let scoped = url.startAccessingSecurityScopedResource()
-            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-            let text = try String(contentsOf: url, encoding: .utf8)
-            let report = try model.core.importSshConfig(text: text, options: SshConfigImportOptions())
-            load()
-            account.sync()
-            let details = report.hostsSkipped.map { "\($0.alias): \($0.reason)" } + report.warnings
-            notice = Notice(
-                title: String(localized: "vault.import.done"),
-                message: ([String(localized: "vault.import.result \(report.hostsCreated.count) \(report.hostsSkipped.count)")] + details)
-                    .joined(separator: "\n")
-            )
         } catch {
             show(error)
         }
