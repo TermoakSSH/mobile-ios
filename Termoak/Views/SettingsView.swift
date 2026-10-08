@@ -112,6 +112,8 @@ struct SettingsView: View {
                     Text("settings.confirm_multiline_paste.footer")
                 }
 
+                terminalAiSection
+
                 Section {
                     Toggle("settings.option_as_meta", isOn: $settings.optionAsMeta)
                     Toggle("settings.key_bar_hardware_keyboard", isOn: $settings.keyBarWithHardwareKeyboard)
@@ -194,6 +196,19 @@ struct SettingsView: View {
     }
 
     /// The bell vibrates on a phone and flashes the terminal on an iPad.
+    /// The AI in the terminal: the chip of failed commands (the AI is only
+    /// asked when you tap it; nothing runs by itself) and how `# request`
+    /// works.
+    private var terminalAiSection: some View {
+        Section {
+            Toggle("settings.ai_fix_chip", isOn: $settings.aiFixChip)
+        } header: {
+            Text("settings.terminal_ai")
+        } footer: {
+            Text("settings.terminal_ai.footer")
+        }
+    }
+
     private var bellToggle: some View {
         Toggle(isOn: $settings.bellFeedback) {
             VStack(alignment: .leading, spacing: 2) {

@@ -140,9 +140,12 @@ enum KeyAction: Codable, Hashable {
     case steps([KeyStep])
     /// Pastes the clipboard.
     case paste
+    /// Asks the AI for the command a `# request` line describes (typed,
+    /// never run), like ⌘↩.
+    case ai
 
     enum CodingKeys: String, CodingKey {
-        case modifier = "modificador", steps = "pasos", paste = "pegar"
+        case modifier = "modificador", steps = "pasos", paste = "pegar", ai
     }
 }
 
@@ -165,7 +168,11 @@ struct ShortcutKey: Codable, Hashable, Identifiable {
     /// Text to show (and to read with VoiceOver). The built-in paste key is
     /// shown in the app language; the rest show their label.
     var title: String {
-        id == ShortcutKey.paste.id ? String(localized: "common.paste") : label
+        switch id {
+        case ShortcutKey.paste.id: return String(localized: "common.paste")
+        case ShortcutKey.ai.id: return String(localized: "keys.ai")
+        default: return label
+        }
     }
 
     static func special(_ e: SpecialKey, _ label: String, icon: String? = nil, repeats: Bool = false) -> ShortcutKey {
@@ -189,6 +196,8 @@ struct ShortcutKey: Codable, Hashable, Identifiable {
     static let ctrl = ShortcutKey(id: "mod.ctrl", label: "ctrl", action: .modifier(.ctrl))
     static let alt = ShortcutKey(id: "mod.alt", label: "alt", action: .modifier(.alt))
     static let paste = ShortcutKey(id: "pegar", label: "Paste", icon: "doc.on.clipboard", action: .paste)
+    /// `# request` → a command from the AI.
+    static let ai = ShortcutKey(id: "ia", label: "AI", icon: "sparkles", action: .ai)
 }
 
 struct KeyGroup: Codable, Hashable, Identifiable {
@@ -247,10 +256,11 @@ struct KeyboardLayout: Codable, Equatable {
         case bar = "barra", groups = "grupos"
     }
 
-    /// All the keys (to add them to the bar).
+    /// All the keys (to add them to the bar). The AI key is there also in
+    /// layouts saved before it existed.
     var all: [ShortcutKey] {
         var seen = Set<String>()
-        return (groups.flatMap(\.keys) + bar).filter { seen.insert($0.id).inserted }
+        return (groups.flatMap(\.keys) + bar + [.ai]).filter { seen.insert($0.id).inserted }
     }
 
     static let standard: KeyboardLayout = {
@@ -265,12 +275,12 @@ struct KeyboardLayout: Codable, Equatable {
         let tab = ShortcutKey.special(.tab, "tab")
         // Empty names: the built-in groups show their name in the app language.
         return KeyboardLayout(
-            bar: [.paste, enter, esc, .ctrl, .alt, tab] + arrows + [.control("c"), .text("|"), .text("/"), .text("-"), .text("~")],
+            bar: [.paste, enter, esc, .ctrl, .alt, tab] + arrows + [.control("c"), .text("|"), .text("/"), .text("-"), .text("~"), .ai],
             groups: [
                 KeyGroup(id: "basicas", name: "",
                          keys: [.paste, enter, esc, tab, .ctrl, .alt, .special(.shiftTab, "shift+tab"),
                                 .special(.backspace, "bksp", icon: "delete.left", repeats: true),
-                                .special(.ins, "ins"), .special(.del, "del")]),
+                                .special(.ins, "ins"), .special(.del, "del"), .ai]),
                 KeyGroup(id: "flechas", name: "",
                          keys: arrows + [.special(.home, "home"), .special(.pageUp, "pgUp"), .special(.pageDown, "pgDn"), .special(.end, "end")]),
                 KeyGroup(id: "tmux", name: "",
@@ -332,6 +342,7 @@ func describe(_ action: KeyAction) -> String {
     switch action {
     case .modifier(let m): return String(localized: "keys.describe.modifier \(m.rawValue)")
     case .paste: return String(localized: "keys.describe.paste")
+    case .ai: return String(localized: "keys.describe.ai")
     case .steps(let steps):
         return steps.map { step -> String in
             switch step {

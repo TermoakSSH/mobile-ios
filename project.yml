@@ -104,6 +104,7 @@ targets:
       - path: Termoak/Model/AiTasks.swift
       - path: Termoak/Model/GroupChain.swift
       - path: Termoak/Model/ExecReport.swift
+      - path: Termoak/Model/TerminalAiRules.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

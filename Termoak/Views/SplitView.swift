@@ -174,6 +174,10 @@ struct SessionStage: View {
             CursorSuggestions(session: session)
             ShareBanners(session: session, background: theme.barColor, onPeople: onPeople)
             notice.frame(maxWidth: .infinity, maxHeight: .infinity)
+            if session.state == .connected && !session.asleep {
+                // "Command failed · Explain · Fix" and the AI's proposals.
+                TerminalAiOverlay(assist: session.assist, theme: theme)
+            }
             if let p = session.cursorPad {
                 CursorPadView(pad: p, accent: SwiftUI.Color(hex: theme.accent)).padding(16)
             }

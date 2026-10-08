@@ -69,6 +69,7 @@ struct ShortcutsSheet: View {
             Item(keys: "⌘0", title: t("shortcut.zoom_reset")),
             Item(keys: "⌘.  ⌃[", title: t("shortcut.send_escape")),
             Item(keys: "⌘I", title: t("copilot.title")),
+            Item(keys: "# …  ⌘↩", title: t("shortcut.ai_command")),
             Item(keys: "⌘/", title: t("shortcuts.title")),
         ]
     }

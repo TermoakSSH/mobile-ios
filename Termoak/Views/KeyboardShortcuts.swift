@@ -41,8 +41,8 @@ struct ShortcutLayer<Content: View>: View {
 
 /// Shortcuts of the terminal screen: ⌘T / ⌘K connect to a host in a new
 /// tab, ⌘W closes the tab, ⌘⇧] / ⌘⇧[ and Ctrl+Tab / Ctrl+⇧Tab change tabs,
-/// ⌘1…⌘9 pick one, ⌘F finds, ⌘+ / ⌘- / ⌘0 zoom, ⌘. sends Esc and ⌘,
-/// opens Settings. In the desktop layout (`onHome`) also ⌃⌘H for the Home
+/// ⌘1…⌘9 pick one, ⌘F finds, ⌘+ / ⌘- / ⌘0 zoom, ⌘. sends Esc, ⌘↩ turns
+/// a `# request` into a command and ⌘, opens Settings. In the desktop layout (`onHome`) also ⌃⌘H for the Home
 /// tab (⌘H and ⌘⇧H are the system's) and Ctrl+⇧PgUp / Ctrl+⇧PgDn to move
 /// the tab.
 struct TerminalShortcuts: View {
@@ -97,6 +97,10 @@ struct TerminalShortcuts: View {
             if session.view.isFirstResponder { session.input(Data([0x1B])) }
         }
         ShortcutButton(title: String(localized: "shortcut.settings"), key: ",", action: onSettings)
+        // `# request` at the prompt → the AI's command, typed (not run).
+        ShortcutButton(title: String(localized: "shortcut.ai_command"), key: .return) {
+            if session.view.isFirstResponder { session.assist.askForLine() }
+        }
         if let onShortcuts {
             ShortcutButton(title: String(localized: "shortcuts.title"), key: "/", action: onShortcuts)
         }

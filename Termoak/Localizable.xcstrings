@@ -11477,6 +11477,22 @@
         }
       }
     },
+    "keys.ai": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IA"
+          }
+        }
+      }
+    },
     "keys.combination.error %@": {
       "localizations": {
         "en": {
@@ -11489,6 +11505,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "No entiendo «%@». Usa ctrl+x, alt+x, ^X, esc, tab, enter, up, down, left, right, home, end, pgup, pgdn, ins, del o f1–f12."
+          }
+        }
+      }
+    },
+    "keys.describe.ai": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "# request → command with the AI"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "# petición → comando con la IA"
           }
         }
       }
@@ -14564,6 +14596,22 @@
         }
       }
     },
+    "settings.ai_fix_chip": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offer Explain and Fix when a command fails"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ofrecer Explicar y Arreglar cuando falla un comando"
+          }
+        }
+      }
+    },
     "settings.appearance": {
       "localizations": {
         "en": {
@@ -15136,6 +15184,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "iOS corta las conexiones SSH locales al poco de salir de la app. Para trabajos largos, abre el host como sesión persistente en el servidor."
+          }
+        }
+      }
+    },
+    "settings.terminal_ai": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI in the terminal"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IA en el terminal"
+          }
+        }
+      }
+    },
+    "settings.terminal_ai.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The AI is only asked when you tap them, and nothing is run by itself: a proposed command is typed at the prompt for you to review. Type # and what you want to do, then tap the AI key or press ⌘↩, to get a command. Passwords, tokens and keys in what is sent are hidden on this device first."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo se pregunta a la IA cuando los tocas, y nada se ejecuta solo: el comando propuesto se escribe en el prompt para que lo revises. Escribe # y lo que quieres hacer y toca la tecla IA o pulsa ⌘↩ para obtener un comando. Las contraseñas, tokens y claves de lo que se envía se ocultan antes en este dispositivo."
           }
         }
       }
@@ -17620,6 +17700,22 @@
         }
       }
     },
+    "shortcut.ai_command": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Command from # request (AI)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comando a partir de # petición (IA)"
+          }
+        }
+      }
+    },
     "shortcut.close_tab": {
       "localizations": {
         "en": {
@@ -19808,6 +19904,470 @@
           "stringUnit": {
             "state": "translated",
             "value": "Este vault solo permite conectar a través del servidor, y el servidor no abre sesiones Telnet"
+          }
+        }
+      }
+    },
+    "terminal.ai.asking": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asking the AI…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preguntando a la IA…"
+          }
+        }
+      }
+    },
+    "terminal.ai.no_answer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(no answer)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(sin respuesta)"
+          }
+        }
+      }
+    },
+    "terminal.ai.no_command": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The AI did not propose any command"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La IA no propuso ningún comando"
+          }
+        }
+      }
+    },
+    "terminal.ai.not_signed_in": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The AI needs you to be signed in to a server"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La IA necesita una sesión iniciada en un servidor"
+          }
+        }
+      }
+    },
+    "terminal.ai.provider %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Provider: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Proveedor: %@"
+          }
+        }
+      }
+    },
+    "terminal.ai.request_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type # and what you want to do at the prompt, then tap AI (⌘↩)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribe # y lo que quieres hacer en el prompt y toca IA (⌘↩)"
+          }
+        }
+      }
+    },
+    "terminal.ai.risk_dangerous": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dangerous"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peligroso"
+          }
+        }
+      }
+    },
+    "terminal.ai.risk_read": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read only"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo consulta"
+          }
+        }
+      }
+    },
+    "terminal.ai.risk_write": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifies the system"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifica el sistema"
+          }
+        }
+      }
+    },
+    "terminal.ai.suggested_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggested command"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comando sugerido"
+          }
+        }
+      }
+    },
+    "terminal.ai_ask.error_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This error"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este error"
+          }
+        }
+      }
+    },
+    "terminal.ai_ask.failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This command seems to have failed. Why, and how do I fix it?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parece que este comando ha fallado. ¿Por qué y cómo lo arreglo?"
+          }
+        }
+      }
+    },
+    "terminal.ai_ask.failed_exit %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This command failed with exit status %lld. Why, and how do I fix it?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este comando ha fallado con el código de salida %lld. ¿Por qué y cómo lo arreglo?"
+          }
+        }
+      }
+    },
+    "terminal.ai_ask.failed_title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Why did “%@” fail?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Por qué ha fallado “%@”?"
+          }
+        }
+      }
+    },
+    "terminal.ai_ask.fix %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This command failed (its output is in the terminal screen). Give the corrected command that does what it was meant to do: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este comando ha fallado (su salida está en la pantalla del terminal). Da el comando corregido que haga lo que pretendía: %@"
+          }
+        }
+      }
+    },
+    "terminal.ai_bar.asking_fix": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asking the AI for a corrected command…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pidiendo a la IA un comando corregido…"
+          }
+        }
+      }
+    },
+    "terminal.ai_bar.asking_request": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asking the AI for the command…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pidiendo el comando a la IA…"
+          }
+        }
+      }
+    },
+    "terminal.ai_bar.dangerous_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type a dangerous command?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Escribir un comando peligroso?"
+          }
+        }
+      }
+    },
+    "terminal.ai_bar.dismiss": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismiss"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descartar"
+          }
+        }
+      }
+    },
+    "terminal.ai_bar.insert": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type it"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribirlo"
+          }
+        }
+      }
+    },
+    "terminal.ai_bar.insert_anyway": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type it anyway"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribirlo igualmente"
+          }
+        }
+      }
+    },
+    "terminal.ai_bar.review": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not run: it is typed at the prompt for you to review."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ejecuta: se escribe en el prompt para que lo revises."
+          }
+        }
+      }
+    },
+    "terminal.ai_bar.typed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Typed at the prompt, not run: review it and press Enter to run it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escrito en el prompt, sin ejecutar: revísalo y pulsa Intro para ejecutarlo."
+          }
+        }
+      }
+    },
+    "terminal.ai_chip.explain": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Explain"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Explicar"
+          }
+        }
+      }
+    },
+    "terminal.ai_chip.explain_tooltip": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask the AI why it failed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preguntar a la IA por qué ha fallado"
+          }
+        }
+      }
+    },
+    "terminal.ai_chip.failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The command may have failed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Puede que el comando haya fallado"
+          }
+        }
+      }
+    },
+    "terminal.ai_chip.failed_exit %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Command failed (exit %lld)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El comando ha fallado (salida %lld)"
+          }
+        }
+      }
+    },
+    "terminal.ai_chip.fix": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fix"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arreglar"
+          }
+        }
+      }
+    },
+    "terminal.ai_chip.fix_tooltip": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask the AI for a corrected command (it is not run: you review it and press Enter)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pedir a la IA un comando corregido (no se ejecuta: lo revisas y pulsas Intro)"
           }
         }
       }

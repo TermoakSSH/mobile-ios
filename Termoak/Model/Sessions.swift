@@ -62,6 +62,9 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     /// failed), from the engine's `CommandWatcher`: the copilot's context
     /// chip and the Explain/Fix chip.
     @Published var lastCommand: LastCommandInfo?
+    /// The AI in the terminal: the "Command failed · Explain · Fix" chip and
+    /// the commands it proposes (`# request`), never run by themselves.
+    let assist = TerminalAssist()
     /// Ctrl and Alt of the bar: they stay pressed until the next key.
     @Published private(set) var ctrl = false
     @Published private(set) var alt = false
@@ -131,8 +134,8 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     /// Set while the output is interpreted: what the terminal answers then
     /// was not typed (and is not broadcast).
     private let feeding = FeedFlag()
-    /// Host OS, to suggest the right package manager.
-    private let os: String?
+    /// Host OS, to suggest the right package manager (and for the AI).
+    let os: String?
     /// Look for suggestions as soon as the echo of what was typed arrives.
     private var suggestAfterEcho = false
     private var query = 0
@@ -185,6 +188,7 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
                                            options: TerminalSession.terminalOptions)
         view = terminal
         super.init()
+        assist.session = self
         terminal.onPaste = { [weak self] in self?.pasteClipboard() }
         view.terminalDelegate = self
         applyAppearance(settings)
@@ -513,6 +517,10 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
             return false
         }
         let normalized = command.replacingOccurrences(of: "\r\n", with: "\r").replacingOccurrences(of: "\n", with: "\r")
+        let t = view.getTerminal()
+        if !t.isCurrentBufferAlternate {
+            assist.enter(command: command.contains("\n") ? nil : command, prompt: lineOnScreen(t))
+        }
         send(Data((normalized + "\r").utf8))
         line.reset()
         suggestions = []
@@ -534,6 +542,10 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         case .paste:
             pasteClipboard()
             releaseModifiers()
+        case .ai:
+            // `# request` at the prompt → a command proposed by the AI.
+            releaseModifiers()
+            assist.askForLine()
         case .steps([.special(.right)]) where suggestionMode == .cursor && !ctrl && !alt && !suggestions.isEmpty:
             // → accepts the suggestion, like on the desktop.
             accept(suggestions[0])
@@ -573,6 +585,8 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         feeding.value = true
         view.feed(byteArray: [UInt8](data)[...])
         feeding.value = false
+        // Commands start and end (the Explain/Fix chip, the AI's context).
+        assist.output(data, alternateScreen: view.getTerminal().isCurrentBufferAlternate)
         if awaitingEcho { awaitingEcho = false }
         if suggestAfterEcho {
             suggestAfterEcho = false
@@ -610,6 +624,8 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     fileprivate func forgetLine() {
         line.reset()
         suggestions = []
+        assist.reset()
+        lastCommand = nil
     }
 
     // ----- Command history -----
@@ -631,7 +647,15 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
             // e.g. after moving it with the gesture).
             echoed = commandEchoed(line: pending, before: lineOnScreen(t), afterBlank: true)
         }
-        guard let sent = line.feed(data: data), echoed, sent == pending, let hostId else { return }
+        let sent = line.feed(data: data)
+        // Enter at the shell's line (not a bracketed paste, which the shell
+        // does not run): a command may start.
+        if data.contains(0x0D), !TerminalAiRules.isBracketedPaste(data) {
+            let screenLine = lineOnScreen(t)
+            assist.enter(command: echoed ? pending : nil,
+                         prompt: TerminalAiRules.prompt(screenLine: screenLine, typed: echoed ? pending : nil))
+        }
+        guard let sent, echoed, sent == pending, let hostId else { return }
         let core = core
         Task.detached { _ = try? core.recordCommand(hostId: hostId, command: sent) }
     }
@@ -648,6 +672,50 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
             r -= 1
         }
         return text
+    }
+
+    // ----- AI in the terminal (`TerminalAssist`) -----
+
+    /// The line being typed, as the screen shows it with the cursor at its
+    /// end (`nil` in full-screen programs or when it is not known).
+    func typedLine() -> String? {
+        let t = view.getTerminal()
+        guard !t.isCurrentBufferAlternate, line.atEnd(), let current = line.current(), !current.isEmpty,
+              commandEchoed(line: current, before: lineOnScreen(t), afterBlank: true) else { return nil }
+        return current
+    }
+
+    /// For `CommandWatcher.idle`: the screen in use, the text in front of
+    /// the cursor on its line and whether the rest of the line is blank.
+    func cursorLineProbe() -> (alternate: Bool, before: String, afterBlank: Bool) {
+        let t = view.getTerminal()
+        let (x, y) = t.getCursorLocation()
+        let alternate = t.isCurrentBufferAlternate
+        guard let row = t.getLine(row: y) else { return (alternate, "", true) }
+        let col = min(max(x, 0), t.cols)
+        let before = row.translateToString(trimRight: false, startCol: 0, endCol: col)
+        let after = col < t.cols ? row.translateToString(trimRight: true, startCol: col) : ""
+        return (alternate, TerminalAiRules.cellText(before), TerminalAiRules.isBlank(TerminalAiRules.cellText(after)))
+    }
+
+    /// Types a command the AI proposed, never with Enter: in place of its
+    /// `# request` line if that is still the line being typed.
+    func typeAiCommand(_ command: String, replacing request: String?) {
+        let text = typeableCommand(command: command)
+        guard !text.isEmpty else { return }
+        var bytes: [UInt8] = []
+        if let request, typedLine() == request { bytes = TerminalAiRules.eraseBytes(request) }
+        input(Data(bytes + Array(text.utf8)), mirror: false)
+        _ = view.becomeFirstResponder()
+    }
+
+    /// Account whose AI the terminal's assistant uses: the host's (signed
+    /// in) or else the current one; `nil`: there is no AI to ask.
+    var aiAccountId: String? {
+        let accounts = core.accounts()
+        if let accountId, accounts.contains(where: { $0.id == accountId && $0.status == .active }) { return accountId }
+        if let current = core.currentAccount(), current.status == .active { return current.id }
+        return nil
     }
 
     /// Cursor cell in the view and cell size (as SwiftTerm computes them from
@@ -1108,6 +1176,9 @@ final class ServerTerminal: TerminalSession {
     override var shareAttached: Bool { handle != nil && greeted }
     /// The round trip to the server (its WebSocket ping), like the desktop.
     override var measuresLatency: Bool { true }
+
+    /// A guest without an account has no AI to ask.
+    override var aiAccountId: String? { isLinkGuest ? nil : super.aiAccountId }
 
     override func measureLatency() async {
         guard state == .connected, let h = handle else {
