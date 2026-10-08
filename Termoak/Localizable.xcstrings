@@ -12436,6 +12436,38 @@
         }
       }
     },
+    "share.kick.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "They leave the session now. They can come back with their invitation."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sale de la sesión ahora. Puede volver con su invitación."
+          }
+        }
+      }
+    },
+    "share.kick.title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove %@?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Sacar a %@ de la sesión?"
+          }
+        }
+      }
+    },
     "share.kick_block": {
       "localizations": {
         "en": {

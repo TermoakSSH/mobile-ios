@@ -296,6 +296,8 @@ struct ParticipantsSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var stopping = false
     @State private var blocking: SessionParticipant?
+    /// Removing someone (without blocking) asks first too.
+    @State private var kicking: SessionParticipant?
 
     private var inside: [SessionParticipant] { session.participants.filter { !$0.waiting } }
     private var waiting: [SessionParticipant] { session.participants.filter { $0.waiting } }
@@ -400,6 +402,13 @@ struct ParticipantsSheet: View {
             } message: { p in
                 Text(String(localized: "share.kick_block.message \(p.name)"))
             }
+            .confirmationDialog(Text("share.kick.title \(kicking?.name ?? "")"),
+                                isPresented: Binding(get: { kicking != nil }, set: { if !$0 { kicking = nil } }),
+                                titleVisibility: .visible, presenting: kicking) { p in
+                Button("share.kick", role: .destructive) { session.act(.kick(p.id, block: false)) }
+            } message: { _ in
+                Text("share.kick.message")
+            }
         }
         .navigationViewStyle(.stack)
     }
@@ -447,7 +456,7 @@ struct ParticipantsSheet: View {
                 giveControlMenu(p, title: "share.change_time", icon: "timer")
             }
             Divider()
-            Button(role: .destructive) { session.act(.kick(p.id, block: false)) } label: {
+            Button(role: .destructive) { kicking = p } label: {
                 Label("share.kick", systemImage: "person.fill.xmark")
             }
             Button(role: .destructive) { blocking = p } label: {
