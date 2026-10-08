@@ -554,13 +554,7 @@ private struct TerminalContent: View {
 
     private var moreMenu: some View {
         Menu {
-            Button { UIPasteboard.general.string = session.screenText() } label: {
-                Label("terminal.menu.copy_screen", systemImage: "doc.on.doc")
-            }
-            Button { finding = true } label: { Label("shortcut.find", systemImage: "magnifyingglass") }
-            Button { session.clearTerminal() } label: { Label("terminal.menu.clear", systemImage: "eraser") }
-            Button { settings.changeFontSize(1) } label: { Label("common.font_larger", systemImage: "textformat.size.larger") }
-            Button { settings.changeFontSize(-1) } label: { Label("common.font_smaller", systemImage: "textformat.size.smaller") }
+            screenActions
             if canShare {
                 Button { sharing = true } label: { Label("share.menu.share", systemImage: "person.badge.plus") }
             }
@@ -598,6 +592,17 @@ private struct TerminalContent: View {
         } label: { Image(systemName: "ellipsis.circle").frame(width: 40, height: 40).contentShape(Rectangle()).hoverEffect() }
         .accessibilityLabel("terminal.more")
         .accessibilityIdentifier("terminal-menu")
+    }
+
+    /// Copy the screen, find, clear and the text size.
+    @ViewBuilder private var screenActions: some View {
+        Button { UIPasteboard.general.string = session.screenText() } label: {
+            Label("terminal.menu.copy_screen", systemImage: "doc.on.doc")
+        }
+        Button { finding = true } label: { Label("shortcut.find", systemImage: "magnifyingglass") }
+        Button { session.clearTerminal() } label: { Label("terminal.menu.clear", systemImage: "eraser") }
+        Button { settings.changeFontSize(1) } label: { Label("common.font_larger", systemImage: "textformat.size.larger") }
+        Button { settings.changeFontSize(-1) } label: { Label("common.font_smaller", systemImage: "textformat.size.smaller") }
     }
 
     /// Rename, duplicate, close the others, and the shortcuts list.
