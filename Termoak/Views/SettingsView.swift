@@ -48,14 +48,7 @@ struct SettingsView: View {
                         if account.loggedIn == true, let url = URL(string: "\(current.serverUrl)/app/account") {
                             Button { openURL(url) } label: { Label("settings.web_account", systemImage: "arrow.up.right.square") }
                         }
-                        if let tf = twoFactor {
-                            HStack {
-                                Label("settings.two_factor", systemImage: "lock.shield")
-                                Spacer()
-                                Chip(tf.enabled ? String(localized: "settings.two_factor.on") : String(localized: "settings.two_factor.off"),
-                                     tf.enabled ? Brand.green : Brand.amber)
-                            }
-                        }
+                        if let tf = twoFactor { twoFactorRow(tf) }
                     }
 
                     if account.loggedIn == true {
@@ -225,6 +218,24 @@ struct SettingsView: View {
             }
         }
         .padding(.vertical, 6)
+    }
+
+    /// Two-step verification: On with the recovery codes left, or Off; it
+    /// opens the page that turns it on or off.
+    private func twoFactorRow(_ tf: TwoFactorStatus) -> some View {
+        NavigationLink { TwoFactorView() } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Label("settings.two_factor", systemImage: "lock.shield")
+                    Text(tf.enabled ? String(localized: "two_factor.codes_left \(Int(tf.recoveryCodesLeft))")
+                                    : String(localized: "two_factor.off_hint"))
+                        .font(.caption).foregroundColor(.secondary)
+                }
+                Spacer()
+                Chip(tf.enabled ? String(localized: "settings.two_factor.on") : String(localized: "settings.two_factor.off"),
+                     tf.enabled ? Brand.green : Brand.amber)
+            }
+        }
     }
 
     /// Without an account: the vault is only on this device.

@@ -199,6 +199,10 @@ struct AccountDetailView: View {
 
                 if let url = URL(string: "\(info.serverUrl)/app/account") {
                     Section {
+                        // The engine manages two-step verification of the current account only.
+                        if info.isCurrent && info.status == .active {
+                            NavigationLink { TwoFactorView() } label: { Label("settings.two_factor", systemImage: "lock.shield") }
+                        }
                         Button { openURL(url) } label: { Label("settings.web_account", systemImage: "arrow.up.right.square") }
                     }
                 }

@@ -19056,6 +19056,334 @@
         }
       }
     },
+    "two_factor.codes_left %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "On · %lld recovery code left"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "On · %lld recovery codes left"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Activada · queda %lld código de recuperación"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Activada · quedan %lld códigos de recuperación"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "two_factor.confirm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activar"
+          }
+        }
+      }
+    },
+    "two_factor.copied": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiados"
+          }
+        }
+      }
+    },
+    "two_factor.copy_codes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy the codes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar los códigos"
+          }
+        }
+      }
+    },
+    "two_factor.copy_secret": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy the secret key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar la clave secreta"
+          }
+        }
+      }
+    },
+    "two_factor.explain": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signing in also asks for a code from an authenticator app (or a recovery code), so your password alone is not enough."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al iniciar sesión también se pide un código de una app de autenticación (o un código de recuperación), así que tu contraseña sola no basta."
+          }
+        }
+      }
+    },
+    "two_factor.off_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off: turn it on to protect your account"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desactivada: actívala para proteger tu cuenta"
+          }
+        }
+      }
+    },
+    "two_factor.open_app": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open in the authenticator app"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir en la app de autenticación"
+          }
+        }
+      }
+    },
+    "two_factor.qr": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR code for the authenticator app"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Código QR para la app de autenticación"
+          }
+        }
+      }
+    },
+    "two_factor.recovery_footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save them somewhere safe: each one signs you in once if you lose your authenticator app. They are not shown again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guárdalos en un lugar seguro: cada uno sirve una vez para iniciar sesión si pierdes tu app de autenticación. No se vuelven a mostrar."
+          }
+        }
+      }
+    },
+    "two_factor.recovery_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovery codes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Códigos de recuperación"
+          }
+        }
+      }
+    },
+    "two_factor.scan_footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan the QR code with another device, open it in the authenticator app of this one, or type the secret key."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escanea el código QR con otro dispositivo, ábrelo en la app de autenticación de este o escribe la clave secreta."
+          }
+        }
+      }
+    },
+    "two_factor.step_code": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2. Enter the code it shows"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2. Escribe el código que muestra"
+          }
+        }
+      }
+    },
+    "two_factor.step_scan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Add it to your authenticator app"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Añádela a tu app de autenticación"
+          }
+        }
+      }
+    },
+    "two_factor.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two-step verification"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificación en dos pasos"
+          }
+        }
+      }
+    },
+    "two_factor.turn_off": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn off two-step verification"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desactivar la verificación en dos pasos"
+          }
+        }
+      }
+    },
+    "two_factor.turn_off_confirm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your account will be protected only by its password."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu cuenta quedará protegida solo por su contraseña."
+          }
+        }
+      }
+    },
+    "two_factor.turn_off_footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your password and a code from the authenticator app (or a recovery code)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu contraseña y un código de la app de autenticación (o un código de recuperación)."
+          }
+        }
+      }
+    },
+    "two_factor.turn_on": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on two-step verification"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activar la verificación en dos pasos"
+          }
+        }
+      }
+    },
     "upload.action %lld": {
       "localizations": {
         "en": {
