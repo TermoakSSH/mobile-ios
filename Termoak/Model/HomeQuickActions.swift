@@ -17,9 +17,10 @@ final class SystemRouter: ObservableObject {
     }
 }
 
-/// The app's delegate (SwiftUI adaptor): only to give the window scene our
-/// delegate, which receives the Quick Actions; a Quick Action that launched
-/// the app comes with the scene's connection options.
+/// The app's delegate (SwiftUI adaptor): it gives the window scene our
+/// delegate, which receives the Quick Actions (a Quick Action that launched
+/// the app comes with the scene's connection options), and receives the
+/// push device token.
 final class TermoakAppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession,
                      options: UIScene.ConnectionOptions) -> UISceneConfiguration {
@@ -30,6 +31,13 @@ final class TermoakAppDelegate: NSObject, UIApplicationDelegate {
         configuration.delegateClass = TermoakSceneDelegate.self
         return configuration
     }
+
+    // Push (only asked for when it is on in the build: Push.enabled).
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        Task { @MainActor in Push.shared.received(deviceToken: deviceToken) }
+    }
+
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {}
 }
 
 /// The window scene's delegate. SwiftUI still makes the window; this only

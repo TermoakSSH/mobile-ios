@@ -391,6 +391,7 @@ final class Accounts: ObservableObject {
         vaultChanged.send()
         if info.status == .active {
             updateEvents()
+            Push.shared.register(info.id)
             sync(info.id)
             Task { await syncLocaleIfNeeded() }
         }
@@ -406,7 +407,10 @@ final class Accounts: ObservableObject {
     /// (`signedOut == false`).
     func signOut(_ accountId: String, discard: Bool) async throws -> SignOutReport {
         stopEvents(accountId)
+        // Its server stops notifying this device (while it can still be asked).
+        await Push.shared.unregister(accountId)
         let report = try await core.signOutAccount(accountId: accountId, discardUnsynced: discard)
+        if !report.signedOut { Push.shared.register(accountId) }
         if report.signedOut {
             approvals[accountId] = nil
             syncErrors[accountId] = nil
@@ -548,11 +552,9 @@ final class Accounts: ObservableObject {
 
     // ----- Live events -----
 
-    // TODO(push): the iOS app has no APNs plumbing yet (no `aps-environment`
-    // entitlement, no app delegate asking for a device token), so join and
-    // control requests only reach the owner through these WebSockets while
-    // the app is open. When it is added: register the token with every
-    // account's server and route a tap by its `user_id` and `server`.
+    // Push (PushNotifications.swift) is off until the build has APNs; until
+    // then join and control requests reach the owner through these
+    // WebSockets while the app is open.
 
     /// One events WebSocket per signed-in account.
     private func updateEvents() {

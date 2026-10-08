@@ -82,6 +82,8 @@ final class AppModel: ObservableObject {
     @Published var inviting: InviteLink?
     /// Quick connect from a home-screen Quick Action.
     @Published var quickConnecting = false
+    /// The AI section over everything (a tapped push about an approval).
+    @Published var showingAi = false
     private var subscriptions: Set<AnyCancellable> = []
 
     init(core: TermoakCore, settings: AppSettings) {
@@ -108,6 +110,10 @@ final class AppModel: ObservableObject {
         BackgroundNotices.shared.onOpen = { [weak self] id, title, owner in
             self?.openFromNotice(sessionId: id, title: title, owner: owner)
         }
+        // Push (only when the build has it): the token on every signed-in
+        // account; a tap opens the AI or that session.
+        Push.shared.start(core: core) { [weak accounts] in accounts?.active.map(\.id) ?? [] }
+        BackgroundNotices.shared.onPush = { [weak self] target in self?.openFromPush(target) }
         // The running server sessions of every signed-in account appear as
         // sleeping tabs: at launch and when an account signs in. Those of an
         // account that signs out go away.
@@ -217,6 +223,17 @@ final class AppModel: ObservableObject {
         sessions.showing = false
         DispatchQueue.main.asyncAfter(deadline: .now() + (covered ? 0.6 : 0.1)) { [weak self] in
             if let self { show(self) }
+        }
+    }
+
+    /// A push notification was tapped: the AI (its approvals) or that session.
+    private func openFromPush(_ target: PushTarget) {
+        if target.isAi {
+            joining = nil
+            sessions.showing = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.showingAi = true }
+        } else if let id = target.sessionId {
+            openFromNotice(sessionId: id, title: target.title, owner: target.isOwnSession)
         }
     }
 
@@ -334,6 +351,20 @@ private struct RootContent: View {
             }
             .environmentObject(model)
             .environmentObject(account)
+        }
+        // A tapped push about the AI: its tasks and approvals.
+        .sheet(isPresented: $model.showingAi) {
+            NavigationView {
+                AiView().toolbar {
+                    ToolbarItem(placement: .cancellationAction) { Button("common.done") { model.showingAi = false } }
+                }
+            }
+            .navigationViewStyle(.stack)
+                .environmentObject(model)
+                .environmentObject(account)
+                .environmentObject(sessions)
+                .environmentObject(settings)
+                .environmentObject(model.tunnels)
         }
         .sheet(item: $model.joining) { item in
             JoinLinkView(link: item.link)

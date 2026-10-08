@@ -102,6 +102,18 @@ the `apple-app-site-association` the servers publish at
 `/.well-known/apple-app-site-association` (public-web:
 `site/.well-known/apple-app-site-association`).
 
+### Push notifications (off for now)
+
+The app registers its APNs device token on every signed-in account (each
+server notifies its own events: AI approvals, sessions shared with you, join
+and keyboard requests) and unregisters it before signing out of one
+(`Termoak/Model/PushNotifications.swift`). It stays off until the APNs
+credentials exist: to turn it on, add the Push Notifications capability
+(`aps-environment` in `Termoak/Termoak.entitlements`), set `TermoakPush: true`
+in `project.yml` (the app's Info.plist properties) and configure APNs on the
+servers (server `docs/DEPLOYMENT.md`, push notifications). Debug builds
+register as APNs sandbox tokens.
+
 ### Another server as the official one
 
 The "official server" button signs in to `https://termoak.com`. To test

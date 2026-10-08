@@ -5,7 +5,8 @@ import UserNotifications
 /// keeps it running after leaving it): someone wants to join or asks for the
 /// keyboard of a session you share, or shares a session with you. They
 /// become local notifications (like Android's "sharing" channel); tapping
-/// one opens that session. Push (with the app closed) needs APNs: TODO(push).
+/// one opens that session. Push with the app closed: PushNotifications.swift
+/// (its taps arrive here too).
 @MainActor
 final class BackgroundNotices: NSObject {
     static let shared = BackgroundNotices()
@@ -18,6 +19,8 @@ final class BackgroundNotices: NSObject {
     var inBackground = false
     /// A notification was tapped: open that session (`owner`: one of yours).
     var onOpen: ((_ sessionId: String, _ title: String, _ owner: Bool) -> Void)?
+    /// A push notification was tapped (PushNotifications.swift).
+    var onPush: ((PushTarget) -> Void)?
 
     private var recent = NoticeDeduper(window: 15)
     private var asked = UserDefaults.standard.bool(forKey: "notifications_asked")
@@ -66,6 +69,13 @@ extension BackgroundNotices: UNUserNotificationCenterDelegate {
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
                                             withCompletionHandler completionHandler: @escaping () -> Void) {
         let info = response.notification.request.content.userInfo
+        if let push = PushTarget(info) {
+            Task { @MainActor in
+                BackgroundNotices.shared.onPush?(push)
+                completionHandler()
+            }
+            return
+        }
         let sessionId = info["session_id"] as? String
         let title = info["title"] as? String ?? ""
         let owner = info["owner"] as? Bool ?? true

@@ -48,6 +48,9 @@ targets:
         # Invitation links open the app: termoak://join?server=…&token=…
         # (https://termoak.com/join/<token> too: Universal Links, see
         # Termoak/Termoak.entitlements and Signing.xcconfig).
+        # Push notifications: off until the APNs credentials and the
+        # aps-environment entitlement exist (README, Push notifications).
+        TermoakPush: false
         CFBundleURLTypes:
           - CFBundleURLName: com.termoak.links
             CFBundleTypeRole: Viewer
@@ -103,6 +106,7 @@ targets:
       - path: Termoak/Model/InviteLink.swift
       - path: Termoak/Model/AiTasks.swift
       - path: Termoak/Model/TeamRules.swift
+      - path: Termoak/Model/PushTarget.swift
       - path: Termoak/Model/GroupChain.swift
       - path: Termoak/Model/ExecReport.swift
       - path: Termoak/Model/TerminalAiRules.swift
