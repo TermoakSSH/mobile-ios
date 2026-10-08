@@ -86,6 +86,7 @@ targets:
       - path: Termoak/Model/HostLogos.swift
       - path: Termoak/Model/Layouts.swift
       - path: Termoak/Model/RemotePaths.swift
+      - path: Termoak/Model/ShareJson.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

@@ -101,7 +101,7 @@ struct ConnectionsView: View {
                 }
             } message: { Text("common.terminate_session.message") }
             .sheet(item: $sharing) { item in
-                ShareSessionView(core: model.core, source: .server(sessionId: item.id), title: item.title)
+                ShareSessionView(core: model.core, source: .server(sessionId: item.id, accountId: item.accountId), title: item.title)
             }
             .sheet(item: $activity) { item in
                 SessionActivityView(core: model.core.api(for: item.accountId), sessionId: item.id, title: item.title)

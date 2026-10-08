@@ -652,13 +652,17 @@ private struct TerminalContent: View {
 
     /// Yours, connected and signed in: it can be shared from here.
     private var canShare: Bool {
-        guard account.loggedIn == true, session.isOwner, session.state == .connected else { return false }
-        if let server = session as? ServerTerminal { return server.sessionId != nil && server.link == nil }
-        return session is LocalTerminal
+        guard session.isOwner, session.state == .connected else { return false }
+        if let server = session as? ServerTerminal {
+            // Through the session's own account (signed in), whichever is current.
+            let signedIn = server.accountId.map { account.account($0)?.status == .active } ?? (account.loggedIn == true)
+            return signedIn && server.sessionId != nil && server.link == nil
+        }
+        return account.loggedIn == true && session is LocalTerminal
     }
 
     private var shareSource: ShareSource? {
-        if let server = session as? ServerTerminal, let id = server.sessionId { return .server(sessionId: id) }
+        if let server = session as? ServerTerminal, let id = server.sessionId { return .server(sessionId: id, accountId: server.accountId) }
         if let local = session as? LocalTerminal { return .local(local) }
         return nil
     }

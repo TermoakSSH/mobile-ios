@@ -6,7 +6,8 @@ import UIKit
 /// device (shared through the server, relay, when the first invitation is
 /// created).
 enum ShareSource {
-    case server(sessionId: String)
+    /// `accountId`: the session's account (`nil`: the current one).
+    case server(sessionId: String, accountId: String?)
     case local(LocalTerminal)
 }
 
@@ -133,7 +134,7 @@ struct ShareSessionView: View {
             }
             .task {
                 await reload()
-                teams = (try? await core.listTeams()) ?? []
+                teams = await loadTeams()
                 if teamId == nil { teamId = teams.first?.id }
             }
         }
@@ -267,7 +268,7 @@ struct ShareSessionView: View {
     /// Where the invitations are, if there are any yet.
     private var currentBackend: ShareBackend? {
         switch source {
-        case .server(let id): return .server(core, sessionId: id)
+        case .server(let id, let accountId): return .server(core.shareApi(for: accountId), sessionId: id)
         case .local(let t): return t.shared.map { ShareBackend.relay($0) }
         }
     }
@@ -275,9 +276,17 @@ struct ShareSessionView: View {
     /// Same, sharing the local terminal first if needed.
     private func backend() async throws -> ShareBackend {
         switch source {
-        case .server(let id): return .server(core, sessionId: id)
+        case .server(let id, let accountId): return .server(core.shareApi(for: accountId), sessionId: id)
         case .local(let t): return .relay(try await t.shareWithPeople())
         }
+    }
+
+    /// The teams of the session's account (to invite one).
+    private func loadTeams() async -> [Team] {
+        if case .server(_, let accountId?) = source, core.currentAccount()?.id != accountId {
+            return (try? await core.teams(of: accountId)) ?? []
+        }
+        return (try? await core.listTeams()) ?? []
     }
 
     private func invite() {
@@ -342,10 +351,10 @@ struct ShareSessionView: View {
 
     private func stopSharing() {
         switch source {
-        case .server(let id):
+        case .server(let id, let accountId):
             Task {
                 do {
-                    _ = try await core.stopSharingServerSession(sessionId: id)
+                    _ = try await core.shareApi(for: accountId).stopSharingServerSession(sessionId: id)
                 } catch {
                     self.error = userMessage(error)
                 }
