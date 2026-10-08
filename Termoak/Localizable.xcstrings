@@ -1,6 +1,102 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "about.device_name": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device name"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre del dispositivo"
+          }
+        }
+      }
+    },
+    "about.device_name.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How this device appears in your accounts' device lists and activity, from the next sign-in. Empty: the system's name."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cómo aparece este dispositivo en la lista de dispositivos y la actividad de tus cuentas, desde el próximo inicio de sesión. Vacío: el nombre del sistema."
+          }
+        }
+      }
+    },
+    "about.licenses": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licenses"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licencias"
+          }
+        }
+      }
+    },
+    "about.licenses.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termoak is free software: its code is on GitHub. The fonts come with their license."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termoak es software libre: su código está en GitHub. Las fuentes vienen con su licencia."
+          }
+        }
+      }
+    },
+    "about.privacy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy policy"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política de privacidad"
+          }
+        }
+      }
+    },
+    "about.terms": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terms of use"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Condiciones de uso"
+          }
+        }
+      }
+    },
     "account.session_expired": {
       "localizations": {
         "en": {

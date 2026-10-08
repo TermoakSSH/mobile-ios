@@ -13,6 +13,11 @@ struct SettingsView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.dismiss) private var dismiss
     @State private var twoFactor: TwoFactorStatus?
+    /// Terms and privacy of the current account's server (its /info).
+    @State private var serverDetails: ServerDetails?
+    @State private var renamingDevice = false
+    @State private var deviceName = ""
+    @State private var deviceError: String?
     @State private var loggingIn = false
     @State private var customizing = false
     @State private var showingShortcuts = false
@@ -147,16 +152,7 @@ struct SettingsView: View {
                     Text("settings.language.footer")
                 }
 
-                Section("settings.about") {
-                    HStack {
-                        Text("settings.version")
-                        Spacer()
-                        Text("settings.version.value \(version) \(libraryVersion())").foregroundColor(.secondary)
-                    }
-                    if let url = URL(string: account.server ?? officialServerUrl()) {
-                        Button { openURL(url) } label: { Label("settings.website", systemImage: "globe") }
-                    }
-                }
+                aboutSection
 
             }
             .navigationTitle("nav.profile")
@@ -167,6 +163,16 @@ struct SettingsView: View {
                     }
                 }
             }
+            .alert("about.device_name", isPresented: $renamingDevice) {
+                TextField(UIDevice.current.name, text: $deviceName)
+                Button("common.cancel", role: .cancel) {}
+                Button("common.save") { saveDeviceName() }
+            } message: {
+                Text("about.device_name.footer")
+            }
+            .alert("common.error", isPresented: Binding(get: { deviceError != nil }, set: { if !$0 { deviceError = nil } })) {
+                Button("common.ok", role: .cancel) {}
+            } message: { Text(deviceError ?? "") }
             .sheet(isPresented: $loggingIn) {
                 LoginView(welcome: false) {}.environmentObject(account).environmentObject(settings)
             }
@@ -223,6 +229,50 @@ struct SettingsView: View {
             }
         }
         .padding(.vertical, 6)
+    }
+
+    /// Version, website, the server's terms and privacy, licenses and this
+    /// device's name.
+    private var aboutSection: some View {
+        Section("settings.about") {
+            HStack {
+                Text("settings.version")
+                Spacer()
+                Text("settings.version.value \(version) \(libraryVersion())").foregroundColor(.secondary)
+            }
+            if let url = URL(string: account.server ?? officialServerUrl()) {
+                Button { openURL(url) } label: { Label("settings.website", systemImage: "globe") }
+            }
+            if let terms = serverDetails?.termsUrl.flatMap(URL.init(string:)) {
+                Button { openURL(terms) } label: { Label("about.terms", systemImage: "doc.text") }
+            }
+            if let privacy = serverDetails?.privacyUrl.flatMap(URL.init(string:)) {
+                Button { openURL(privacy) } label: { Label("about.privacy", systemImage: "hand.raised") }
+            }
+            NavigationLink { LicensesView() } label: { Label("about.licenses", systemImage: "doc.plaintext") }
+            Button {
+                deviceName = DeviceName.chosen ?? ""
+                renamingDevice = true
+            } label: {
+                HStack {
+                    Label("about.device_name", systemImage: "iphone")
+                    Spacer()
+                    Text(verbatim: DeviceName.current).foregroundColor(.secondary).lineLimit(1)
+                }
+            }
+        }
+        .task(id: account.server) {
+            let url = account.server ?? officialServerUrl()
+            if let json = try? await serverInfo(url: url) { serverDetails = try? ServerDetails(url: url, json: json) }
+        }
+    }
+
+    private func saveDeviceName() {
+        do {
+            try DeviceName.set(deviceName, core: model.core)
+        } catch {
+            deviceError = userMessage(error)
+        }
     }
 
     /// Two-step verification: On with the recovery codes left, or Off; it

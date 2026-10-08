@@ -82,7 +82,7 @@ final class AppModel: ObservableObject {
         // A host's system detected after connecting: its logo in the lists.
         let accounts = account
         sessions.onHostChanged = { [weak accounts] in accounts?.vaultChanged.send() }
-        try? core.setDeviceName(name: UIDevice.current.name)
+        try? core.setDeviceName(name: DeviceName.current)
         // Sharing notices in the background become notifications; a tap
         // opens the session.
         BackgroundNotices.shared.start()
