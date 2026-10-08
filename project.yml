@@ -111,6 +111,7 @@ targets:
       - path: Termoak/Model/ExecReport.swift
       - path: Termoak/Model/TerminalAiRules.swift
       - path: Termoak/Model/HostStatus.swift
+      - path: Termoak/Model/ImportPlan.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

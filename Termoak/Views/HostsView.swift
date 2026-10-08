@@ -39,6 +39,7 @@ struct HostsView: View {
     @State private var generatingKey = false
     @State private var importingKey = false
     @State private var importingConfig = false
+    @State private var exporting = false
     /// Quick connect (the bolt button or the + menu).
     /// A host's actions opened with the keyboard (menu key or Shift+F10).
     @State private var keyMenuHost: SshHost?
@@ -280,7 +281,10 @@ struct HostsView: View {
             .environmentObject(account)
         }
         .sheet(isPresented: $importingConfig, onDismiss: load) {
-            ImportConfigView().environmentObject(model).environmentObject(account)
+            ImportView().environmentObject(model).environmentObject(account)
+        }
+        .sheet(isPresented: $exporting) {
+            ExportView().environmentObject(model).environmentObject(account)
         }
     }
 
@@ -522,7 +526,7 @@ struct HostsView: View {
     private var covered: Bool {
         // One element at a time (a long || chain is slow to type-check).
         let shown: [Bool] = [
-            sessions.showing, editing != nil, editedGroup != nil, generatingKey, importingKey, importingConfig, quickConnecting,
+            sessions.showing, editing != nil, editedGroup != nil, generatingKey, importingKey, importingConfig, exporting, quickConnecting,
             transferring != nil, addingAccount, resuming != nil, managingAccounts, showingVaults,
             filesHost != nil, tunnelsHost != nil, deleting != nil, deletingGroup != nil, deletingSelection, notice != nil,
             viewing != nil, snippetPick != nil, snippetRun != nil, keyMenuHost != nil,
@@ -747,11 +751,12 @@ struct HostsView: View {
             Divider()
             Button { generatingKey = true } label: { Label("vault.new_key", systemImage: "key") }
             Menu {
-                Button { importingConfig = true } label: { Label("vault.import.ssh_config", systemImage: "doc.text") }
+                Button { importingConfig = true } label: { Label("vault.import.hosts", systemImage: "doc.text") }
                 Button { importingKey = true } label: { Label("keychain.import.title", systemImage: "doc.on.clipboard") }
             } label: {
                 Label("vault.import", systemImage: "square.and.arrow.down")
             }
+            Button { exporting = true } label: { Label("vault.export", systemImage: "square.and.arrow.up") }
         } label: {
             Image(systemName: "plus")
         }
@@ -1326,8 +1331,9 @@ private extension HostsView {
                 .hoverEffect(.highlight)
             }
             Menu {
-                Button { importingConfig = true } label: { Label("vault.import.ssh_config", systemImage: "doc.text") }
+                Button { importingConfig = true } label: { Label("vault.import.hosts", systemImage: "doc.text") }
                 Button { importingKey = true } label: { Label("keychain.import.title", systemImage: "doc.on.clipboard") }
+                Button { exporting = true } label: { Label("vault.export", systemImage: "square.and.arrow.up") }
                 Divider()
                 Button { generatingKey = true } label: { Label("vault.new_key", systemImage: "key") }
             } label: {
