@@ -11,13 +11,15 @@ struct DesktopHome: View {
     /// For the screens that send you to a tab of the phone layout
     /// (Connections → "Go to the vault").
     @StateObject private var router = HomeRouter()
+    /// Choosing the section on screen again: back to its first screen.
+    @State private var resets = 0
 
     var body: some View {
         HStack(spacing: 0) {
-            DesktopSidebar(section: $section, collapsed: sidebarCollapsed)
+            DesktopSidebar(section: $section, collapsed: sidebarCollapsed) { resets += 1 }
             Divider()
             content
-                .id(section)
+                .id(SectionPage(section: section, reset: resets))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .environmentObject(router)
@@ -70,12 +72,21 @@ struct DesktopHome: View {
     }
 }
 
+/// The page of a section, rebuilt (back to its first screen) when the
+/// section is chosen again.
+private struct SectionPage: Hashable {
+    let section: DesktopSection
+    let reset: Int
+}
+
 /// The sidebar: the app and the account switcher (and the vaults), the
 /// sections in three groups, and the account's state at the bottom.
 /// Collapsed, only the icons.
 struct DesktopSidebar: View {
     @Binding var section: DesktopSection
     let collapsed: Bool
+    /// The section on screen was chosen again (back to its first screen).
+    var onReselect: () -> Void = {}
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Accounts
     @EnvironmentObject private var sessions: Sessions
@@ -170,15 +181,13 @@ struct DesktopSidebar: View {
     private func item(_ s: DesktopSection) -> some View {
         let selected = section == s
         let shape = RoundedRectangle(cornerRadius: 8, style: .continuous)
-        return Button { section = s } label: {
+        return Button { if selected { onReselect() } else { section = s } } label: {
             HStack(spacing: 12) {
                 Image(systemName: s.icon)
                     .font(.system(size: 17))
                     .frame(width: 24)
                     .overlay(alignment: .topTrailing) {
-                        if collapsed, let dot = badgeDot(s) {
-                            Circle().fill(dot).frame(width: 7, height: 7).offset(x: 4, y: -2)
-                        }
+                        if collapsed, let badge = badge(s) { collapsedBadge(badge) }
                     }
                 if !collapsed {
                     Text(verbatim: s.title).font(.body).lineLimit(1)
@@ -221,12 +230,25 @@ struct DesktopSidebar: View {
         }
     }
 
-    private func badgeDot(_ s: DesktopSection) -> Color? {
+    /// Collapsed: the approvals waiting (amber) or the sessions running on
+    /// the server (green), as a number on the icon.
+    private func badge(_ s: DesktopSection) -> (count: Int, color: Color)? {
         switch s {
-        case .ai: return account.pendingApprovals > 0 ? Brand.amber : nil
-        case .serverSessions: return sessions.onServer.isEmpty ? nil : Brand.green
+        case .ai: return account.pendingApprovals > 0 ? (account.pendingApprovals, Brand.amber) : nil
+        case .serverSessions: return sessions.onServer.isEmpty ? nil : (sessions.onServer.count, Brand.green)
         default: return nil
         }
+    }
+
+    private func collapsedBadge(_ b: (count: Int, color: Color)) -> some View {
+        Text(verbatim: b.count > 99 ? "99+" : "\(b.count)")
+            .font(.system(size: 9, weight: .bold).monospacedDigit())
+            .foregroundColor(b.color == Brand.amber ? .black : .white)
+            .padding(.horizontal, 4)
+            .frame(minWidth: 15, minHeight: 15)
+            .background(b.color, in: Capsule())
+            .offset(x: 9, y: -7)
+            .accessibilityHidden(true)
     }
 
     // MARK: Footer

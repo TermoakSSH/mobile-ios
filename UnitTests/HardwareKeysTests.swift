@@ -253,6 +253,10 @@ final class HardwareKeysTests: XCTestCase {
         XCTAssertEqual(NavKey(hidUsage: HID.backspace), .delete)
         XCTAssertEqual(NavKey(hidUsage: HID.deleteForward), .delete)
         XCTAssertEqual(NavKey(hidUsage: HID.esc), .escape)
+        // The PC menu key (Application, Menu) and F10 (Shift+F10).
+        XCTAssertEqual(NavKey(hidUsage: 0x65), .menu)
+        XCTAssertEqual(NavKey(hidUsage: 0x76), .menu)
+        XCTAssertEqual(NavKey(hidUsage: 0x43), .f10)
         XCTAssertNil(NavKey(hidUsage: HID.a))
     }
 

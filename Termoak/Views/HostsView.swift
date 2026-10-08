@@ -40,6 +40,8 @@ struct HostsView: View {
     @State private var importingKey = false
     @State private var importingConfig = false
     /// Quick connect (the bolt button or the + menu).
+    /// A host's actions opened with the keyboard (menu key or Shift+F10).
+    @State private var keyMenuHost: SshHost?
     @State private var quickConnecting = false
     @State private var transferring: TransferRequest?
     @State private var addingAccount = false
@@ -321,6 +323,11 @@ struct HostsView: View {
 
     private func withDialogs<V: View>(_ view: V) -> some View {
         view
+        .confirmationDialog(Text(verbatim: keyMenuHost?.displayName ?? ""),
+                            isPresented: Binding(get: { keyMenuHost != nil }, set: { if !$0 { keyMenuHost = nil } }),
+                            titleVisibility: .visible, presenting: keyMenuHost) { host in
+            keyMenu(host)
+        }
         .confirmationDialog(Text("hosts.delete.title \(deleting?.label ?? "")"),
                             isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
                             titleVisibility: .visible) {
@@ -507,7 +514,7 @@ struct HostsView: View {
             sessions.showing, editing != nil, editedGroup != nil, generatingKey, importingKey, importingConfig, quickConnecting,
             transferring != nil, addingAccount, resuming != nil, managingAccounts, showingVaults,
             filesHost != nil, tunnelsHost != nil, deleting != nil, deletingGroup != nil, deletingSelection, notice != nil,
-            viewing != nil, snippetPick != nil, snippetRun != nil,
+            viewing != nil, snippetPick != nil, snippetRun != nil, keyMenuHost != nil,
         ]
         return shown.contains(true)
     }
@@ -549,6 +556,11 @@ struct HostsView: View {
         case .escape:
             guard cursor != nil else { return false }
             cursor = nil
+            return true
+        case .menu, .f10:
+            // The menu key or Shift+F10: the highlighted host's actions.
+            guard let host, key == .menu || modifiers.contains(.shift) else { return false }
+            keyMenuHost = host
             return true
         default:
             return false
@@ -880,6 +892,45 @@ struct HostsView: View {
     private func canOpenOnServer(_ host: SshHost) -> Bool {
         if let a = account.account(host.accountId) { return a.status == .active }
         return account.loggedIn == true
+    }
+
+    /// ⌘ is held (a ⌘-click on a card selects it).
+    private var commandHeld: Bool {
+        HardwareKeyboard.shared.isPressed(0xE3) == true || HardwareKeyboard.shared.isPressed(0xE7) == true
+    }
+
+    /// The host's menu opened with the keyboard (menu key or Shift+F10): a
+    /// context menu can't be opened from code, so its main actions as a list.
+    @ViewBuilder private func keyMenu(_ host: SshHost) -> some View {
+        Button("common.connect") { connect(host, onServer: false) }
+        if desktop && !sessions.open.isEmpty {
+            Button("hosts.menu.connect_split") { connectInSplit(host) }
+        }
+        if canOpenOnServer(host) && !host.isTelnet {
+            Button("hosts.menu.persistent") { connect(host, onServer: true) }
+        }
+        if !host.isTelnet {
+            Button("common.files_sftp") { filesHost = host }
+        }
+        if !isStrict(host) && !host.isTelnet {
+            Button("common.tunnels") { tunnelsHost = host }
+        }
+        if host.canEdit {
+            Button("common.edit") { editing = HostEdit(host: host) }
+            Button(host.favorite ? LocalizedStringKey("hosts.menu.unfavorite") : LocalizedStringKey("hosts.menu.favorite")) {
+                toggleFavorite(host)
+            }
+        } else {
+            Button("hosts.menu.view") { viewing = host }
+        }
+        Button("hosts.select") { startSelection(host) }
+        Button("hosts.menu.copy_address") {
+            UIPasteboard.general.string = host.address
+            flash(String(localized: "hosts.address_copied"))
+        }
+        if host.canEdit {
+            Button("common.delete", role: .destructive) { deleting = host }
+        }
     }
 
     @ViewBuilder private func menu(_ host: SshHost) -> some View {
@@ -1357,6 +1408,11 @@ private extension HostsView {
 
     /// Connects (and it stays highlighted), or selects while selecting.
     func tapCard(_ host: SshHost) {
+        // ⌘-click selects it (and starts selecting), like the desktop.
+        if !selecting && commandHeld {
+            startSelection(host)
+            return
+        }
         if selecting {
             if selection.contains(host.key) { selection.remove(host.key) } else { selection.insert(host.key) }
         } else {

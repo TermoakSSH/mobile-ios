@@ -230,6 +230,10 @@ enum HardwareKeyMap {
 /// Keys that move around a list (hosts, files) outside the terminal.
 enum NavKey: Equatable {
     case up, down, left, right, enter, space, delete, escape, home, end, pageUp, pageDown
+    /// The context-menu key of PC keyboards (Application or Menu).
+    case menu
+    /// F10 (Shift+F10 opens the menu on Windows and Linux).
+    case f10
 
     init?(hidUsage usage: Int) {
         switch usage {
@@ -245,6 +249,8 @@ enum NavKey: Equatable {
         case 0x4D: self = .end
         case 0x4B: self = .pageUp
         case 0x4E: self = .pageDown
+        case 0x65, 0x76: self = .menu
+        case 0x43: self = .f10
         default: return nil
         }
     }

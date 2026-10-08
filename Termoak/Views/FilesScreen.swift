@@ -287,6 +287,8 @@ struct FilesScreen: View {
             deleting = f
         case .escape:
             dismiss()
+        case .menu, .f10:
+            return false
         }
         return true
     }

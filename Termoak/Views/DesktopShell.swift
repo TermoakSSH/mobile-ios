@@ -270,6 +270,8 @@ private struct DesktopTab: View {
         .modifier(TabBackground(selected: selected))
         .hoverEffect(.highlight)
         .onTapGesture(perform: onShow)
+        // A middle click closes it, like the desktop's tabs.
+        .background(MiddleClickCatcher(action: onClose))
         .contextMenu { menu }
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
@@ -311,6 +313,41 @@ private struct DesktopTab: View {
         case .connecting: return Brand.amber
         case .closed: return Brand.red
         }
+    }
+}
+
+/// A middle click (mouse button 3) on what is in front of it. It takes
+/// nothing else: fingers and other buttons go through to the SwiftUI views.
+private struct MiddleClickCatcher: UIViewRepresentable {
+    let action: () -> Void
+
+    func makeUIView(context: Context) -> MiddleClickView {
+        let view = MiddleClickView()
+        view.backgroundColor = .clear
+        view.isAccessibilityElement = false
+        let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.clicked))
+        tap.buttonMaskRequired = .button(3)
+        view.addGestureRecognizer(tap)
+        return view
+    }
+
+    func updateUIView(_ view: MiddleClickView, context: Context) {
+        context.coordinator.action = action
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator(action: action) }
+
+    final class Coordinator: NSObject {
+        var action: () -> Void
+        init(action: @escaping () -> Void) { self.action = action }
+        @objc func clicked() { action() }
+    }
+}
+
+final class MiddleClickView: UIView {
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        guard let event, event.buttonMask.contains(.button(3)) else { return nil }
+        return super.hitTest(point, with: event)
     }
 }
 
