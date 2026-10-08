@@ -331,7 +331,7 @@ final class Accounts: ObservableObject {
             await refreshApprovals(a.id)
         }
         updateEvents()
-        if loggedIn == true { await syncLocaleIfNeeded() }
+        if !active.isEmpty { await syncLocaleIfNeeded() }
         checkLayoutNotice()
     }
 
@@ -529,13 +529,19 @@ final class Accounts: ObservableObject {
         return language == "Base" ? "en" : language
     }
 
-    /// Saves the app language in the current account (`PATCH /api/v1/me`)
-    /// so its server writes the emails in it. Only when it differs.
+    /// Saves the app language in every signed-in account (`PATCH
+    /// /api/v1/me`, through each account) so their servers write the emails
+    /// in it, like Android. Only where it differs.
     func syncLocaleIfNeeded() async {
         let language = Self.appLanguage
-        guard let user = try? await core.currentUser(),
-              user.locale.lowercased() != language.lowercased() else { return }
-        _ = try? await core.setLocale(locale: language)
+        for a in active {
+            guard let handle = try? core.account(accountId: a.id) else { continue }
+            let me = ShareJson.object((try? await handle.apiGet(path: "/api/v1/me")) ?? "{}")
+            let user = me["user"] as? [String: Any] ?? me
+            if let locale = user["locale"] as? String, locale.lowercased() == language.lowercased() { continue }
+            let body = ShareJson.encode(["locale": language])
+            _ = try? await handle.apiPatch(path: "/api/v1/me", bodyJson: body)
+        }
     }
 
     // ----- Live events -----

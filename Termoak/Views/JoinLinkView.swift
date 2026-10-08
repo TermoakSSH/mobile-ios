@@ -21,11 +21,16 @@ struct JoinLinkView: View {
     /// Signed in to that server but joining as a guest anyway.
     @State private var asGuest = false
 
-    /// Signed in to the server of the link.
-    private var signedIn: Bool {
-        guard account.loggedIn == true, let current else { return false }
-        return JoinLink.sameServer(account.server, current.server)
+    /// A signed-in account on the link's server (the current one first): it
+    /// joins with its name, like Android.
+    private var match: AccountInfo? {
+        guard let current else { return nil }
+        let onServer = account.active.filter { JoinLink.sameServer($0.serverUrl, current.server) }
+        return onServer.first(where: \.isCurrent) ?? onServer.first
     }
+
+    /// Signed in to the server of the link.
+    private var signedIn: Bool { match != nil }
 
     var body: some View {
         NavigationView {
@@ -72,7 +77,7 @@ struct JoinLinkView: View {
                     details(info, current)
                     Section {
                         if signedIn && !asGuest {
-                            Label(String(localized: "join.as_account \(account.user ?? "")"), systemImage: "person.crop.circle.fill")
+                            Label(String(localized: "join.as_account \(match?.email ?? "")"), systemImage: "person.crop.circle.fill")
                             Button("join.as_guest_instead") { asGuest = true }
                         } else {
                             TextField("share.join.name", text: $name)
@@ -171,7 +176,10 @@ struct JoinLinkView: View {
     private func join() {
         guard let current, info != nil else { return }
         let mode: ServerTerminal.JoinMode
-        if signedIn && !asGuest {
+        if let match, !asGuest {
+            // Joining with an account goes through the current one: make
+            // that account current (as Android does).
+            if !match.isCurrent { account.setScope(.account(match.id)) }
             mode = .account
         } else {
             let n = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(40))
