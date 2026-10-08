@@ -94,6 +94,14 @@ final class AppModel: ObservableObject {
         let accounts = account
         sessions.onHostChanged = { [weak accounts] in accounts?.vaultChanged.send() }
         try? core.setDeviceName(name: DeviceName.current)
+        // Aliases and "Hide email addresses" for every view that names an account.
+        AccountNamesStore.shared.names = settings.accountNames
+        settings.$hideEmails
+            .sink { AccountNamesStore.shared.names.hideEmails = $0 }
+            .store(in: &subscriptions)
+        settings.$accountAliases
+            .sink { AccountNamesStore.shared.names.aliases = $0 }
+            .store(in: &subscriptions)
         // Sharing notices in the background become notifications; a tap
         // opens the session.
         BackgroundNotices.shared.start()

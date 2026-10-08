@@ -147,7 +147,7 @@ struct HostsView: View {
         }
         for a in account.list {
             let mine = list.filter { $0.accountId == a.id }
-            if !mine.isEmpty { out.append(HostSection(id: a.id, title: a.email, hosts: mine)) }
+            if !mine.isEmpty { out.append(HostSection(id: a.id, title: a.displayName, hosts: mine)) }
         }
         return out
     }
@@ -798,7 +798,7 @@ struct HostsView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(a.status == .unverified ? String(localized: "accounts.enter_code") : String(localized: "accounts.sign_in_again"))
                         .font(.subheadline.weight(.medium)).foregroundColor(.primary)
-                    Text(verbatim: a.email).font(.caption).foregroundColor(.secondary)
+                    Text(verbatim: a.displayName).font(.caption).foregroundColor(.secondary)
                 }
                 Spacer(minLength: 0)
             }
@@ -822,7 +822,7 @@ struct HostsView: View {
                     .background(Brand.amber.opacity(0.15), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 VStack(alignment: .leading, spacing: 2) {
                     Text("hosts.sync_failed").font(.subheadline.weight(.medium)).foregroundColor(.primary)
-                    Text(verbatim: account.list.count > 1 ? "\(a.email) · \(message)" : message)
+                    Text(verbatim: account.list.count > 1 ? "\(a.displayName) · \(message)" : message)
                         .font(.caption).foregroundColor(.secondary).lineLimit(3)
                 }
                 Spacer(minLength: 0)

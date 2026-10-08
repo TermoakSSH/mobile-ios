@@ -77,7 +77,7 @@ struct JoinLinkView: View {
                     details(info, current)
                     Section {
                         if signedIn && !asGuest {
-                            Label(String(localized: "join.as_account \(match?.email ?? "")"), systemImage: "person.crop.circle.fill")
+                            Label(String(localized: "join.as_account \(match?.displayName ?? "")"), systemImage: "person.crop.circle.fill")
                             Button("join.as_guest_instead") { asGuest = true }
                         } else {
                             TextField("share.join.name", text: $name)

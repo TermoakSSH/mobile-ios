@@ -2,11 +2,12 @@ import TermoakKit
 import SwiftUI
 import UIKit
 
-/// Two-step verification of the current account: its state and recovery
-/// codes left; turn it on (QR code or secret for the authenticator app, a
-/// code to confirm, then the recovery codes shown once) or off (password and
-/// a code). The engine does this for the current account only.
+/// Two-step verification of one account (any signed-in one, through its
+/// `AccountHandle`): its state and recovery codes left; turn it on (QR code
+/// or secret for the authenticator app, a code to confirm, then the recovery
+/// codes shown once) or off (password and a code).
 struct TwoFactorView: View {
+    let accountId: String
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Accounts
     @Environment(\.openURL) private var openURL
@@ -20,6 +21,9 @@ struct TwoFactorView: View {
     @State private var busy = false
     @State private var error: String?
     @State private var copied = false
+    @State private var sharingCodes = false
+
+    private var info: AccountInfo? { account.account(accountId) }
 
     var body: some View {
         Form {
@@ -39,6 +43,7 @@ struct TwoFactorView: View {
             webSection
         }
         .navigationTitle("two_factor.title")
+        .sheet(isPresented: $sharingCodes) { ActivityView(items: [recoveryCodes.joined(separator: "\n")]) }
         .navigationBarTitleDisplayMode(.inline)
         .confirmationDialog(Text("two_factor.turn_off_confirm"), isPresented: $disabling, titleVisibility: .visible) {
             Button("two_factor.turn_off", role: .destructive, action: disable)
@@ -64,6 +69,8 @@ struct TwoFactorView: View {
                 Text("two_factor.codes_left \(Int(status.recoveryCodesLeft))")
                     .font(.footnote).foregroundColor(.secondary)
             }
+        } header: {
+            if account.list.count > 1, let info { Text(verbatim: info.displayLabel) }
         } footer: {
             Text("two_factor.explain")
         }
@@ -142,6 +149,7 @@ struct TwoFactorView: View {
                 Label(copied ? String(localized: "two_factor.copied") : String(localized: "two_factor.copy_codes"),
                       systemImage: copied ? "checkmark" : "doc.on.doc")
             }
+            Button { sharingCodes = true } label: { Label("two_factor.share_codes", systemImage: "square.and.arrow.up") }
             Button("common.done") {
                 recoveryCodes = []
                 copied = false
@@ -178,7 +186,7 @@ struct TwoFactorView: View {
     }
 
     @ViewBuilder private var webSection: some View {
-        if let server = account.current?.serverUrl, let url = URL(string: "\(server)/app/account") {
+        if let server = info?.serverUrl, let url = URL(string: "\(server)/app/account") {
             Section {
                 Button { openURL(url) } label: { Label("settings.web_account", systemImage: "arrow.up.right.square") }
             }
@@ -187,9 +195,14 @@ struct TwoFactorView: View {
 
     // MARK: Actions
 
+    /// The account's own engine calls (not only the current account's).
+    private func handle() throws -> AccountHandle {
+        try model.core.account(accountId: accountId)
+    }
+
     private func load() async {
         do {
-            status = try await model.core.twoFactorStatus()
+            status = try await handle().twoFactorStatus()
         } catch {
             self.error = userMessage(error)
         }
@@ -197,7 +210,7 @@ struct TwoFactorView: View {
 
     private func startSetup() {
         run {
-            setup = try await model.core.setupTwoFactor()
+            setup = try await handle().setupTwoFactor()
             code = ""
         }
     }
@@ -205,7 +218,7 @@ struct TwoFactorView: View {
     private func enable() {
         let c = code.trimmingCharacters(in: .whitespaces)
         run {
-            recoveryCodes = try await model.core.enableTwoFactor(code: c)
+            recoveryCodes = try await handle().enableTwoFactor(code: c)
             setup = nil
             code = ""
             await load()
@@ -215,7 +228,7 @@ struct TwoFactorView: View {
     private func disable() {
         let p = password, c = code.trimmingCharacters(in: .whitespaces)
         run {
-            try await model.core.disableTwoFactor(password: p, code: c)
+            try await handle().disableTwoFactor(password: p, code: c)
             password = ""
             code = ""
             await load()
@@ -235,6 +248,41 @@ struct TwoFactorView: View {
                 self.error = userMessage(error)
             }
         }
+    }
+}
+
+/// Settings and an account's page: two-step verification of that account,
+/// On with the recovery codes left or Off; it opens the page that turns it
+/// on or off.
+struct TwoFactorRow: View {
+    let accountId: String
+    @EnvironmentObject private var model: AppModel
+    @State private var status: TwoFactorStatus?
+
+    var body: some View {
+        NavigationLink { TwoFactorView(accountId: accountId) } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Label("settings.two_factor", systemImage: "lock.shield")
+                    if let tf = status {
+                        Text(tf.enabled ? String(localized: "two_factor.codes_left \(Int(tf.recoveryCodesLeft))")
+                                        : String(localized: "two_factor.off_hint"))
+                            .font(.caption).foregroundColor(.secondary)
+                    }
+                }
+                Spacer()
+                if let tf = status {
+                    Chip(tf.enabled ? String(localized: "settings.two_factor.on") : String(localized: "settings.two_factor.off"),
+                         tf.enabled ? Brand.green : Brand.amber)
+                }
+            }
+        }
+        // Again when coming back from its page (it may have changed).
+        .onAppear { Task { await load() } }
+    }
+
+    private func load() async {
+        status = try? await model.core.account(accountId: accountId).twoFactorStatus()
     }
 }
 

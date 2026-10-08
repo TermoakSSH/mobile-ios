@@ -47,7 +47,7 @@ struct VaultsView: View {
                         }
                     }
                 } header: {
-                    if accounts.count > 1 || accountId == nil && account.list.count > 1 { Text(verbatim: a.email) }
+                    if accounts.count > 1 || accountId == nil && account.list.count > 1 { Text(verbatim: a.displayName) }
                 }
             }
             if let error {

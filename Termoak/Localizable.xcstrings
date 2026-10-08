@@ -129,6 +129,86 @@
         }
       }
     },
+    "accounts.alias": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name on this device"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre en este dispositivo"
+          }
+        }
+      }
+    },
+    "accounts.alias.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shown instead of the email in the account switcher, the sidebar and the lists. It stays on this device."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se muestra en lugar del correo en el selector de cuentas, la barra lateral y las listas. Se queda en este dispositivo."
+          }
+        }
+      }
+    },
+    "accounts.alias.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A name for this account, such as Work or Personal. Empty: its email is shown."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un nombre para esta cuenta, como Trabajo o Personal. Vacío: se muestra su correo."
+          }
+        }
+      }
+    },
+    "accounts.alias.none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ninguno"
+          }
+        }
+      }
+    },
+    "accounts.alias.remove": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove the name"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar el nombre"
+          }
+        }
+      }
+    },
     "accounts.all": {
       "localizations": {
         "en": {
@@ -14804,6 +14884,38 @@
         }
       }
     },
+    "settings.hide_emails": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide email addresses"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ocultar las direcciones de correo"
+          }
+        }
+      }
+    },
+    "settings.hide_emails.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The emails of your accounts are shortened (a•••@e•••.com) everywhere in the app, for screenshots, screen sharing and demos. Accounts with a name on this device show their name."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los correos de tus cuentas se muestran acortados (a•••@e•••.com) en toda la app, para capturas, compartir pantalla y demostraciones. Las cuentas con un nombre en este dispositivo muestran su nombre."
+          }
+        }
+      }
+    },
     "settings.keep_screen_on": {
       "localizations": {
         "en": {
@@ -15040,6 +15152,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Opción como tecla Meta"
+          }
+        }
+      }
+    },
+    "settings.privacy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacidad"
           }
         }
       }
@@ -19572,6 +19700,38 @@
         }
       }
     },
+    "teams.add_member_hint.invite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Someone with an account on this server joins at once; otherwise they get an invitation to sign up (by email when the server can send it). Admins manage the members; only owners appoint owners and delete the team."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quien ya tiene cuenta en este servidor entra al momento; si no, recibe una invitación para registrarse (por correo si el servidor puede enviarlo). Los administradores gestionan los miembros; solo los propietarios nombran propietarios y borran el equipo."
+          }
+        }
+      }
+    },
+    "teams.added %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is now in the team."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ya está en el equipo."
+          }
+        }
+      }
+    },
     "teams.create": {
       "localizations": {
         "en": {
@@ -19657,13 +19817,205 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open a team of the current account to manage its members. Teams of other accounts are managed there (make it current) or on the web."
+            "value": "Open a team to see its members: admins add people (or invite them to sign up) and owners also appoint owners. Sessions and vaults can be shared with a whole team at once."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abre un equipo de la cuenta actual para gestionar sus miembros. Los equipos de otras cuentas se gestionan desde ellas (hazlas actuales) o en la web."
+            "value": "Abre un equipo para ver sus miembros: los administradores añaden personas (o las invitan a registrarse) y los propietarios también nombran propietarios. Las sesiones y los vaults se pueden compartir con todo un equipo a la vez."
+          }
+        }
+      }
+    },
+    "teams.invite_created.emailed %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ has no account on this server yet: an invitation to sign up was emailed to them."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ aún no tiene cuenta en este servidor: se le ha enviado por correo una invitación para registrarse."
+          }
+        }
+      }
+    },
+    "teams.invite_created.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When they create their account with it, they join the team with the role you chose. It is also under Invitations waiting."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuando cree su cuenta con él, entrará en el equipo con el rol que elegiste. También aparece en Invitaciones pendientes."
+          }
+        }
+      }
+    },
+    "teams.invite_created.qr": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show QR code"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar código QR"
+          }
+        }
+      }
+    },
+    "teams.invite_created.send %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ has no account on this server yet. Send them this link to sign up and join the team."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ aún no tiene cuenta en este servidor. Envíale este enlace para que se registre y entre en el equipo."
+          }
+        }
+      }
+    },
+    "teams.invite_created.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitation"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitación"
+          }
+        }
+      }
+    },
+    "teams.invites": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitations waiting"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitaciones pendientes"
+          }
+        }
+      }
+    },
+    "teams.invites.anyone": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anyone with the link"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cualquiera con el enlace"
+          }
+        }
+      }
+    },
+    "teams.invites.expires %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expires %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caduca %@"
+          }
+        }
+      }
+    },
+    "teams.invites.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitations to sign up that put the person in the team. Revoke one and its link stops working."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitaciones para registrarse que meten a la persona en el equipo. Si revocas una, su enlace deja de funcionar."
+          }
+        }
+      }
+    },
+    "teams.invites.revoke": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revoke"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revocar"
+          }
+        }
+      }
+    },
+    "teams.invites.revoke.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Its link will no longer work."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Su enlace dejará de funcionar."
+          }
+        }
+      }
+    },
+    "teams.invites.revoke.title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revoke the invitation for %@?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Revocar la invitación de %@?"
           }
         }
       }
@@ -22412,6 +22764,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Escanea el código QR con otro dispositivo, ábrelo en la app de autenticación de este o escribe la clave secreta."
+          }
+        }
+      }
+    },
+    "two_factor.share_codes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share the codes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compartir los códigos"
           }
         }
       }

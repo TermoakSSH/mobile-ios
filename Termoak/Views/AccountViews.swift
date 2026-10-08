@@ -17,7 +17,7 @@ struct AccountAvatar: View {
                     .font(.system(size: size * 0.45, weight: .semibold, design: .rounded))
                     .foregroundColor(.white)
             )
-            .accessibilityLabel(Text(verbatim: account.email))
+            .accessibilityLabel(Text(verbatim: account.displayName))
     }
 }
 
@@ -96,7 +96,7 @@ struct AccountSwitcher: View {
             Section {
                 ForEach(account.list, id: \.id) { a in
                     Button { account.setScope(.account(a.id)) } label: {
-                        let text = a.serverLabel.map { "\(a.email) · \($0)" } ?? a.email
+                        let text = a.displayLabel
                         if account.scope == .account(a.id) {
                             Label(text, systemImage: "checkmark")
                         } else if a.status != .active {
@@ -167,10 +167,10 @@ struct AccountSwitcher: View {
     private var scopeTitle: String {
         switch account.scope {
         case .account(let id):
-            return account.account(id)?.email ?? String(localized: "accounts.switcher")
+            return account.account(id)?.displayName ?? String(localized: "accounts.switcher")
         case .all:
             if account.list.count > 1 { return String(localized: "accounts.all") }
-            return account.list.first?.email ?? String(localized: "accounts.device_only")
+            return account.list.first?.displayName ?? String(localized: "accounts.device_only")
         case .device:
             return String(localized: "accounts.device_only")
         }
@@ -221,7 +221,7 @@ struct VaultFilterBar: View {
                 }
                 ForEach(account.scopedVaults, id: \.key) { v in
                     let title = account.showsAccountBadges
-                        ? "\(v.displayName) · \(account.account(v.accountId)?.email ?? "")" : v.displayName
+                        ? "\(v.displayName) · \(account.account(v.accountId)?.displayName ?? "")" : v.displayName
                     chip(title, symbol: vaultSymbol(v.icon, kind: v.kind), tint: vaultColor(v),
                          selected: account.vaultFilter == .vault(accountId: v.accountId, vaultId: v.id)) {
                         account.vaultFilter = .vault(accountId: v.accountId, vaultId: v.id)

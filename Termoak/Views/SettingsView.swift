@@ -12,7 +12,6 @@ struct SettingsView: View {
     @EnvironmentObject private var sessions: Sessions
     @Environment(\.openURL) private var openURL
     @Environment(\.dismiss) private var dismiss
-    @State private var twoFactor: TwoFactorStatus?
     /// Terms and privacy of the current account's server (its /info).
     @State private var serverDetails: ServerDetails?
     @State private var renamingDevice = false
@@ -58,8 +57,9 @@ struct SettingsView: View {
                         if account.loggedIn == true, let url = URL(string: "\(current.serverUrl)/app/account") {
                             Button { openURL(url) } label: { Label("settings.web_account", systemImage: "arrow.up.right.square") }
                         }
-                        if let tf = twoFactor { twoFactorRow(tf) }
+                        if current.status == .active { TwoFactorRow(accountId: current.id) }
                     }
+                    privacySection
 
                     if account.loggedIn == true {
                         Section("settings.ai") {
@@ -176,13 +176,6 @@ struct SettingsView: View {
             }
         }
         .navigationViewStyle(.stack)
-        .task(id: account.current?.id) {
-            if account.loggedIn == true {
-                twoFactor = try? await model.core.twoFactorStatus()
-            } else {
-                twoFactor = nil
-            }
-        }
         .onChange(of: settings.fontSize) { _ in sessions.applyAppearance() }
         .onChange(of: settings.terminalThemeId) { _ in sessions.applyAppearance() }
         .onChange(of: settings.fontId) { _ in sessions.applyAppearance() }
@@ -223,7 +216,7 @@ struct SettingsView: View {
         HStack(spacing: 14) {
             AccountAvatar(account: current, size: 56)
             VStack(alignment: .leading, spacing: 3) {
-                Text(verbatim: current.email)
+                Text(verbatim: current.displayName)
                     .font(.title3.weight(.semibold))
                     .lineLimit(1)
                 Text(verbatim: current.serverUrl.replacingOccurrences(of: "https://", with: ""))
@@ -286,21 +279,15 @@ struct SettingsView: View {
         }
     }
 
-    /// Two-step verification: On with the recovery codes left, or Off; it
-    /// opens the page that turns it on or off.
-    private func twoFactorRow(_ tf: TwoFactorStatus) -> some View {
-        NavigationLink { TwoFactorView() } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Label("settings.two_factor", systemImage: "lock.shield")
-                    Text(tf.enabled ? String(localized: "two_factor.codes_left \(Int(tf.recoveryCodesLeft))")
-                                    : String(localized: "two_factor.off_hint"))
-                        .font(.caption).foregroundColor(.secondary)
-                }
-                Spacer()
-                Chip(tf.enabled ? String(localized: "settings.two_factor.on") : String(localized: "settings.two_factor.off"),
-                     tf.enabled ? Brand.green : Brand.amber)
-            }
+    /// Privacy: the emails of your accounts masked everywhere (switcher,
+    /// sidebar, sharing...), for screenshots, screen sharing and demos.
+    private var privacySection: some View {
+        Section {
+            Toggle("settings.hide_emails", isOn: $settings.hideEmails)
+        } header: {
+            Text("settings.privacy")
+        } footer: {
+            Text("settings.hide_emails.footer")
         }
     }
 

@@ -296,7 +296,7 @@ struct ConnectionsView: View {
         for a in account.list where a.status == .active {
             do {
                 let list = try await model.core.account(accountId: a.id).listServerSessions()
-                out.append(AccountSessionList(accountId: a.id, email: a.email, list: list))
+                out.append(AccountSessionList(accountId: a.id, email: a.displayName, list: list))
             } catch {
                 self.error = userMessage(error)
             }

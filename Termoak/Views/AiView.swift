@@ -691,7 +691,7 @@ private struct AiAccountChip: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 AccountAvatar(account: account, size: 18)
-                Text(verbatim: account.email).font(.subheadline).lineLimit(1)
+                Text(verbatim: account.displayName).font(.subheadline).lineLimit(1)
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 6)

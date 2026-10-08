@@ -53,12 +53,7 @@ extension KnownHost {
 }
 
 extension AccountInfo {
-    /// "ana@example.com" or, on another server, "ana@example.com · ssh.example.com".
-    var title: String { name.isEmpty ? email : name }
-    var initial: String {
-        let source = name.isEmpty ? email : name
-        return source.trimmingCharacters(in: .whitespaces).first.map { String($0).uppercased() } ?? "?"
-    }
+    // Its name, email and initial as shown: AccountNames.swift.
     /// Server shown next to the account (nothing for the official one).
     var serverLabel: String? { official ? nil : serverName }
 }

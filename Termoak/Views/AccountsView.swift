@@ -50,12 +50,12 @@ struct AccountRow: View {
             AccountAvatar(account: info, size: 36)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text(verbatim: info.email).font(.headline).lineLimit(1)
+                    Text(verbatim: info.displayName).font(.headline).lineLimit(1)
                     if info.isCurrent && account.list.count > 1 {
                         Text("accounts.current").font(.caption2.weight(.semibold)).foregroundColor(.accentColor)
                     }
                 }
-                Text(verbatim: info.official ? officialHost : info.serverName)
+                Text(verbatim: subtitle)
                     .font(.caption).foregroundColor(.secondary).lineLimit(1)
                 AccountStatusText(info: info).font(.caption)
             }
@@ -67,6 +67,12 @@ struct AccountRow: View {
 
     private var officialHost: String {
         officialServerUrl().replacingOccurrences(of: "https://", with: "")
+    }
+
+    /// The server, after the email when the account has an alias.
+    private var subtitle: String {
+        let server = info.official ? officialHost : info.serverName
+        return info.alias == nil ? server : "\(info.displayEmail) · \(server)"
     }
 }
 
@@ -109,6 +115,8 @@ struct AccountDetailView: View {
     @State private var confirmUnsynced = false
     @State private var busy = false
     @State private var error: String?
+    @State private var renaming = false
+    @State private var aliasText = ""
 
     private var info: AccountInfo? { account.account(accountId) }
 
@@ -124,7 +132,10 @@ struct AccountDetailView: View {
                     HStack(spacing: 14) {
                         AccountAvatar(account: info, size: 56)
                         VStack(alignment: .leading, spacing: 3) {
-                            Text(verbatim: info.email).font(.title3.weight(.semibold)).lineLimit(1)
+                            Text(verbatim: info.displayName).font(.title3.weight(.semibold)).lineLimit(1)
+                            if info.alias != nil {
+                                Text(verbatim: info.displayEmail).font(.subheadline).foregroundColor(.secondary).lineLimit(1)
+                            }
                             if !info.name.isEmpty {
                                 Text(verbatim: info.name).font(.subheadline).foregroundColor(.secondary)
                             }
@@ -138,6 +149,8 @@ struct AccountDetailView: View {
                     }
                     .padding(.vertical, 6)
                 }
+
+                aliasSection(info)
 
                 Section {
                     HStack {
@@ -199,9 +212,11 @@ struct AccountDetailView: View {
 
                 if let url = URL(string: "\(info.serverUrl)/app/account") {
                     Section {
-                        // The engine manages two-step verification of the current account only.
-                        if info.isCurrent && info.status == .active {
-                            NavigationLink { TwoFactorView() } label: { Label("settings.two_factor", systemImage: "lock.shield") }
+                        if info.status == .active {
+                            TwoFactorRow(accountId: info.id)
+                            NavigationLink { TeamsView(accountId: info.id) } label: {
+                                Label("desktop.section.teams", systemImage: "person.3")
+                            }
                         }
                         Button { openURL(url) } label: { Label("settings.web_account", systemImage: "arrow.up.right.square") }
                     }
@@ -224,14 +239,14 @@ struct AccountDetailView: View {
                 }
             }
         }
-        .navigationTitle(info?.email ?? "")
+        .navigationTitle(info?.displayName ?? "")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $signingIn) {
             if let info {
                 LoginView(welcome: false, resume: info) {}.environmentObject(account).environmentObject(settings)
             }
         }
-        .confirmationDialog(Text("accounts.sign_out.title \(info?.email ?? "")"), isPresented: $confirmSignOut,
+        .confirmationDialog(Text("accounts.sign_out.title \(info?.displayName ?? "")"), isPresented: $confirmSignOut,
                             titleVisibility: .visible) {
             Button(info?.status == .active ? String(localized: "accounts.sign_out") : String(localized: "accounts.remove"), role: .destructive) { signOut(discard: false) }
         } message: {
@@ -246,6 +261,38 @@ struct AccountDetailView: View {
         } message: {
             Text("accounts.unsynced.message")
         }
+        .textPrompt(Text("accounts.alias"), isPresented: $renaming, text: $aliasText,
+                    placeholder: info?.email ?? "", message: Text("accounts.alias.message"),
+                    confirm: String(localized: "common.save"), plain: false) { saveAlias() }
+    }
+
+    /// The name of this account on this device ("Work", "Personal").
+    private func aliasSection(_ info: AccountInfo) -> some View {
+        Section {
+            Button {
+                aliasText = info.alias ?? ""
+                renaming = true
+            } label: {
+                HStack {
+                    Label("accounts.alias", systemImage: "character.cursor.ibeam")
+                    Spacer()
+                    Text(verbatim: info.alias ?? String(localized: "accounts.alias.none"))
+                        .foregroundColor(.secondary).lineLimit(1)
+                }
+            }
+            if info.alias != nil {
+                Button(role: .destructive) { settings.accountAliases[accountId] = nil } label: {
+                    Label("accounts.alias.remove", systemImage: "xmark.circle")
+                }
+            }
+        } footer: {
+            Text("accounts.alias.footer")
+        }
+    }
+
+    private func saveAlias() {
+        // Trimmed, at most 40 characters; blank removes it.
+        settings.accountAliases[accountId] = cleanAccountAlias(alias: aliasText)
     }
 
     private func askSignOut() {

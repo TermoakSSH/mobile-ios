@@ -260,7 +260,7 @@ struct DesktopSidebar: View {
                 Circle().fill(statusColor).frame(width: 8, height: 8)
                 if !collapsed {
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(verbatim: account.current?.email ?? String(localized: "desktop.account.no_server"))
+                        Text(verbatim: account.current?.displayName ?? String(localized: "desktop.account.no_server"))
                             .font(.caption.weight(.medium))
                             .foregroundColor(.primary)
                             .lineLimit(1)
@@ -358,7 +358,7 @@ private struct VaultPicker: View {
     }
 
     private func title(_ v: VaultInfo) -> String {
-        account.showsAccountBadges ? "\(v.displayName) · \(account.account(v.accountId)?.email ?? "")" : v.displayName
+        account.showsAccountBadges ? "\(v.displayName) · \(account.account(v.accountId)?.displayName ?? "")" : v.displayName
     }
 
     private var chosen: VaultInfo? {

@@ -80,6 +80,7 @@ final class Accounts: ObservableObject {
     let sessionNotices = PassthroughSubject<ShareNotice, Never>()
 
     private var queued: [AppNotice] = []
+    private var subscriptions: Set<AnyCancellable> = []
     private var events: [String: (task: Task<Void, Never>, subscription: EventSubscription?)] = [:]
     private var approvals: [String: Int] = [:]
     /// Account added from an empty device: after its first sync, offer to
@@ -92,6 +93,10 @@ final class Accounts: ObservableObject {
     init(core: TermoakCore) {
         self.core = core
         reload()
+        // An alias or "Hide email addresses" changed: the names shown change.
+        AccountNamesStore.shared.$names
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &subscriptions)
     }
 
     // ----- State -----
@@ -218,7 +223,7 @@ final class Accounts: ObservableObject {
         guard let accountId = p.accountId else { return String(localized: "accounts.this_device") }
         let acc = account(accountId)
         let vaultName = vault(accountId, p.vaultId)?.displayName
-        let accountName = acc?.email ?? "?"
+        let accountName = acc?.displayName ?? "?"
         guard let vaultName else { return accountName }
         return list.count > 1 ? "\(vaultName) · \(accountName)" : vaultName
     }
@@ -343,7 +348,7 @@ final class Accounts: ObservableObject {
         d.set(true, forKey: Self.layoutNoticeKey)
         let message = list.isEmpty
             ? String(localized: "accounts.layout_notice.device")
-            : String(localized: "accounts.layout_notice.accounts \(list.map(\.email).joined(separator: ", "))")
+            : String(localized: "accounts.layout_notice.accounts \(list.map(\.displayName).joined(separator: ", "))")
         post(String(localized: "accounts.layout_notice.title"), message)
     }
 
@@ -469,7 +474,7 @@ final class Accounts: ObservableObject {
             lines.append(String(localized: "accounts.sync.discarded \(Int(d.count)) \(d.vaultName)"))
         }
         guard !lines.isEmpty else { return }
-        let title = list.count > 1 ? info.email : String(localized: "accounts.sync.title")
+        let title = list.count > 1 ? info.displayName : String(localized: "accounts.sync.title")
         post(title, lines.joined(separator: "\n"))
     }
 

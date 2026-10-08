@@ -24,7 +24,7 @@ struct UploadDeviceItemsView: View {
 
     private var targetName: String {
         let personal = account.vaults(of: accountId).first { $0.kind == .personal }
-        return personal?.displayName ?? account.account(accountId)?.email ?? ""
+        return personal?.displayName ?? account.account(accountId)?.displayName ?? ""
     }
 
     var body: some View {
