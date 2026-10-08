@@ -20,6 +20,9 @@ struct ConnectionsView: View {
     @State private var sharing: SharingItem?
     /// One of your server sessions whose activity (who typed) is on screen.
     @State private var activity: SharingItem?
+    /// A recording being downloaded (session id), and the downloaded file to share or save.
+    @State private var downloadingRecording: String?
+    @State private var recordingFile: RecordingFile?
 
     private var serverEmpty: Bool {
         lists.allSatisfy { $0.list.active.isEmpty && $0.list.shared.isEmpty && $0.list.recent.isEmpty }
@@ -103,6 +106,7 @@ struct ConnectionsView: View {
             .sheet(item: $sharing) { item in
                 ShareSessionView(core: model.core, source: .server(sessionId: item.id, accountId: item.accountId), title: item.title)
             }
+            .sheet(item: $recordingFile) { f in ActivityView(items: [f.url]) }
             .sheet(item: $activity) { item in
                 SessionActivityView(core: model.core.api(for: item.accountId), sessionId: item.id, title: item.title)
             }
@@ -176,7 +180,9 @@ struct ConnectionsView: View {
                                 .font(.caption).foregroundColor(.secondary).lineLimit(1)
                         }
                         Spacer(minLength: 0)
-                        if r.recording {
+                        if downloadingRecording == r.id {
+                            ProgressView()
+                        } else if r.recording {
                             Image(systemName: "record.circle").foregroundColor(.secondary)
                                 .accessibilityLabel(Text("activity.recorded"))
                         }
@@ -187,6 +193,11 @@ struct ConnectionsView: View {
                         if r.recording {
                             Button { showActivity(id: r.id, title: title, accountId: accountId) } label: {
                                 Label("activity.menu", systemImage: "clock.arrow.circlepath")
+                            }
+                            if canDownloadRecording(accountId) {
+                                Button { downloadRecording(id: r.id, title: title) } label: {
+                                    Label("sessions.recording.download", systemImage: "arrow.down.circle")
+                                }
                             }
                         }
                     }
@@ -232,6 +243,31 @@ struct ConnectionsView: View {
     }
 
     /// Who typed in one of your sessions (open or closed).
+    /// The engine downloads recordings of the current account's sessions
+    /// (other accounts: needs a per-account call).
+    private func canDownloadRecording(_ accountId: String) -> Bool {
+        model.core.currentAccount()?.id == accountId
+    }
+
+    /// Downloads a recording (`.cast`, asciicast) to share it or save it to Files.
+    private func downloadRecording(id: String, title: String) {
+        guard downloadingRecording == nil else { return }
+        downloadingRecording = id
+        let safe = title.components(separatedBy: CharacterSet(charactersIn: "/\\:")).joined(separator: "-")
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("recording-\(UUID().uuidString)", isDirectory: true)
+        let file = folder.appendingPathComponent("\(safe.isEmpty ? id : safe).cast")
+        Task {
+            defer { downloadingRecording = nil }
+            do {
+                try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                _ = try await model.core.downloadRecording(sessionId: id, localPath: file.path, listener: nil)
+                recordingFile = RecordingFile(url: file)
+            } catch {
+                self.error = userMessage(error)
+            }
+        }
+    }
+
     private func showActivity(id: String, title: String, accountId: String) {
         activity = SharingItem(id: id, title: title, accountId: accountId)
     }
@@ -262,6 +298,12 @@ private struct AccountSessionList: Identifiable {
 }
 
 /// One of your server sessions in the invitations sheet.
+/// A downloaded recording to share or save.
+private struct RecordingFile: Identifiable {
+    let url: URL
+    var id: String { url.path }
+}
+
 private struct SharingItem: Identifiable {
     let id: String
     let title: String

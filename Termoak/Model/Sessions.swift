@@ -1104,6 +1104,8 @@ final class ServerTerminal: TerminalSession {
     /// Joined with an invitation link (instead of attached by id).
     private(set) var link: JoinLink?
     private(set) var joinMode: JoinMode = .account
+    /// A new session is recorded on the server (`nil`: as the host says).
+    var record: Bool?
     /// The first `hello` arrived (who you are is known).
     private var greeted = false
     /// Last size of the view: sent only while you can write.
@@ -1171,9 +1173,9 @@ final class ServerTerminal: TerminalSession {
                         // On the host's account (the current one for This-device hosts).
                         if let accountId {
                             id = try await core.account(accountId: accountId)
-                                .openServerSession(hostId: hostId, cols: cols, rows: rows, title: label, record: nil).id
+                                .openServerSession(hostId: hostId, cols: cols, rows: rows, title: label, record: record).id
                         } else {
-                            id = try await core.openServerSession(hostId: hostId, cols: cols, rows: rows, title: label, record: nil).id
+                            id = try await core.openServerSession(hostId: hostId, cols: cols, rows: rows, title: label, record: record).id
                         }
                         sessionId = id
                     } else {
@@ -1773,15 +1775,18 @@ final class Sessions: ObservableObject {
 
     /// A persistent session on the host's server (its account). The server
     /// does not open Telnet sessions: a Telnet host's tab says so.
-    func openOnServer(_ host: SshHost) {
+    /// `record`: record this session on the server (`nil`: as the host says).
+    func openOnServer(_ host: SshHost, record: Bool? = nil) {
         RecentHostsStore.record(host)
         if host.isTelnet {
             let reason = host.isUseOnly ? String(localized: "telnet.strict_vault") : String(localized: "telnet.no_server_sessions")
             add(LocalTerminal(core: core, host: host, settings: settings, refusal: reason))
             return
         }
-        add(ServerTerminal(core: core, label: host.label.isEmpty ? host.address : host.label,
-                           hostId: host.id, sessionId: nil, accountId: host.accountId, settings: settings))
+        let s = ServerTerminal(core: core, label: host.label.isEmpty ? host.address : host.label,
+                               hostId: host.id, sessionId: nil, accountId: host.accountId, settings: settings)
+        s.record = record
+        add(s)
     }
 
     /// Connects to a host from this device, or through its server when it

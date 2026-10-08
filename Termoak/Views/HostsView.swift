@@ -941,6 +941,13 @@ struct HostsView: View {
         // Telnet hosts: no server sessions, SFTP or tunnels (SSH only).
         if canOpenOnServer(host) && !host.isTelnet {
             Button { connect(host, onServer: true) } label: { Label("hosts.menu.persistent", systemImage: "icloud") }
+            // Recorded on the server, for its activity and download (the
+            // host's setting may already record every session).
+            if host.settings.recordSessions != true {
+                Button { sessions.openOnServer(host, record: true) } label: {
+                    Label("hosts.menu.persistent_recorded", systemImage: "record.circle")
+                }
+            }
         }
         if !host.isTelnet {
             Button { filesHost = host } label: { Label("common.files_sftp", systemImage: "folder") }

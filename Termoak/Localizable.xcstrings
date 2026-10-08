@@ -8149,6 +8149,22 @@
         }
       }
     },
+    "hosts.menu.persistent_recorded": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect on server, recorded"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectar en el servidor, grabando"
+          }
+        }
+      }
+    },
     "hosts.menu.unfavorite": {
       "localizations": {
         "en": {
@@ -13016,6 +13032,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "No hay sesiones abiertas"
+          }
+        }
+      }
+    },
+    "sessions.recording.download": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Download recording"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descargar la grabación"
           }
         }
       }
