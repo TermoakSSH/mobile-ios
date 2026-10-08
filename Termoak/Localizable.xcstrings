@@ -8325,6 +8325,102 @@
         }
       }
     },
+    "host_status.down": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unreachable"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No accesible"
+          }
+        }
+      }
+    },
+    "host_status.setting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check host status"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprobar el estado de los hosts"
+          }
+        }
+      }
+    },
+    "host_status.setting.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A dot next to each host on screen: green when it answers (with the time it took), red when it doesn't. This device connects to each host's port (through its proxy, without signing in), at most once a minute and only while the list is in view. Hosts behind jump hosts or in Strict vaults aren't checked. A host's menu can leave it out."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un punto junto a cada host en pantalla: verde si responde (con el tiempo que tardó), rojo si no. Este dispositivo se conecta al puerto de cada host (a través de su proxy, sin iniciar sesión), como mucho una vez por minuto y solo mientras la lista está a la vista. Los hosts tras hosts de salto o en bóvedas Estrictas no se comprueban. El menú de un host permite dejarlo fuera."
+          }
+        }
+      }
+    },
+    "host_status.turn_off": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Don't check status"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No comprobar el estado"
+          }
+        }
+      }
+    },
+    "host_status.turn_on": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check status"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprobar el estado"
+          }
+        }
+      }
+    },
+    "host_status.up %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reachable · %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accesible · %@"
+          }
+        }
+      }
+    },
     "hosts.address_copied": {
       "localizations": {
         "en": {

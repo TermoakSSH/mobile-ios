@@ -110,6 +110,7 @@ targets:
       - path: Termoak/Model/GroupChain.swift
       - path: Termoak/Model/ExecReport.swift
       - path: Termoak/Model/TerminalAiRules.swift
+      - path: Termoak/Model/HostStatus.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

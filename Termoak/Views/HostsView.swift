@@ -69,6 +69,8 @@ struct HostsView: View {
     @State private var chip: HostChip = .all
     /// Desktop layout: cards per row (for ↑/↓).
     @State private var gridColumns = 1
+    /// In view (not under a group pushed over it): the status dots check.
+    @State private var onScreen = false
     @FocusState private var searchFocused: Bool
 
     private var selecting: Bool { editMode.isEditing }
@@ -112,6 +114,11 @@ struct HostsView: View {
             return !hasGroup(h)
         }
         .sorted(by: listOrder)
+    }
+
+    /// The hosts on screen, for the status dots.
+    private var probedHosts: [SshHost] {
+        desktop ? gridSections.flatMap(\.hosts) : visible
     }
 
     /// Favorites first, then by name.
@@ -161,7 +168,11 @@ struct HostsView: View {
         // Split in parts: as one expression it is too much for the type checker.
         withDialogs(withMoreSheets(withSheets(withToolbar(content))))
         .overlay(alignment: .bottom) { toastView }
+        // Status dots (Settings → Host status): the hosts on screen.
+        .hostStatusChecks(probedHosts, active: onScreen && !sessions.showing && !covered)
+        .onDisappear { onScreen = false }
         .onAppear {
+            onScreen = true
             load()
             if isRoot { account.sync() }
         }
@@ -986,6 +997,7 @@ struct HostsView: View {
         } label: {
             Label("hosts.menu.copy_address", systemImage: "doc.on.doc")
         }
+        HostStatusMenuItem(host: host)
         if desktop && host.canEdit { moveToGroupMenu(host) }
         if !account.list.isEmpty && !host.isUseOnly {
             let place = account.place(accountId: host.accountId, vaultId: host.vaultId)
@@ -1699,6 +1711,7 @@ private struct HostRow: View {
                             .accessibilityLabel(Text("vaults.use_only_badge"))
                     }
                     if host.isTelnet { TelnetBadge() }
+                    HostStatusDot(host: host, showsLatency: true)
                 }
                 Text(hostSubtitle(host)).font(.subheadline).foregroundColor(.secondary).lineLimit(1)
                 if !host.tags.isEmpty || showVault || host.isUseOnly {

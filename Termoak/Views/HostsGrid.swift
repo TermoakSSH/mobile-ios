@@ -83,6 +83,7 @@ struct HostCard<MenuItems: View>: View {
                             Image(systemName: "lock.fill").font(.caption2).foregroundColor(Brand.amber)
                                 .accessibilityLabel(Text("vaults.use_only_badge"))
                         }
+                        HostStatusDot(host: host, showsLatency: true)
                     }
                     Text(verbatim: hostAddressLine(host))
                         .font(.caption)

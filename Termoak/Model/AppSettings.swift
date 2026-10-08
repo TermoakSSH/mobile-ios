@@ -111,7 +111,7 @@ final class AppSettings: ObservableObject {
     /// Reachability dots on the hosts lists (`probeHosts`), off by default
     /// like the desktop's "Check host status".
     @Published var hostStatusChecks: Bool { didSet { d.set(hostStatusChecks, forKey: "host_status_checks") } }
-    /// Hosts (`SshHost.key`) whose status is never checked.
+    /// Hosts (ids, as `probeHosts` takes them) whose status is never checked.
     @Published var hostStatusOff: [String] { didSet { d.set(hostStatusOff, forKey: "host_status_off") } }
     /// "Command failed · Explain · Fix" under a command that failed in a
     /// terminal (the AI is only asked when tapped; nothing runs by itself).

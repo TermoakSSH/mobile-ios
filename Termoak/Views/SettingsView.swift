@@ -126,6 +126,8 @@ struct SettingsView: View {
 
                 AppLockSection(lock: AppLock.shared)
 
+                HostStatusSettingsSection()
+
                 Section {
                     Picker("common.theme", selection: $settings.appTheme) {
                         ForEach(AppTheme.allCases) { Text($0.title).tag($0) }
