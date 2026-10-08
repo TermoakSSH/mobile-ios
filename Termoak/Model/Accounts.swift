@@ -61,6 +61,8 @@ final class Accounts: ObservableObject {
     @Published var notice: AppNotice?
     /// Offer to upload the This-device items to the first account.
     @Published var uploadOffer: UploadOffer?
+    /// Account chosen in the AI section (`nil`: the current one).
+    @Published var aiAccountId: String?
 
     /// Something changed on a server (`ai`, `session`, `lagged`): reload.
     let changes = PassthroughSubject<String, Never>()
@@ -123,6 +125,17 @@ final class Accounts: ObservableObject {
     var syncing: Bool { !syncingIds.isEmpty }
     var syncError: String? { current.flatMap { syncErrors[$0.id] } }
     var lastSync: Date? { current?.lastSyncAt.map { Date(timeIntervalSince1970: TimeInterval($0) / 1000) } }
+
+    /// Signed-in accounts (the AI and server sessions work with these).
+    var active: [AccountInfo] { list.filter { $0.status == .active } }
+
+    /// The account the AI section works with: the one chosen there, the
+    /// current one, or the first signed in.
+    var aiAccount: AccountInfo? {
+        if let chosen = account(aiAccountId), chosen.status == .active { return chosen }
+        if let current, current.status == .active { return current }
+        return active.first
+    }
 
     func account(_ id: String?) -> AccountInfo? {
         guard let id else { return nil }

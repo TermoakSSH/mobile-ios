@@ -28,9 +28,13 @@ struct AiView: View {
     @State private var loggingIn = false
     @State private var error: String?
 
+    /// The account whose AI is on screen (the server runs its tasks).
+    private var aiAccountId: String? { account.aiAccount?.id }
+    private var api: AccountApi { model.core.api(for: aiAccountId) }
+
     var body: some View {
         Group {
-            if account.loggedIn != true {
+            if account.aiAccount == nil {
                 EmptyState(
                     icon: "sparkles",
                     title: String(localized: "ai.empty.title"),
@@ -44,13 +48,13 @@ struct AiView: View {
         .navigationTitle("connections.ai_tasks")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                if account.loggedIn == true {
+                if account.aiAccount != nil {
                     Button { creating = true } label: { Image(systemName: "plus") }
                         .accessibilityLabel("ai.new.title")
                 }
             }
         }
-        .sheet(isPresented: $creating) { NewTaskView().environmentObject(model) }
+        .sheet(isPresented: $creating) { NewTaskView(accountId: aiAccountId).environmentObject(model) }
         .sheet(isPresented: $loggingIn) {
             LoginView(welcome: false) {}.environmentObject(account).environmentObject(model.settings)
         }
@@ -62,10 +66,33 @@ struct AiView: View {
             if kind == "ai" || kind == "lagged" { Task { await load() } }
         }
         .onChange(of: creating) { open in if !open { Task { await load() } } }
+        .onChange(of: account.aiAccountId) { _ in
+            tasks = []
+            approvals = []
+            Task { await load() }
+        }
+    }
+
+    /// Several accounts signed in: which one's AI (its tasks, approvals and
+    /// new tasks), like Android.
+    private var accountPicker: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(account.active, id: \.id) { a in
+                    AiAccountChip(account: a, selected: a.id == aiAccountId) { account.aiAccountId = a.id }
+                }
+            }
+            .padding(.vertical, 2)
+        }
+        .listRowInsets(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 0))
+        .listRowBackground(Color.clear)
     }
 
     private var list: some View {
         List {
+            if account.active.count > 1 {
+                Section { accountPicker }
+            }
             if !approvals.isEmpty {
                 Section("ai.section.approvals") {
                     ForEach(approvals, id: \.id) { a in
@@ -81,7 +108,7 @@ struct AiView: View {
                         .foregroundColor(.secondary)
                 }
                 ForEach(tasks, id: \.id) { t in
-                    NavigationLink { TaskView(taskId: t.id) } label: { TaskRow(task: t) }
+                    NavigationLink { TaskView(taskId: t.id, accountId: aiAccountId) } label: { TaskRow(task: t) }
                 }
             }
         }
@@ -90,10 +117,11 @@ struct AiView: View {
     }
 
     private func load() async {
-        guard account.loggedIn == true else { return }
+        guard account.aiAccount != nil else { return }
+        let api = self.api
         do {
-            tasks = try await model.core.listAiTasks(limit: 50)
-            approvals = try await model.core.listPendingApprovals()
+            tasks = try await api.listAiTasks(limit: 50)
+            approvals = try await api.listPendingApprovals()
             await account.refreshApprovals()
         } catch {
             self.error = userMessage(error)
@@ -103,7 +131,7 @@ struct AiView: View {
     private func decide(_ a: AiApproval, approve: Bool, always: Bool) {
         Task {
             do {
-                try await model.core.decideApproval(taskId: a.taskId, approvalId: a.id, approve: approve, always: always)
+                try await api.decideApproval(taskId: a.taskId, approvalId: a.id, approve: approve, always: always)
             } catch {
                 self.error = userMessage(error)
             }
@@ -210,6 +238,8 @@ struct ApprovalCard: View {
 }
 
 struct NewTaskView: View {
+    /// The account whose server runs the task (`nil`: the current one).
+    var accountId: String? = nil
     @EnvironmentObject private var model: AppModel
     @Environment(\.dismiss) private var dismiss
     @State private var prompt = ""
@@ -278,9 +308,9 @@ struct NewTaskView: View {
         }
         .sheet(isPresented: $showingAiSettings) { AiSettingsSheet().environmentObject(model) }
         .onAppear {
-            // The AI runs on the current account's server: only its hosts.
-            let current = model.account.current?.id
-            let filter = ItemFilter(accountIds: current.map { [$0] } ?? [], vaultIds: nil, includeDevice: false)
+            // The AI runs on the account's server: only its hosts.
+            let owner = accountId ?? model.account.current?.id
+            let filter = ItemFilter(accountIds: owner.map { [$0] } ?? [], vaultIds: nil, includeDevice: false)
             // Its tools work over SSH: Telnet hosts are left out.
             hosts = ((try? model.core.listHosts(filter: filter)) ?? [])
                 .filter { !$0.isTelnet }
@@ -295,7 +325,7 @@ struct NewTaskView: View {
         Task {
             defer { busy = false }
             do {
-                _ = try await model.core.createAiTask(request: AiTaskRequest(
+                _ = try await model.core.api(for: accountId).createAiTask(request: AiTaskRequest(
                     prompt: prompt.trimmingCharacters(in: .whitespacesAndNewlines),
                     mode: mode, hostIds: Array(selected)))
                 dismiss()
@@ -309,6 +339,8 @@ struct NewTaskView: View {
 
 struct TaskView: View {
     let taskId: String
+    /// The task's account (`nil`: the current one).
+    var accountId: String? = nil
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Accounts
     @State private var task: AiTask?
@@ -318,6 +350,8 @@ struct TaskView: View {
     @State private var problem: AiAccessProblem?
     @State private var showingAiSettings = false
     @FocusState private var typing: Bool
+
+    private var api: AccountApi { model.core.api(for: accountId) }
 
     var body: some View {
         Group {
@@ -331,7 +365,7 @@ struct TaskView: View {
                             ForEach(t.pendingApprovals, id: \.id) { a in
                                 ApprovalCard(approval: a, task: nil) { approve, always in
                                     Task {
-                                        try? await model.core.decideApproval(taskId: a.taskId, approvalId: a.id, approve: approve, always: always)
+                                        try? await api.decideApproval(taskId: a.taskId, approvalId: a.id, approve: approve, always: always)
                                         await account.refreshApprovals()
                                         await load()
                                     }
@@ -365,7 +399,7 @@ struct TaskView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 if task?.isActive == true {
-                    Button("common.cancel") { Task { try? await model.core.cancelAiTask(taskId: taskId); await load() } }
+                    Button("common.cancel") { Task { try? await api.cancelAiTask(taskId: taskId); await load() } }
                 }
             }
         }
@@ -419,7 +453,7 @@ struct TaskView: View {
 
     private func load() async {
         do {
-            task = try await model.core.getAiTask(taskId: taskId)
+            task = try await api.getAiTask(taskId: taskId)
         } catch {
             self.error = userMessage(error)
         }
@@ -432,7 +466,7 @@ struct TaskView: View {
         problem = nil
         Task {
             do {
-                task = try await model.core.sendAiMessage(taskId: taskId, text: text)
+                task = try await api.sendAiMessage(taskId: taskId, text: text)
             } catch {
                 // Not lost: back in the field to send it again.
                 if message.isEmpty { message = text }
@@ -443,5 +477,28 @@ struct TaskView: View {
                 }
             }
         }
+    }
+}
+
+/// An account to choose in the AI section: its avatar and email.
+private struct AiAccountChip: View {
+    let account: AccountInfo
+    let selected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                AccountAvatar(account: account, size: 18)
+                Text(verbatim: account.email).font(.subheadline).lineLimit(1)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .foregroundColor(selected ? .accentColor : .primary)
+            .background(selected ? Color.accentColor.opacity(0.15) : Color(.secondarySystemGroupedBackground), in: Capsule())
+            .overlay(Capsule().stroke(selected ? Color.accentColor : Color.secondary.opacity(0.3), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
