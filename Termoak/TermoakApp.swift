@@ -69,6 +69,8 @@ final class AppModel: ObservableObject {
     let tunnels: Tunnels
     /// "Join with link" sheet (opened from a link or from Connections).
     @Published var joining: JoinSheetItem?
+    /// A `termoak://invite` link: sign up with it.
+    @Published var inviting: InviteLink?
     private var subscriptions: Set<AnyCancellable> = []
 
     init(core: TermoakCore, settings: AppSettings) {
@@ -108,6 +110,15 @@ final class AppModel: ObservableObject {
     /// Returns whether it was an invitation link.
     @discardableResult
     func handleURL(_ url: URL) -> Bool {
+        if let invite = InviteLink.parse(url) {
+            // The terminal covers the home screen: close it first.
+            let covered = sessions.showing
+            sessions.showing = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + (covered ? 0.6 : 0)) { [weak self] in
+                self?.inviting = invite
+            }
+            return true
+        }
         guard let link = JoinLink.parse(url) else { return false }
         if sessions.showing {
             // The terminal covers the home screen: close it first so the
@@ -258,6 +269,12 @@ private struct RootContent: View {
             JoinLinkView(link: item.link)
                 .environmentObject(model)
                 .environmentObject(model.account)
+        }
+        // termoak://invite: the sign-up form of that server with the code.
+        .sheet(item: $model.inviting) { link in
+            LoginView(welcome: false, inviteLink: link) {}
+                .environmentObject(account)
+                .environmentObject(settings)
         }
         .onReceive(account.sessionNotices) { model.sessionNotice($0) }
         // Notices of the syncs (vaults shared or lost, changes discarded)

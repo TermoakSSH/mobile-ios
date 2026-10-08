@@ -10468,6 +10468,70 @@
         }
       }
     },
+    "login.invite.expires %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expires on %@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caduca el %@."
+          }
+        }
+      }
+    },
+    "login.invite.join_team %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You will join the team “%@”."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Te unirás al equipo «%@»."
+          }
+        }
+      }
+    },
+    "login.invite.only_for %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only for %@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo para %@."
+          }
+        }
+      }
+    },
+    "login.invite.valid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valid invitation."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitación válida."
+          }
+        }
+      }
+    },
     "login.name": {
       "localizations": {
         "en": {

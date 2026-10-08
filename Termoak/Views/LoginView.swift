@@ -38,6 +38,8 @@ struct LoginView: View {
     let welcome: Bool
     /// An account to sign in again (prefilled) or to finish verifying.
     var resume: AccountInfo? = nil
+    /// A `termoak://invite` link: sign up on its server with its code.
+    var inviteLink: InviteLink? = nil
     let onFinish: () -> Void
 
     @EnvironmentObject private var account: Accounts
@@ -62,6 +64,8 @@ struct LoginView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var invite = ""
+    /// What the invitation of `inviteLink` offers (team, email, expiry).
+    @State private var invitation: InviteInfo?
     @State private var acceptTerms = false
     @State private var totp = ""
     @State private var needsTotp = false
@@ -299,9 +303,10 @@ struct LoginView: View {
                        contentType: .username)
             LoginField(icon: "lock", title: String(localized: "login.new_password"), text: $password, secure: true,
                        contentType: .newPassword)
-            if let c = custom, !c.registrationOpen {
+            if custom.map({ !$0.registrationOpen }) == true || inviteLink != nil {
                 LoginField(icon: "ticket", title: String(localized: "login.invite"), text: $invite, keyboard: .asciiCapable)
             }
+            if let invitation { inviteCard(invitation) }
         }
         if let terms = details?.termsUrl {
             Toggle(isOn: $acceptTerms) {
@@ -333,6 +338,26 @@ struct LoginView: View {
         Text("login.password_rules").font(.caption).foregroundColor(.secondary)
         Button { go(.signIn, server: custom) } label: { Text("login.have_account") }
             .font(.footnote)
+    }
+
+    /// "You will join the team “Ops”. Only for ana@example.com. Expires on…"
+    private func inviteCard(_ i: InviteInfo) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            if let team = i.team {
+                Text("login.invite.join_team \(team)")
+            } else {
+                Text("login.invite.valid")
+            }
+            if let mail = i.email { Text("login.invite.only_for \(mail)") }
+            if let exp = i.expiresAt {
+                Text("login.invite.expires \(Date(timeIntervalSince1970: TimeInterval(exp) / 1000).formatted(date: .abbreviated, time: .shortened))")
+            }
+        }
+        .font(.footnote)
+        .foregroundColor(.secondary)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(Brand.green.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
     }
 
     @ViewBuilder private var errorBanner: some View {
@@ -425,6 +450,10 @@ struct LoginView: View {
     // MARK: Actions
 
     private func start() {
+        if let link = inviteLink {
+            startInvite(link)
+            return
+        }
         guard let r = resume else {
             if email.isEmpty { email = UserDefaults.standard.string(forKey: Self.lastEmailKey) ?? "" }
             return
@@ -444,6 +473,35 @@ struct LoginView: View {
             step = .verify(accountId: r.id, email: r.email)
         } else {
             step = .signIn
+        }
+    }
+
+    /// A `termoak://invite` link: the sign-up form of its server with the
+    /// code filled in, and what the invitation is for.
+    private func startInvite(_ link: InviteLink) {
+        guard step == .start, invite.isEmpty else { return }
+        invite = link.token
+        let isOfficial = JoinLink.sameServer(link.server, officialServerUrl())
+        if isOfficial {
+            go(.signUp, server: nil)
+        } else {
+            serverText = link.server
+            step = .signUp
+            Task {
+                if let json = try? await serverInfo(url: link.server) {
+                    custom = try? ServerDetails(url: link.server, json: json)
+                }
+                if custom == nil { custom = try? ServerDetails(url: link.server, json: "{}") }
+            }
+        }
+        Task {
+            do {
+                let info = try await inviteInfo(url: link.server, token: link.token)
+                invitation = info
+                if email.isEmpty, let mail = info.email { email = mail }
+            } catch {
+                self.error = userMessage(error)
+            }
         }
     }
 

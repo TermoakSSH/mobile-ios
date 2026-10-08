@@ -98,6 +98,7 @@ targets:
       - path: Termoak/Model/ApprovalPreview.swift
       - path: Termoak/Model/LockPolicy.swift
       - path: Termoak/Model/KeyTools.swift
+      - path: Termoak/Model/InviteLink.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
