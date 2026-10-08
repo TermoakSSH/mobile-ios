@@ -4045,6 +4045,110 @@
         }
       }
     },
+    "copilot.chip.exit %@ %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · exit %2$lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · salida %2$lld"
+          }
+        }
+      }
+    },
+    "copilot.chip.failed %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · failed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · falló"
+          }
+        }
+      }
+    },
+    "copilot.chip.last_command": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last command"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Último comando"
+          }
+        }
+      }
+    },
+    "copilot.chip.remove %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Don't send %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No enviar %@"
+          }
+        }
+      }
+    },
+    "copilot.chip.selection %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Selection · %lld line"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Selection · %lld lines"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Selección · %lld línea"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Selección · %lld líneas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "copilot.close": {
       "localizations": {
         "en": {
@@ -4233,6 +4337,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Permisos: %@"
+          }
+        }
+      }
+    },
+    "copilot.secrets_hidden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secrets (passwords, tokens, keys) are hidden before sending."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los secretos (contraseñas, tokens, claves) se ocultan antes de enviarlos."
           }
         }
       }

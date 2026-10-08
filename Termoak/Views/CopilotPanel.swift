@@ -51,7 +51,11 @@ struct CopilotPanel: View {
             LoginView(welcome: false) {}.environmentObject(account).environmentObject(settings)
         }
         .sheet(isPresented: $showingAiSettings) { AiSettingsSheet().environmentObject(model) }
-        .onAppear { copilot.resume() }
+        .onAppear {
+            copilot.resume()
+            updateContext()
+        }
+        .onChange(of: session.lastCommand) { _ in updateContext() }
         .onReceive(account.aiEvents) { copilot.receive($0) }
         .onReceive(account.changes) { kind in
             // Events were lost: what is saved wins.
@@ -320,9 +324,37 @@ struct CopilotPanel: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel("copilot.stop_ai")
             }
+            chipsRow
             field
         }
         .padding(.horizontal, 10).padding(.vertical, 8)
+    }
+
+    /// What goes with the next message, each one removable.
+    @ViewBuilder private var chipsRow: some View {
+        if !copilot.chips.isEmpty {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(copilot.chips, id: \.self) { chip in
+                        ContextChipView(chip: chip) { copilot.remove(chip) }
+                    }
+                }
+            }
+        }
+        if copilot.secretsHidden {
+            Label("copilot.secrets_hidden", systemImage: "eye.slash")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// The host and the last command of the terminal, for the chips.
+    private func updateContext() {
+        let host = session.hostId.flatMap { try? model.core.getHost(id: $0, accountId: session.accountId) }
+        let name = host.map { $0.label.isEmpty ? $0.address : $0.label } ?? session.label
+        let chip = session.hostId == nil ? nil : contextChipHost(name: name, os: host?.os)
+        copilot.updateContext(host: chip, last: session.lastCommand)
     }
 
     private var field: some View {
@@ -343,5 +375,35 @@ struct CopilotPanel: View {
 
     private func send() {
         copilot.send(from: session)
+    }
+}
+
+/// A context chip of the copilot: what it is (host, folder, last command,
+/// selection) and an (x) to leave it out.
+private struct ContextChipView: View {
+    let chip: ContextChip
+    let onRemove: () -> Void
+
+    private var icon: String {
+        switch chip.kind {
+        case .host: return "server.rack"
+        case .directory: return "folder"
+        case .lastCommand: return "terminal"
+        case .selection: return "text.cursor"
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon).font(.caption2)
+            Text(verbatim: chip.label).font(.caption).lineLimit(1)
+            Button(action: onRemove) {
+                Image(systemName: "xmark").font(.caption2.weight(.semibold)).frame(width: 18, height: 18)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text("copilot.chip.remove \(chip.label)"))
+        }
+        .padding(.leading, 8).padding(.trailing, 4).padding(.vertical, 3)
+        .background(Color(.tertiarySystemFill), in: Capsule())
     }
 }

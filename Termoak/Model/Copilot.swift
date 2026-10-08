@@ -71,6 +71,22 @@ final class Copilot: ObservableObject {
     /// different one when sending (shared again or the SSH reconnected), the
     /// AI is told about the new one.
     private var taskSession: String?
+    /// What goes with the next message (host, last command, selection), as
+    /// removable chips; their text is redacted by the engine.
+    @Published private(set) var chips: [ContextChip] = []
+    /// Something attached (the chips, or the screen when the AI can't read
+    /// the terminal) has secrets, hidden before leaving the device.
+    @Published private(set) var secretsHidden = false
+    /// The screen sent in this conversation had secrets (hidden).
+    private var screenRedacted = false
+    /// The terminal's context the chips are made from.
+    private var hostChip: ContextChip?
+    private var lastCommand: LastCommandInfo?
+    /// The last command already sent (its chip isn't offered again).
+    private var sentCommand: LastCommandInfo?
+    private var selection: String?
+    /// Chips removed by hand (until the context changes).
+    private var removed: Set<ContextChip> = []
     /// Mode chosen mid-task, until the reloaded task confirms it.
     @Published private(set) var pendingMode: AiPermissionMode?
     /// Stopped while the task was being created: it is cancelled as soon as it exists.
@@ -142,7 +158,72 @@ final class Copilot: ObservableObject {
         splitNext = false
         creating = false
         buffer = []
+        selection = nil
+        sentCommand = nil
+        removed = []
+        screenRedacted = false
+        rebuildChips()
         changes += 1
+    }
+
+    // ----- Context chips -----
+
+    /// The terminal in front of the panel: its host (only offered before the
+    /// first message) and the last command that ended in it.
+    func updateContext(host: ContextChip?, last: LastCommandInfo?) {
+        hostChip = host
+        lastCommand = last
+        rebuildChips()
+    }
+
+    /// "Ask AI about this": the selected text goes with the next message
+    /// (it replaces a previous selection).
+    func attach(selection text: String) {
+        let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !t.isEmpty else { return }
+        selection = text
+        removed = removed.filter { $0.kind != .selection }
+        rebuildChips()
+    }
+
+    /// The chip's (x): it doesn't go with the message.
+    func remove(_ chip: ContextChip) {
+        removed.insert(chip)
+        if chip.kind == .selection { selection = nil }
+        rebuildChips()
+    }
+
+    private func rebuildChips() {
+        var out: [ContextChip] = []
+        if task == nil, pending.isEmpty, let hostChip { out.append(hostChip) }
+        if let last = lastCommand, last != sentCommand {
+            out.append(contextChipLastCommand(last: last, label: Copilot.lastCommandLabel(last)))
+        }
+        if let selection {
+            let label = String(localized: "copilot.chip.selection \(CopilotChipLabel.lines(selection))")
+            out.append(contextChipSelection(text: selection, label: label))
+        }
+        chips = out.filter { !removed.contains($0) }
+        secretsHidden = screenRedacted || chipsHadSecrets
+    }
+
+    /// "make · exit 2", "make · failed", or the command alone.
+    static func lastCommandLabel(_ last: LastCommandInfo) -> String {
+        let command = CopilotChipLabel.command(last.command) ?? String(localized: "copilot.chip.last_command")
+        if let code = last.exitCode, code != 0 { return String(localized: "copilot.chip.exit \(command) \(Int(code))") }
+        if last.failure != nil { return String(localized: "copilot.chip.failed \(command)") }
+        return command
+    }
+
+    /// Whether the chips' source text had secrets (the engine hides them).
+    private var chipsHadSecrets: Bool {
+        chips.contains { chip in
+            switch chip.kind {
+            case .selection: return selection.map { containsSecrets(text: $0) } ?? false
+            case .lastCommand: return lastCommand.map { containsSecrets(text: $0.output) || containsSecrets(text: $0.command ?? "") } ?? false
+            default: return false
+            }
+        }
     }
 
     /// Sends what was typed. The AI types in the terminal through its server
@@ -159,8 +240,16 @@ final class Copilot: ObservableObject {
 
         let local = session as? LocalTerminal
         let own = (session as? ServerTerminal)?.sessionId
-        let screen = session.screenText()
+        // Nothing leaves the device with its secrets: the screen (attached
+        // when the AI can't read the terminal) is redacted here, the chips by
+        // the engine.
+        let rawScreen = session.screenText()
+        let screen = redactSecrets(text: rawScreen)
+        let screenHadSecrets = containsSecrets(text: rawScreen)
         let name = session.hostId == nil ? "local terminal" : session.label
+        let context = chips.isEmpty ? "" : copilotContextBlock(label: name, chips: chips)
+        let used = (lastCommand: chips.contains { $0.kind == .lastCommand } ? lastCommand : nil,
+                    selection: chips.contains { $0.kind == .selection })
         let hostIds = sendsHost ? (session.hostId.map { [$0] } ?? []) : []
         let id = task?.id
         if id == nil {
@@ -185,14 +274,15 @@ final class Copilot: ObservableObject {
                 }
                 guard gen == generation else { return }
                 if let id {
-                    var request = text
+                    var request = context + text
                     if let sessionId {
                         if sessionId != taskSession {
-                            request = Copilot.withSession(sessionId, text)
+                            request = Copilot.withSession(sessionId, context + text)
                         }
                     } else {
-                        request = Copilot.withContext(text, screen: screen, name: name)
+                        request = Copilot.withContext(context + text, screen: screen, name: name)
                     }
+                    if sessionId == nil && screenHadSecrets { screenRedacted = true }
                     _ = try await core.sendAiMessage(taskId: id, text: request)
                     if gen == generation, let sessionId {
                         taskSession = sessionId
@@ -200,7 +290,8 @@ final class Copilot: ObservableObject {
                     }
                 } else {
                     let request = sessionId == nil
-                        ? Copilot.withContext(text, screen: screen, name: name) : text
+                        ? Copilot.withContext(context + text, screen: screen, name: name) : context + text
+                    if sessionId == nil && screenHadSecrets { screenRedacted = true }
                     let t = try await core.createAiTask(request: AiTaskRequest(
                         prompt: request, mode: mode, hostIds: hostIds, sessionId: sessionId))
                     guard gen == generation else { return }
@@ -218,6 +309,13 @@ final class Copilot: ObservableObject {
                         stop(local)
                         return
                     }
+                }
+                // What was attached went with it: not offered again.
+                if gen == generation {
+                    if let last = used.lastCommand { sentCommand = last }
+                    if used.selection { selection = nil }
+                    removed = []
+                    rebuildChips()
                 }
                 await reload()
             } catch {
