@@ -14,9 +14,11 @@ struct FilesScreen: View {
     @State private var renaming: RemoteFile?
     @State private var deleting: RemoteFile?
     @State private var changingPermissions: RemoteFile?
+    @State private var showingInfo: RemoteFile?
     @State private var name = ""
     @State private var preview: URL?
     @State private var sharing: URL?
+    @State private var saving: URL?
     /// File highlighted with a hardware keyboard (by path).
     @State private var cursor: String?
     @ObservedObject private var keyboard = HardwareKeyboard.shared
@@ -25,46 +27,37 @@ struct FilesScreen: View {
         _browser = StateObject(wrappedValue: FileBrowser(core: core, title: title, source: source))
     }
 
-    private var filtered: [RemoteFile] {
-        let q = search.trimmingCharacters(in: .whitespaces).lowercased()
-        return q.isEmpty ? browser.visible : browser.visible.filter { $0.name.lowercased().contains(q) }
-    }
+    private var filtered: [RemoteFile] { browser.arranged(query: search) }
 
     var body: some View {
+        // Split in parts: as one expression it is too much for the type checker.
+        withAlerts(withDialogs(withSheets(navigation)))
+            .task { await browser.open() }
+            // The search belongs to the folder: it is cleared when the folder changes.
+            .onChange(of: browser.path) { _ in
+                search = ""
+                cursor = nil
+            }
+            .onChange(of: browser.downloaded) { file in
+                guard let file else { return }
+                browser.downloaded = nil
+                switch file.purpose {
+                case .preview: preview = file.url
+                case .share: sharing = file.url
+                case .save: saving = file.url
+                }
+            }
+            .onDisappear { browser.close() }
+    }
+
+    private var navigation: some View {
         NavigationView {
             VStack(spacing: 0) {
                 SearchDismisser(path: browser.path)
                 FilesKeyboard(active: keyboard.connected && !covered, shortcuts: !covered,
                               onKey: handleKey, onCommand: command)
                 breadcrumbs
-                ScrollViewReader { proxy in
-                    List {
-                        ForEach(filtered, id: \.path) { f in
-                            row(f)
-                                .listRowBackground(keyboardHighlight(cursor == f.path))
-                                .id(f.path)
-                        }
-                    }
-                    .onChange(of: cursor) { path in
-                        if let path { withAnimation { proxy.scrollTo(path) } }
-                    }
-                }
-                .listStyle(.plain)
-                .overlay {
-                    if browser.loading && browser.entries.isEmpty {
-                        ProgressView()
-                    } else if !browser.loading && filtered.isEmpty {
-                        Group {
-                            if search.isEmpty {
-                                Text("files.empty_folder")
-                            } else {
-                                Text("files.no_match \(search)")
-                            }
-                        }
-                        .foregroundColor(.secondary)
-                    }
-                }
-                .refreshable { await browser.reload() }
+                fileList
                 if !browser.transfers.isEmpty { transfersBar }
             }
             .searchable(text: $search, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "files.search_prompt")
@@ -72,66 +65,158 @@ struct FilesScreen: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("common.close") { dismiss() } }
-                ToolbarItem(placement: .primaryAction) {
-                    Menu {
-                        Button { uploading = true } label: { Label("files.upload", systemImage: "arrow.up.doc") }
-                        Button { name = ""; newFolder = true } label: { Label("files.new_folder", systemImage: "folder.badge.plus") }
-                        Divider()
-                        Toggle(isOn: $browser.showHidden) { Label("files.show_hidden", systemImage: "eye") }
-                        Button { UIPasteboard.general.string = browser.path } label: { Label("common.copy_path", systemImage: "doc.on.doc") }
-                    } label: { Image(systemName: "plus.circle") }
-                    .disabled(browser.fileSystem == nil)
-                    .accessibilityLabel("files.actions")
-                }
+                ToolbarItem(placement: .primaryAction) { actionsMenu }
             }
         }
         .navigationViewStyle(.stack)
-        .task { await browser.open() }
-        // The search belongs to the folder: it is cleared when the folder changes.
-        .onChange(of: browser.path) { _ in
-            search = ""
-            cursor = nil
-        }
-        .onDisappear { browser.close() }
-        .sheet(item: $browser.prompt) { p in AuthPromptView(prompt: p) { browser.prompt = nil }.interactiveDismissDisabled() }
-        .fileImporter(isPresented: $uploading, allowedContentTypes: [.item], allowsMultipleSelection: true) { r in
-            guard case .success(let urls) = r else { return }
-            Task { for u in urls { await browser.upload(u) } }
-        }
-        .sheet(item: Binding(get: { preview.map(IdentifiableURL.init) }, set: { preview = $0?.url })) { u in
-            QuickLookPreview(url: u.url) { preview = nil }.ignoresSafeArea()
-        }
-        .sheet(item: Binding(get: { sharing.map(IdentifiableURL.init) }, set: { sharing = $0?.url })) { u in
-            ShareSheet(url: u.url)
-        }
-        .alert("files.new_folder", isPresented: $newFolder) {
-            TextField("common.name", text: $name).textInputAutocapitalization(.never).autocorrectionDisabled()
-            Button("common.cancel", role: .cancel) {}
-            Button("files.create") { let n = name; Task { await browser.createFolder(n) } }
-        }
-        .alert("common.rename", isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
-            TextField("common.name", text: $name).textInputAutocapitalization(.never).autocorrectionDisabled()
-            Button("common.cancel", role: .cancel) {}
-            Button("common.rename") {
-                if let f = renaming { let n = name; Task { await browser.rename(f, to: n) } }
+    }
+
+    private var fileList: some View {
+        ScrollViewReader { proxy in
+            List {
+                ForEach(filtered, id: \.path) { f in
+                    row(f)
+                        .listRowBackground(keyboardHighlight(cursor == f.path))
+                        .id(f.path)
+                }
+            }
+            .onChange(of: cursor) { path in
+                if let path { withAnimation { proxy.scrollTo(path) } }
             }
         }
-        .confirmationDialog(Text("files.delete.title \(deleting?.name ?? "")"),
-                            isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }), titleVisibility: .visible) {
-            Button("common.delete", role: .destructive) { if let f = deleting { Task { await browser.delete(f) } } }
-        } message: {
-            if deleting?.kind == .dir {
-                Text("files.delete.folder_message")
-            } else {
-                Text("files.delete.file_message")
+        .listStyle(.plain)
+        .overlay { listOverlay }
+        .refreshable { await browser.reload() }
+    }
+
+    @ViewBuilder private var listOverlay: some View {
+        if browser.loading && browser.entries.isEmpty {
+            ProgressView()
+        } else if !browser.loading && filtered.isEmpty {
+            Group {
+                if search.isEmpty {
+                    Text("files.empty_folder")
+                } else {
+                    Text("files.no_match \(search)")
+                }
             }
+            .foregroundColor(.secondary)
         }
-        .sheet(item: Binding(get: { changingPermissions.map(IdentifiableFile.init) }, set: { changingPermissions = $0?.file })) { e in
-            PermissionsEditor(file: e.file) { mode in Task { await browser.setPermissions(e.file, mode: mode) } }
+    }
+
+    /// "+": upload, new folder, the order, hidden files and the path.
+    private var actionsMenu: some View {
+        Menu {
+            Button { uploading = true } label: { Label("files.upload", systemImage: "arrow.up.doc") }
+            Button { name = ""; newFolder = true } label: { Label("files.new_folder", systemImage: "folder.badge.plus") }
+            Divider()
+            sortMenu
+            Toggle(isOn: $browser.showHidden) { Label("files.show_hidden", systemImage: "eye") }
+            Button { UIPasteboard.general.string = browser.path } label: { Label("common.copy_path", systemImage: "doc.on.doc") }
+        } label: { Image(systemName: "plus.circle") }
+        .disabled(browser.fileSystem == nil)
+        .accessibilityLabel("files.actions")
+    }
+
+    /// By name, size or date; the chosen one again turns the order around.
+    private var sortMenu: some View {
+        Menu {
+            ForEach(FileSort.allCases, id: \.self) { by in
+                Button { browser.setSort(by) } label: {
+                    if browser.sort == by {
+                        Label(sortTitle(by), systemImage: browser.descending ? "chevron.down" : "chevron.up")
+                    } else {
+                        Text(sortTitle(by))
+                    }
+                }
+            }
+        } label: {
+            Label("files.sort", systemImage: "arrow.up.arrow.down")
         }
-        .alert("common.error", isPresented: Binding(get: { browser.error != nil }, set: { if !$0 { browser.error = nil } })) {
-            Button("common.ok", role: .cancel) {}
-        } message: { Text(browser.error ?? "") }
+    }
+
+    private func sortTitle(_ by: FileSort) -> String {
+        switch by {
+        case .name: return String(localized: "files.sort.name")
+        case .size: return String(localized: "files.sort.size")
+        case .date: return String(localized: "files.sort.date")
+        }
+    }
+
+    private func withSheets<V: View>(_ view: V) -> some View {
+        view
+            .sheet(item: $browser.prompt) { p in AuthPromptView(prompt: p) { browser.prompt = nil }.interactiveDismissDisabled() }
+            .fileImporter(isPresented: $uploading, allowedContentTypes: [.item], allowsMultipleSelection: true) { r in
+                guard case .success(let urls) = r else { return }
+                browser.pickedForUpload(urls)
+            }
+            .sheet(item: Binding(get: { preview.map(IdentifiableURL.init) }, set: { preview = $0?.url })) { u in
+                QuickLookPreview(url: u.url) { preview = nil }.ignoresSafeArea()
+            }
+            .sheet(item: Binding(get: { sharing.map(IdentifiableURL.init) }, set: { sharing = $0?.url })) { u in
+                ShareSheet(url: u.url)
+            }
+            .sheet(item: Binding(get: { saving.map(IdentifiableURL.init) }, set: { saving = $0?.url })) { u in
+                SaveToFiles(url: u.url) { saving = nil }.ignoresSafeArea()
+            }
+            .sheet(item: Binding(get: { changingPermissions.map(IdentifiableFile.init) }, set: { changingPermissions = $0?.file })) { e in
+                PermissionsEditor(file: e.file) { mode in Task { await browser.setPermissions(e.file, mode: mode) } }
+            }
+            .sheet(item: Binding(get: { showingInfo.map(IdentifiableFile.init) }, set: { showingInfo = $0?.file })) { e in
+                FileInfoView(file: e.file)
+            }
+    }
+
+    private func withDialogs<V: View>(_ view: V) -> some View {
+        view
+            .confirmationDialog(Text("files.delete.title \(deleting?.name ?? "")"),
+                                isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }), titleVisibility: .visible) {
+                Button("common.delete", role: .destructive) { if let f = deleting { Task { await browser.delete(f) } } }
+            } message: {
+                if deleting?.kind == .dir {
+                    Text("files.delete.folder_message")
+                } else {
+                    Text("files.delete.file_message")
+                }
+            }
+            // Some picked files already exist in the folder.
+            .confirmationDialog(Text("files.replace.title \(browser.uploadAsk?.conflicts.count ?? 0)"),
+                                isPresented: Binding(get: { browser.uploadAsk != nil }, set: { if !$0 { browser.uploadAsk = nil } }),
+                                titleVisibility: .visible) {
+                Button("files.replace", role: .destructive) { if let r = browser.uploadAsk { browser.upload(r, replace: true) } }
+                Button("files.keep_both") { if let r = browser.uploadAsk { browser.upload(r, replace: false) } }
+                Button("common.cancel", role: .cancel) { browser.uploadAsk = nil }
+            } message: {
+                Text(uploadConflictMessage)
+            }
+    }
+
+    /// The names that exist ("a.txt, b.txt") and the question.
+    private var uploadConflictMessage: String {
+        let names = browser.uploadAsk?.conflicts ?? []
+        let shown = names.prefix(5).joined(separator: ", ") + (names.count > 5 ? ", …" : "")
+        return shown + "\n\n" + String(localized: "files.replace.message")
+    }
+
+    private func withAlerts<V: View>(_ view: V) -> some View {
+        view
+            .alert("files.new_folder", isPresented: $newFolder) {
+                TextField("common.name", text: $name).textInputAutocapitalization(.never).autocorrectionDisabled()
+                Button("common.cancel", role: .cancel) {}
+                Button("files.create") { let n = name; Task { await browser.createFolder(n) } }
+                    .disabled(RemotePaths.invalidName(name))
+            }
+            .alert("common.rename", isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
+                TextField("common.name", text: $name).textInputAutocapitalization(.never).autocorrectionDisabled()
+                Button("common.cancel", role: .cancel) {}
+                Button("common.rename") {
+                    if let f = renaming { let n = name; Task { await browser.rename(f, to: n) } }
+                }
+                .disabled(RemotePaths.invalidName(name))
+            }
+            .alert("common.error", isPresented: Binding(get: { browser.error != nil }, set: { if !$0 { browser.error = nil } })) {
+                Button("common.ok", role: .cancel) {}
+            } message: { Text(browser.error ?? "") }
     }
 
     // MARK: Hardware keyboard
@@ -139,8 +224,9 @@ struct FilesScreen: View {
     /// A sheet, alert or preview covers the list.
     private var covered: Bool {
         let shown: [Bool] = [
-            uploading, newFolder, renaming != nil, deleting != nil, changingPermissions != nil,
-            preview != nil, sharing != nil, browser.prompt != nil, browser.error != nil,
+            uploading, newFolder, renaming != nil, deleting != nil, changingPermissions != nil, showingInfo != nil,
+            preview != nil, sharing != nil, saving != nil, browser.prompt != nil, browser.error != nil,
+            browser.uploadAsk != nil,
         ]
         return shown.contains(true)
     }
@@ -161,7 +247,7 @@ struct FilesScreen: View {
             Task { await browser.goUp() }
         case .space:
             guard let f = highlighted, f.kind != .dir else { return false }
-            Task { preview = await browser.download(f) }
+            browser.download(f, for: .preview)
         case .delete:
             guard let f = highlighted else { return false }
             deleting = f
@@ -241,11 +327,15 @@ struct FilesScreen: View {
         }
         .contextMenu {
             if f.kind != .dir {
-                Button { Task { preview = await browser.download(f) } } label: { Label("files.view", systemImage: "eye") }
-                Button { Task { sharing = await browser.download(f) } } label: {
+                Button { browser.download(f, for: .preview) } label: { Label("files.view", systemImage: "eye") }
+                Button { browser.download(f, for: .share) } label: {
                     Label("files.share", systemImage: "square.and.arrow.up")
                 }
+                Button { browser.download(f, for: .save) } label: {
+                    Label("files.save_to_files", systemImage: "folder")
+                }
             }
+            Button { showingInfo = f } label: { Label("files.info", systemImage: "info.circle") }
             Button { name = f.name; renaming = f } label: { Label("common.rename", systemImage: "pencil") }
             if browser.canChmod {
                 Button { changingPermissions = f } label: { Label("common.permissions", systemImage: "lock") }
@@ -261,47 +351,33 @@ struct FilesScreen: View {
             // A link may point to a folder: try to enter it.
             Task {
                 await browser.go(to: f.path)
-                if f.kind == .symlink, browser.path != f.path { preview = await browser.download(f) }
+                if f.kind == .symlink, browser.path != f.path { browser.download(f, for: .preview) }
             }
         default:
-            Task { preview = await browser.download(f) }
+            browser.download(f, for: .preview)
         }
     }
 
+    /// The transfers: progress, and Cancel while they wait or run; Retry
+    /// and Remove once they failed or were cancelled.
     private var transfersBar: some View {
-        VStack(spacing: 6) {
-            ForEach(browser.transfers) { t in
-                HStack(spacing: 10) {
-                    Image(systemName: t.uploading ? "arrow.up.circle" : "arrow.down.circle").foregroundColor(Brand.blue)
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(t.name).font(.caption).lineLimit(1)
-                        if let fr = t.fraction { ProgressView(value: fr) } else { ProgressView().progressViewStyle(.linear) }
-                    }
-                    Text(ByteCountFormatter.string(fromByteCount: Int64(t.done), countStyle: .file))
-                        .font(.caption2.monospacedDigit()).foregroundColor(.secondary)
+        ScrollView {
+            VStack(spacing: 6) {
+                ForEach(browser.transfers) { t in
+                    TransferRow(transfer: t,
+                                onCancel: { browser.cancel(t.id) },
+                                onRetry: { browser.retry(t.id) },
+                                onDismiss: { browser.dismiss(t.id) })
                 }
             }
+            .padding(10)
         }
-        .padding(10)
+        .frame(maxHeight: 170)
+        .fixedSize(horizontal: false, vertical: true)
         .background(.bar)
     }
 
-    private func icon(_ f: RemoteFile) -> String {
-        switch f.kind {
-        case .dir: return "folder.fill"
-        case .symlink: return "arrow.triangle.turn.up.right.diamond"
-        case .other: return "questionmark.square"
-        case .file:
-            switch (f.name as NSString).pathExtension.lowercased() {
-            case "png", "jpg", "jpeg", "gif", "heic", "webp", "svg": return "photo"
-            case "pdf": return "doc.richtext"
-            case "zip", "gz", "tgz", "xz", "bz2", "tar", "7z": return "doc.zipper"
-            case "sh", "py", "rb", "js", "ts", "go", "rs", "c", "h", "swift", "kt", "java", "php": return "chevron.left.forwardslash.chevron.right"
-            case "log", "txt", "md", "conf", "cfg", "ini", "yml", "yaml", "json", "toml", "xml", "env": return "doc.text"
-            default: return "doc"
-            }
-        }
-    }
+    private func icon(_ f: RemoteFile) -> String { fileIcon(f) }
 
     private func detail(_ f: RemoteFile) -> String {
         var parts: [String] = []
@@ -311,6 +387,24 @@ struct FilesScreen: View {
         }
         if !f.modeString.isEmpty { parts.append(f.modeString) }
         return parts.joined(separator: " · ")
+    }
+}
+
+/// SF Symbol of a file by its kind and extension.
+func fileIcon(_ f: RemoteFile) -> String {
+    switch f.kind {
+    case .dir: return "folder.fill"
+    case .symlink: return "arrow.triangle.turn.up.right.diamond"
+    case .other: return "questionmark.square"
+    case .file:
+        switch (f.name as NSString).pathExtension.lowercased() {
+        case "png", "jpg", "jpeg", "gif", "heic", "webp", "svg": return "photo"
+        case "pdf": return "doc.richtext"
+        case "zip", "gz", "tgz", "xz", "bz2", "tar", "7z": return "doc.zipper"
+        case "sh", "py", "rb", "js", "ts", "go", "rs", "c", "h", "swift", "kt", "java", "php": return "chevron.left.forwardslash.chevron.right"
+        case "log", "txt", "md", "conf", "cfg", "ini", "yml", "yaml", "json", "toml", "xml", "env": return "doc.text"
+        default: return "doc"
+        }
     }
 }
 
@@ -409,12 +503,15 @@ private struct ShareSheet: UIViewControllerRepresentable {
     func updateUIViewController(_ vc: UIActivityViewController, context: Context) {}
 }
 
-/// Unix permissions with checkboxes (owner, group, others) and in octal.
+/// Unix permissions with checkboxes (owner, group, others, and the setuid,
+/// setgid and sticky bits) and in octal, which can also be typed. The bits
+/// the file has are kept: only what you change changes.
 private struct PermissionsEditor: View {
     let file: RemoteFile
     let save: (UInt32) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var mode: UInt32 = 0o644
+    @State private var octal = "644"
 
     private var classes: [(String, Int)] {
         [(String(localized: "files.perm.owner"), 6), (String(localized: "files.perm.group"), 3), (String(localized: "files.perm.others"), 0)]
@@ -422,36 +519,213 @@ private struct PermissionsEditor: View {
     private var rights: [(String, UInt32)] {
         [(String(localized: "files.perm.read"), 4), (String(localized: "files.perm.write"), 2), (String(localized: "files.perm.execute"), 1)]
     }
+    private var specials: [(String, UInt32)] {
+        [(String(localized: "files.perm.setuid"), 0o4000), (String(localized: "files.perm.setgid"), 0o2000),
+         (String(localized: "files.perm.sticky"), 0o1000)]
+    }
+
+    private var valid: Bool { RemotePaths.parseOctal(octal) != nil }
 
     var body: some View {
         NavigationView {
             Form {
                 ForEach(classes, id: \.0) { name, shift in
                     Section(name) {
-                        ForEach(rights, id: \.0) { right, bit in
-                            let mask = bit << UInt32(shift)
-                            Toggle(right, isOn: Binding(
-                                get: { mode & mask != 0 },
-                                set: { mode = $0 ? mode | mask : mode & ~mask }
-                            ))
-                        }
+                        ForEach(rights, id: \.0) { right, bit in toggle(right, bit << UInt32(shift)) }
                     }
+                }
+                Section("files.perm.special") {
+                    ForEach(specials, id: \.0) { title, bit in toggle(title, bit) }
                 }
                 Section {
                     HStack {
                         Text("files.perm.octal")
                         Spacer()
-                        Text(String(mode, radix: 8)).font(.body.monospacedDigit()).foregroundColor(.secondary)
+                        TextField("", text: $octal)
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .font(.body.monospacedDigit())
+                            .foregroundColor(valid ? .secondary : Brand.red)
+                            .frame(maxWidth: 120)
+                            .accessibilityLabel(Text("files.perm.octal"))
                     }
+                } footer: {
+                    if !valid { Text("files.perm.octal_invalid").foregroundColor(Brand.red) }
                 }
+            }
+            .onChange(of: octal) { text in
+                if let m = RemotePaths.parseOctal(text) { mode = m }
             }
             .navigationTitle(file.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
-                ToolbarItem(placement: .confirmationAction) { Button("common.save") { save(mode); dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("common.save") { save(mode); dismiss() }.disabled(!valid)
+                }
             }
         }
-        .onAppear { mode = (file.mode ?? 0o644) & 0o777 }
+        .onAppear {
+            mode = RemotePaths.editableMode(file.mode)
+            octal = RemotePaths.octal(mode)
+        }
+    }
+
+    private func toggle(_ title: String, _ mask: UInt32) -> some View {
+        Toggle(title, isOn: Binding(
+            get: { mode & mask != 0 },
+            set: { on in
+                mode = on ? mode | mask : mode & ~mask
+                octal = RemotePaths.octal(mode)
+            }
+        ))
+    }
+}
+
+/// A transfer in the bar: what, how far, and what can be done with it.
+private struct TransferRow: View {
+    let transfer: Transfer
+    let onCancel: () -> Void
+    let onRetry: () -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: transfer.uploading ? "arrow.up.circle" : "arrow.down.circle").foregroundColor(tint)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(transfer.name).font(.caption).lineLimit(1)
+                if transfer.status == .running {
+                    if let fr = transfer.fraction { ProgressView(value: fr) } else { ProgressView().progressViewStyle(.linear) }
+                }
+                Text(statusText).font(.caption2.monospacedDigit()).foregroundColor(transfer.status == .failed ? Brand.red : .secondary)
+                    .lineLimit(2)
+            }
+            Spacer(minLength: 0)
+            buttons
+        }
+    }
+
+    @ViewBuilder private var buttons: some View {
+        if transfer.active {
+            Button(action: onCancel) { Image(systemName: "xmark.circle.fill").foregroundColor(.secondary) }
+                .buttonStyle(.borderless)
+                .accessibilityLabel(Text("common.cancel"))
+        } else if transfer.status != .done {
+            Button(action: onRetry) { Image(systemName: "arrow.clockwise.circle") }
+                .buttonStyle(.borderless)
+                .accessibilityLabel(Text("common.retry"))
+            Button(action: onDismiss) { Image(systemName: "trash.circle").foregroundColor(.secondary) }
+                .buttonStyle(.borderless)
+                .accessibilityLabel(Text("files.dismiss"))
+        }
+    }
+
+    private var tint: Color {
+        switch transfer.status {
+        case .failed: return Brand.red
+        case .done: return Brand.green
+        case .cancelled: return .secondary
+        default: return Brand.blue
+        }
+    }
+
+    private var statusText: String {
+        let size = { (n: UInt64) in ByteCountFormatter.string(fromByteCount: Int64(n), countStyle: .file) }
+        switch transfer.status {
+        case .waiting: return String(localized: "files.transfer.waiting")
+        case .running:
+            guard let total = transfer.total else { return size(transfer.done) }
+            return String(localized: "files.transfer.progress \(size(transfer.done)) \(size(total))")
+        case .done:
+            return transfer.uploading ? String(localized: "files.transfer.uploaded") : String(localized: "files.transfer.downloaded")
+        case .failed: return transfer.error ?? String(localized: "files.transfer.failed")
+        case .cancelled: return String(localized: "files.transfer.cancelled")
+        }
+    }
+}
+
+/// Everything known about a file: kind, exact size, date, permissions in
+/// both forms, owner and group, path.
+private struct FileInfoView: View {
+    let file: RemoteFile
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            List {
+                Section {
+                    HStack(spacing: 12) {
+                        Image(systemName: fileIcon(file)).font(.title2).foregroundColor(Brand.blue)
+                        Text(file.name).font(.headline).lineLimit(2)
+                    }
+                }
+                Section { details }
+            }
+            .navigationTitle("files.info")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button("common.done") { dismiss() } }
+            }
+        }
+    }
+
+    @ViewBuilder private var details: some View {
+        line("files.info.kind", kindTitle)
+        if file.kind != .dir {
+            line("files.info.size", "\(ByteCountFormatter.string(fromByteCount: Int64(file.size), countStyle: .file)) (\(file.size))")
+        }
+        if let m = file.modified {
+            line("files.info.modified", Date(timeIntervalSince1970: TimeInterval(m)).formatted(date: .long, time: .standard))
+        }
+        if !file.modeString.isEmpty || file.mode != nil {
+            line("common.permissions", [file.modeString, file.mode.map { RemotePaths.octal($0) } ?? ""]
+                .filter { !$0.isEmpty }.joined(separator: "  "), mono: true)
+        }
+        if file.owner != nil || file.group != nil {
+            line("files.info.owner", [file.owner, file.group].compactMap { $0 }.joined(separator: ":"))
+        }
+        line("files.info.path", file.path, mono: true)
+    }
+
+    private var kindTitle: String {
+        switch file.kind {
+        case .dir: return String(localized: "files.kind.folder")
+        case .file: return String(localized: "files.kind.file")
+        case .symlink: return String(localized: "files.kind.link")
+        case .other: return String(localized: "files.kind.other")
+        }
+    }
+
+    private func line(_ label: LocalizedStringKey, _ value: String, mono: Bool = false) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(label).foregroundColor(.secondary)
+            Spacer(minLength: 12)
+            Text(verbatim: value)
+                .font(mono ? .system(.body, design: .monospaced) : .body)
+                .multilineTextAlignment(.trailing)
+                .textSelection(.enabled)
+        }
+    }
+}
+
+/// "Save to Files": the system's folder picker with a copy of the file.
+private struct SaveToFiles: UIViewControllerRepresentable {
+    let url: URL
+    let onDone: () -> Void
+
+    func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
+        let picker = UIDocumentPickerViewController(forExporting: [url], asCopy: true)
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ vc: UIDocumentPickerViewController, context: Context) {}
+    func makeCoordinator() -> Coordinator { Coordinator(onDone: onDone) }
+
+    final class Coordinator: NSObject, UIDocumentPickerDelegate {
+        let onDone: () -> Void
+        init(onDone: @escaping () -> Void) { self.onDone = onDone }
+        func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) { onDone() }
+        func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) { onDone() }
     }
 }
