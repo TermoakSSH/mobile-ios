@@ -6501,6 +6501,102 @@
         }
       }
     },
+    "groups.defaults": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Defaults for its hosts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valores por defecto de sus hosts"
+          }
+        }
+      }
+    },
+    "groups.defaults.credential": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identity or key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identidad o clave"
+          }
+        }
+      }
+    },
+    "groups.defaults.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The hosts in this group and its subgroups use these values unless they set their own (the nearest group wins). Empty: not set here."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los hosts de este grupo y de sus subgrupos usan estos valores salvo que tengan los suyos (gana el grupo más cercano). Vacío: sin valor aquí."
+          }
+        }
+      }
+    },
+    "groups.defaults.not_set": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not set"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin valor"
+          }
+        }
+      }
+    },
+    "groups.defaults.off": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desactivado"
+          }
+        }
+      }
+    },
+    "groups.defaults.on": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activado"
+          }
+        }
+      }
+    },
     "host_editor.add_jump": {
       "localizations": {
         "en": {
@@ -6961,6 +7057,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "Favorito"
+          }
+        }
+      }
+    },
+    "host_editor.from_group %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From the group: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Del grupo: %@"
+          }
+        }
+      }
+    },
+    "host_editor.from_group_identity %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without its own credential it uses the group's identity “%@”."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin credencial propia usa la identidad «%@» del grupo."
+          }
+        }
+      }
+    },
+    "host_editor.from_group_key %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without its own credential it uses the group's key “%@”."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin credencial propia usa la clave «%@» del grupo."
           }
         }
       }

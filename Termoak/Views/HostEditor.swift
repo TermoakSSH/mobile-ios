@@ -419,13 +419,13 @@ struct HostEditor: View {
     private var ssh: some View {
         let p = problems
         return Section {
-            TextField("host_editor.username", text: $username)
+            TextField("host_editor.username", text: $username, prompt: fromGroup(inherited.username))
                 .textInputAutocapitalization(.never).autocorrectionDisabled()
                 .textContentType(.username)
                 .focused($focus, equals: .username)
                 .submitLabel(.next)
                 .onSubmit { focus = .port }
-            TextField("host_editor.port", text: $port)
+            TextField("host_editor.port", text: $port, prompt: fromGroup(inherited.port.map(String.init)))
                 .keyboardType(.numberPad)
                 .focused($focus, equals: .port)
                 .onSubmit {
@@ -462,6 +462,9 @@ struct HostEditor: View {
                         ForEach(identities, id: \.id) { Text(verbatim: "\($0.label) (\($0.username))").tag(Optional($0.id)) }
                     }
                 }
+            }
+            if let hint = inheritedCredential {
+                Text(hint).font(.footnote).foregroundColor(.secondary)
             }
         } header: {
             Text(verbatim: telnet ? "Telnet" : "SSH")
@@ -639,7 +642,9 @@ struct HostEditor: View {
                 HStack {
                     Text("host_editor.keepalive")
                     Spacer()
-                    TextField(text: $keepalive, prompt: Text(verbatim: "30")) { Text("host_editor.keepalive") }
+                    TextField(text: $keepalive, prompt: Text(verbatim: inherited.keepaliveSecs.map(String.init) ?? "30")) {
+                        Text("host_editor.keepalive")
+                    }
                         .keyboardType(.numberPad)
                         .multilineTextAlignment(.trailing)
                         .frame(maxWidth: 90)
@@ -651,7 +656,7 @@ struct HostEditor: View {
             HStack {
                 Text("host_editor.term")
                 Spacer()
-                TextField(text: $term, prompt: Text(verbatim: "xterm-256color")) { Text("host_editor.term") }
+                TextField(text: $term, prompt: Text(verbatim: inherited.term ?? "xterm-256color")) { Text("host_editor.term") }
                     .textInputAutocapitalization(.never).autocorrectionDisabled()
                     .multilineTextAlignment(.trailing)
                     .focused($focus, equals: .term)
@@ -783,6 +788,32 @@ struct HostEditor: View {
             addr = String(parts[0])
         }
         if addr != address.trimmingCharacters(in: .whitespaces) { address = addr }
+    }
+
+    // MARK: Values from the group
+
+    /// What the host gets from its group and the ones above it (shown as
+    /// hints; the host's own values win).
+    private var inherited: HostSettings {
+        HostSettings.inherited(groupId: groupId, groups: groups)
+    }
+
+    /// "From the group: deploy" in an empty field.
+    private func fromGroup(_ value: String?) -> Text? {
+        value.map { Text("host_editor.from_group \($0)") }
+    }
+
+    /// The group's identity or key, when the host doesn't choose its own.
+    private var inheritedCredential: String? {
+        guard keyId == nil, identityId == nil, password.isEmpty, original?.hasPassword != true else { return nil }
+        let s = inherited
+        if let i = s.identityId, let identity = identities.first(where: { $0.id == i }) {
+            return String(localized: "host_editor.from_group_identity \(identity.label)")
+        }
+        if let k = s.keyId, let key = keys.first(where: { $0.id == k }) {
+            return String(localized: "host_editor.from_group_key \(key.label)")
+        }
+        return nil
     }
 
     // MARK: Loading and saving

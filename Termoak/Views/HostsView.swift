@@ -1753,6 +1753,10 @@ private struct GroupEditor: View {
     @State private var color: String?
     @State private var place: ItemPlace = .device
     @State private var error: String?
+    /// Defaults for its hosts, and the credentials they can use.
+    @State private var defaults = HostSettings()
+    @State private var identities: [SshIdentity] = []
+    @State private var keys: [SshKey] = []
 
     /// A new top-level group: choose its vault.
     private var choosesPlace: Bool {
@@ -1765,6 +1769,7 @@ private struct GroupEditor: View {
                 TextField("hosts.group.name", text: $name)
                 if choosesPlace { PlacePicker(place: $place) }
                 Section { GroupColorPicker(color: $color) }
+                GroupDefaultsSection(settings: $defaults, identities: identities, keys: keys)
                 if let error { Text(error).foregroundColor(Brand.red) }
             }
             .navigationTitle(original.id.isEmpty ? String(localized: "hosts.group.new") : String(localized: "hosts.group.edit"))
@@ -1776,6 +1781,7 @@ private struct GroupEditor: View {
                         var g = original
                         g.name = name.trimmingCharacters(in: .whitespaces)
                         g.color = color
+                        g.settings = defaults
                         if choosesPlace {
                             g.accountId = place.accountId
                             g.vaultId = place.vaultId
@@ -1797,8 +1803,25 @@ private struct GroupEditor: View {
         .onAppear {
             name = original.name
             color = original.color
+            defaults = original.settings
             place = account.place(accountId: original.accountId, vaultId: original.vaultId)
+            loadCredentials()
         }
+        .onChange(of: place) { _ in loadCredentials() }
+    }
+
+    /// The identities and keys of the group's vault and of This device (a
+    /// reference never leaves its vault); one that no longer fits is dropped.
+    private func loadCredentials() {
+        let p = place
+        let filter = ItemFilter(accountIds: p.accountId.map { [$0] } ?? [], vaultIds: nil, includeDevice: true)
+        func usable(_ accountId: String?, _ vaultId: String?) -> Bool {
+            accountId == nil || (accountId == p.accountId && vaultId == p.vaultId)
+        }
+        identities = ((try? model.core.listIdentities(filter: filter)) ?? []).filter { usable($0.accountId, $0.vaultId) }
+        keys = ((try? model.core.listKeys(filter: filter)) ?? []).filter { usable($0.accountId, $0.vaultId) }
+        if let i = defaults.identityId, !identities.contains(where: { $0.id == i }) { defaults.identityId = nil }
+        if let k = defaults.keyId, !keys.contains(where: { $0.id == k }) { defaults.keyId = nil }
     }
 }
 
