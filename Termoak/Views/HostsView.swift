@@ -297,6 +297,9 @@ struct HostsView: View {
                 if let pending = account.scoped.first(where: { $0.status == .needsSignIn || $0.status == .unverified }) {
                     Section { signInAgainBanner(pending) }
                 }
+                ForEach(syncProblems, id: \.account.id) { p in
+                    Section { syncErrorBanner(p.account, p.message) }
+                }
                 if !sessions.onServer.isEmpty {
                     Section { serverNotice }
                 }
@@ -661,6 +664,37 @@ struct HostsView: View {
                 Spacer(minLength: 0)
             }
         }
+    }
+
+    /// Signed-in accounts on screen whose last sync failed, with why.
+    private var syncProblems: [(account: AccountInfo, message: String)] {
+        account.scoped.filter { $0.status == .active }.compactMap { a in
+            account.syncErrors[a.id].map { (account: a, message: $0) }
+        }
+    }
+
+    /// "Couldn't sync · ana@example.com", the reason and Retry.
+    private func syncErrorBanner(_ a: AccountInfo, _ message: String) -> some View {
+        Button { account.sync(a.id) } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "exclamationmark.icloud")
+                    .foregroundColor(Brand.amber)
+                    .frame(width: 30, height: 30)
+                    .background(Brand.amber.opacity(0.15), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("hosts.sync_failed").font(.subheadline.weight(.medium)).foregroundColor(.primary)
+                    Text(verbatim: account.list.count > 1 ? "\(a.email) · \(message)" : message)
+                        .font(.caption).foregroundColor(.secondary).lineLimit(3)
+                }
+                Spacer(minLength: 0)
+                if account.syncingIds.contains(a.id) {
+                    ProgressView()
+                } else {
+                    Text("common.retry").font(.subheadline.weight(.semibold)).foregroundColor(.accentColor)
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 
     /// "☁ N sessions running on the server", with a button to go to them.
@@ -1120,6 +1154,12 @@ private extension HostsView {
         let card = RoundedRectangle(cornerRadius: 12, style: .continuous)
         if let pending = account.scoped.first(where: { $0.status == .needsSignIn || $0.status == .unverified }) {
             signInAgainBanner(pending)
+                .buttonStyle(.plain)
+                .padding(12)
+                .background(Color(.secondarySystemGroupedBackground), in: card)
+        }
+        ForEach(syncProblems, id: \.account.id) { p in
+            syncErrorBanner(p.account, p.message)
                 .buttonStyle(.plain)
                 .padding(12)
                 .background(Color(.secondarySystemGroupedBackground), in: card)

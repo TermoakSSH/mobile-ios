@@ -112,6 +112,11 @@ struct AccountDetailView: View {
 
     private var info: AccountInfo? { account.account(accountId) }
 
+    private func syncState(_ info: AccountInfo, failed: Bool) -> String {
+        if failed { return String(localized: "nav.account.not_synced") }
+        return account.liveIds.contains(info.id) ? String(localized: "nav.account.synced_live") : String(localized: "nav.account.synced")
+    }
+
     var body: some View {
         Form {
             if let info {
@@ -124,9 +129,10 @@ struct AccountDetailView: View {
                                 Text(verbatim: info.name).font(.subheadline).foregroundColor(.secondary)
                             }
                             HStack(spacing: 6) {
-                                Circle().fill(account.liveIds.contains(info.id) ? Brand.green : Brand.amber).frame(width: 7, height: 7)
-                                Text(account.liveIds.contains(info.id) ? String(localized: "nav.account.synced_live") : String(localized: "nav.account.synced"))
-                                    .font(.caption).foregroundColor(.secondary)
+                                let failed = account.syncErrors[info.id] != nil
+                                Circle().fill(account.liveIds.contains(info.id) && !failed ? Brand.green : Brand.amber).frame(width: 7, height: 7)
+                                Text(syncState(info, failed: failed))
+                                    .font(.caption).foregroundColor(failed ? Brand.amber : .secondary)
                             }
                         }
                     }

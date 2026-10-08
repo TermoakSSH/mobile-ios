@@ -6285,6 +6285,22 @@
         }
       }
     },
+    "hosts.sync_failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't sync"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo sincronizar"
+          }
+        }
+      }
+    },
     "hosts.telnet_badge": {
       "localizations": {
         "en": {
@@ -8688,6 +8704,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Web"
+          }
+        }
+      }
+    },
+    "nav.account.not_synced": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not synced"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin sincronizar"
           }
         }
       }

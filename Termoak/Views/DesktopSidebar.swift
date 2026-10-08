@@ -259,6 +259,7 @@ struct DesktopSidebar: View {
 
     private var statusColor: Color {
         guard account.loggedIn == true else { return account.current == nil ? Color.secondary : Brand.amber }
+        if account.syncError != nil { return Brand.amber }
         return account.live ? Brand.green : Brand.amber
     }
 
@@ -268,6 +269,8 @@ struct DesktopSidebar: View {
                 AccountStatusText(info: current)
             } else if account.syncing {
                 Text("common.syncing").foregroundColor(.secondary)
+            } else if account.syncError != nil {
+                Text("nav.account.not_synced").foregroundColor(Brand.amber)
             } else {
                 Text(LocalizedStringKey(account.live ? "nav.account.synced_live" : "nav.account.synced")).foregroundColor(.secondary)
             }
