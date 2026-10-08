@@ -273,10 +273,10 @@ struct HostsView: View {
             TunnelsView(host: e.host)
         }
         .sheet(isPresented: $quickConnecting, onDismiss: load) {
-            QuickConnectView { host, strict in
+            QuickConnectView(onConnect: { host, strict in
                 // After the sheet has gone, the terminal comes up.
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { sessions.connect(host, strict: strict) }
-            }
+            }, actions: paletteActions)
             .environmentObject(model)
             .environmentObject(account)
         }
@@ -761,6 +761,20 @@ struct HostsView: View {
             Image(systemName: "plus")
         }
         .accessibilityLabel("vault.add")
+    }
+
+    /// The palette's actions of the hosts: new host or group, import, export.
+    private var paletteActions: [PaletteAction] {
+        [
+            PaletteAction(key: "cmd:new_host", title: String(localized: "common.new_host"), symbol: "server.rack",
+                          keywords: ["new", "host", "add"]) { editing = HostEdit(host: nil) },
+            PaletteAction(key: "cmd:new_group", title: String(localized: "hosts.group.new"), symbol: "folder.badge.plus",
+                          keywords: ["new", "group", "folder"]) { newGroup() },
+            PaletteAction(key: "cmd:import", title: String(localized: "import.title"), symbol: "square.and.arrow.down",
+                          keywords: ["import", "csv", "putty", "termius"]) { importingConfig = true },
+            PaletteAction(key: "cmd:export", title: String(localized: "export.title"), symbol: "square.and.arrow.up",
+                          keywords: ["export", "csv", "json"]) { exporting = true },
+        ]
     }
 
     private func newGroup() {

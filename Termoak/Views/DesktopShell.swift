@@ -108,12 +108,20 @@ struct DesktopShell: View {
                                          onSettings: { show(.settings) },
                                          onToggleSidebar: toggleSidebar))
         .sheet(isPresented: $quickConnect) {
-            QuickConnectView { host, strict in
+            QuickConnectView(onConnect: { host, strict in
                 // After the sheet has gone, the tab opens.
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { sessions.connect(host, strict: strict) }
-            }
+            }, actions: paletteActions)
             .environmentObject(model)
             .environmentObject(account)
+        }
+    }
+
+    /// The palette's "Go to" each section of Home.
+    private var paletteActions: [PaletteAction] {
+        DesktopSection.allCases.map { s in
+            PaletteAction(key: "go:\(s.rawValue)", title: String(localized: "palette.go_to \(s.title)"), symbol: s.icon,
+                          keywords: [s.rawValue]) { show(s) }
         }
     }
 

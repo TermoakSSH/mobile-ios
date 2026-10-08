@@ -93,12 +93,29 @@ struct Home: View {
             quickConnect = true
         }.environmentObject(router))
         .sheet(isPresented: $quickConnect) {
-            QuickConnectView { host, strict in
+            QuickConnectView(onConnect: { host, strict in
                 // After the sheet has gone, the terminal comes up.
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { sessions.connect(host, strict: strict) }
-            }
+            }, actions: paletteActions)
             .environmentObject(model)
             .environmentObject(account)
+        }
+    }
+
+    /// The palette's "Go to" the tabs.
+    private var paletteActions: [PaletteAction] {
+        let router = router
+        let tabs: [(HomeTab, String, String, String)] = [
+            (.vault, "vault", String(localized: "nav.vault"), "server.rack"),
+            (.connections, "connections", String(localized: "nav.connections"), "terminal"),
+            (.profile, "profile", String(localized: "nav.profile"), "person.crop.circle"),
+        ]
+        return tabs.map { tab, key, title, symbol in
+            PaletteAction(key: "go:\(key)", title: String(localized: "palette.go_to \(title)"), symbol: symbol,
+                          keywords: [key, "settings"]) {
+                sessions.showing = false
+                router.tab = tab
+            }
         }
     }
 }

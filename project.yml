@@ -112,6 +112,7 @@ targets:
       - path: Termoak/Model/TerminalAiRules.swift
       - path: Termoak/Model/HostStatus.swift
       - path: Termoak/Model/ImportPlan.swift
+      - path: Termoak/Model/PaletteCommands.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

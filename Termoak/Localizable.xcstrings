@@ -15044,6 +15044,182 @@
         }
       }
     },
+    "palette.cmd.add_to_split": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a terminal to the split view"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir un terminal a la vista dividida"
+          }
+        }
+      }
+    },
+    "palette.cmd.broadcast": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type in all panes (broadcast)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribir en todos los paneles (difusión)"
+          }
+        }
+      }
+    },
+    "palette.cmd.focus_mode": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus mode"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modo foco"
+          }
+        }
+      }
+    },
+    "palette.cmd.home": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show Home"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar Inicio"
+          }
+        }
+      }
+    },
+    "palette.cmd.toggle_theme": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switch between dark and light"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar entre oscuro y claro"
+          }
+        }
+      }
+    },
+    "palette.go_to %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go to %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ir a %@"
+          }
+        }
+      }
+    },
+    "palette.kind.command": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Action"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acción"
+          }
+        }
+      }
+    },
+    "palette.kind.session": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session on the server"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesión en el servidor"
+          }
+        }
+      }
+    },
+    "palette.kind.tab": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open tab"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pestaña abierta"
+          }
+        }
+      }
+    },
+    "palette.no_matches": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing matches"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay coincidencias"
+          }
+        }
+      }
+    },
+    "palette.placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hosts, tabs, sessions, snippets, actions or user@host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hosts, pestañas, sesiones, snippets, acciones o usuario@host"
+          }
+        }
+      }
+    },
     "paste.confirm.broadcast %lld": {
       "localizations": {
         "en": {
@@ -15264,22 +15440,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Todavía no hay hosts."
-          }
-        }
-      }
-    },
-    "quick_connect.prompt": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Host, tag, user@host or telnet://host"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Host, etiqueta, usuario@host o telnet://host"
           }
         }
       }
