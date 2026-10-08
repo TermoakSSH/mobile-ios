@@ -139,7 +139,7 @@ struct HostsView: View {
 
     var body: some View {
         // Split in parts: as one expression it is too much for the type checker.
-        withDialogs(withSheets(content.toolbar { hostsToolbar }))
+        withDialogs(withSheets(withToolbar(content)))
         .onAppear {
             load()
             if isRoot { account.sync() }
@@ -155,36 +155,40 @@ struct HostsView: View {
         }
     }
 
-    @ToolbarContentBuilder private var hostsToolbar: some ToolbarContent {
-        if selecting {
-            ToolbarItem(placement: .cancellationAction) {
-                Button(selectAllTitle) { toggleSelectAll() }
-            }
-            ToolbarItem(placement: .confirmationAction) {
-                Button("common.done") { endSelection() }
-            }
-            ToolbarItemGroup(placement: .bottomBar) { selectionActions }
-        } else {
-            if isRoot {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    AccountSwitcher(onAdd: { addingAccount = true },
-                                    onManage: { managingAccounts = true },
-                                    onVaults: { showingVaults = true })
+    // The toolbar in a .toolbar closure (not a @ToolbarContentBuilder property:
+    // its if/else needs iOS 16 there).
+    private func withToolbar<V: View>(_ view: V) -> some View {
+        view.toolbar {
+                if selecting {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(selectAllTitle) { toggleSelectAll() }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("common.done") { endSelection() }
+                    }
+                    ToolbarItemGroup(placement: .bottomBar) { selectionActions }
+                } else {
+                    if isRoot {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            AccountSwitcher(onAdd: { addingAccount = true },
+                                            onManage: { managingAccounts = true },
+                                            onVaults: { showingVaults = true })
+                        }
+                    }
+                    ToolbarItemGroup(placement: .primaryAction) {
+                        if account.syncing {
+                            ProgressView()
+                        } else if account.list.contains(where: { $0.status == .active }) && isRoot {
+                            Button { account.sync() } label: { Image(systemName: "arrow.triangle.2.circlepath") }
+                                .accessibilityLabel("settings.sync")
+                        }
+                        if !hosts.isEmpty {
+                            Button { startSelection(nil) } label: { Image(systemName: "checkmark.circle") }
+                                .accessibilityLabel("hosts.select")
+                        }
+                        addMenu
+                    }
                 }
-            }
-            ToolbarItemGroup(placement: .primaryAction) {
-                if account.syncing {
-                    ProgressView()
-                } else if account.list.contains(where: { $0.status == .active }) && isRoot {
-                    Button { account.sync() } label: { Image(systemName: "arrow.triangle.2.circlepath") }
-                        .accessibilityLabel("settings.sync")
-                }
-                if !hosts.isEmpty {
-                    Button { startSelection(nil) } label: { Image(systemName: "checkmark.circle") }
-                        .accessibilityLabel("hosts.select")
-                }
-                addMenu
-            }
         }
     }
 
