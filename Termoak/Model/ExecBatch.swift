@@ -77,7 +77,7 @@ final class ExecBatch: ObservableObject {
             Task { @MainActor in self?.prompts.append(p) }
         }
         do {
-            let session = try await core.connect(hostId: host.id, auth: auth, accountId: host.accountId)
+            let session = try await core.connect(hostId: host.id, auth: auth, accountId: host.accountId, keyChanged: auth)
             set(host.key, .running)
             defer { Task.detached { try? await session.disconnect() } }
             let r = try await session.exec(command: command, timeoutSecs: timeout)

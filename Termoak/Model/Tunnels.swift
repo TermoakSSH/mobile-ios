@@ -113,7 +113,7 @@ final class Tunnels: ObservableObject {
         let auth = AuthBridge { [weak self] p in
             Task { @MainActor in self?.prompt = p }
         }
-        let s = try await core.connect(hostId: hostId, auth: auth, accountId: accountId)
+        let s = try await core.connect(hostId: hostId, auth: auth, accountId: accountId, keyChanged: auth)
         connections[hostId] = (s, true)
         return s
     }

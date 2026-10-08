@@ -5,28 +5,6 @@ import SwiftTerm
 import SwiftUI
 import UIKit
 
-/// A connection refused because the server's key is not the one saved in
-/// Known hosts (`TermoakError.HostKey`, "has CHANGED").
-struct HostKeyChange: Equatable {
-    let host: String
-    let port: UInt32
-    /// Fingerprint saved in Known hosts.
-    let expected: String
-    /// Fingerprint the server presents now.
-    let actual: String
-
-    /// `nil` for any other error.
-    init?(_ error: Error) {
-        guard case .HostKey(let message)? = error as? TermoakError,
-              case .changed(let where_, let expected, let actual)? = HostKeyProblem.parse(message),
-              let hp = HostKeyProblem.hostAndPort(where_) else { return nil }
-        host = hp.host
-        port = hp.port
-        self.expected = expected
-        self.actual = actual
-    }
-}
-
 enum TerminalState: Equatable {
     case connecting(String)
     case connected
@@ -77,10 +55,9 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     @Published var customTitle: String?
     /// The tab's name: the one given by hand, the program's title or the host's name.
     var displayTitle: String { TabTitle.display(custom: customTitle, title: title, label: label) }
+    /// A question while connecting: a password, a new server's fingerprint
+    /// or a known server whose key changed (`AuthBridge`).
     @Published var prompt: AuthPrompt?
-    /// The last connection failed because the host's key changed: the
-    /// failure card offers to forget the old key and connect again.
-    @Published var hostKeyChange: HostKeyChange?
     /// The last command that ended in this terminal (its output and why it
     /// failed), from the engine's `CommandWatcher`: the copilot's context
     /// chip and the Explain/Fix chip.
@@ -735,6 +712,12 @@ final class LocalTerminal: TerminalSession {
     private let telnet: Bool
     /// Why it cannot be opened from here (shown instead of connecting).
     private let refusal: String?
+    /// "Connect, recorded": this terminal is recorded on this device even if
+    /// the host does not record every session.
+    let record: Bool
+    /// The recording of the connected terminal (an asciicast `.cast` file
+    /// in the app's data), when it is recorded.
+    @Published private(set) var recordingPath: String?
     /// Connected over SSH: to start the automatic tunnels.
     var onConnected: ((String, SshSession) -> Void)?
     /// The host's system was detected and saved (its logo changes).
@@ -776,10 +759,11 @@ final class LocalTerminal: TerminalSession {
     var sharedSessionId: String? { shared?.sessionId() }
 
     /// `refusal`: the tab only shows it (a host that cannot be opened).
-    init(core: TermoakCore, host: SshHost, settings: AppSettings, refusal: String? = nil) {
+    init(core: TermoakCore, host: SshHost, settings: AppSettings, refusal: String? = nil, record: Bool = false) {
         address = host.address
         telnet = host.isTelnet
         self.refusal = refusal
+        self.record = record
         super.init(core: core, label: host.label.isEmpty ? host.address : host.label, hostId: host.id,
                    accountId: host.accountId, settings: settings)
     }
@@ -791,7 +775,8 @@ final class LocalTerminal: TerminalSession {
             return
         }
         state = .connecting(String(localized: "terminal.state.connecting_to \(address)"))
-        hostKeyChange = nil
+        // Also asks when a known host's key changed (trusting the new one
+        // replaces it in Known hosts and the connection goes on).
         let auth = AuthBridge { [weak self] prompt in
             Task { @MainActor in self?.prompt = prompt }
         }
@@ -805,8 +790,10 @@ final class LocalTerminal: TerminalSession {
                 // prompts if Settings says so.
                 let h = try await core.connectTerminal(hostId: hostId, cols: cols, rows: rows, auth: auth,
                                                        listener: listener, accountId: accountId,
-                                                       telnetAutoLogin: settings.telnetAutoLogin)
+                                                       telnetAutoLogin: settings.telnetAutoLogin,
+                                                       record: record, keyChanged: auth)
                 handle = h
+                recordingPath = h.recordingPath()
                 state = .connected
                 let (c, r) = size
                 try? h.resize(cols: c, rows: r)
@@ -817,7 +804,6 @@ final class LocalTerminal: TerminalSession {
                 }
                 _ = view.becomeFirstResponder()
             } catch {
-                hostKeyChange = HostKeyChange(error)
                 state = .closed(userMessage(error))
             }
         }
@@ -1120,6 +1106,19 @@ final class ServerTerminal: TerminalSession {
     override var persistent: Bool { true }
     override var shareSessionId: String? { sessionId }
     override var shareAttached: Bool { handle != nil && greeted }
+    /// The round trip to the server (its WebSocket ping), like the desktop.
+    override var measuresLatency: Bool { true }
+
+    override func measureLatency() async {
+        guard state == .connected, let h = handle else {
+            latency = nil
+            return
+        }
+        let ms = try? await h.latencyMs(timeoutMs: Latency.timeoutMs)
+        // Reattached or closed meanwhile: that answer is old.
+        guard handle === h, state == .connected else { return }
+        latency = ms
+    }
 
     /// With `sessionId` it attaches to an existing one; without it, it opens a new one on `hostId`.
     /// `owner`: it is yours (`false` for sessions shared with you); the
@@ -1740,9 +1739,11 @@ final class Sessions: ObservableObject {
         s.start()
     }
 
-    func openLocal(_ host: SshHost) {
+    /// `record`: record this terminal on this device ("Connect, recorded"),
+    /// even if the host does not record every session.
+    func openLocal(_ host: SshHost, record: Bool = false) {
         RecentHostsStore.record(host)
-        add(LocalTerminal(core: core, host: host, settings: settings))
+        add(LocalTerminal(core: core, host: host, settings: settings, record: record))
     }
 
     /// Opens a terminal to each host (several selected in the list). On an
@@ -1912,30 +1913,6 @@ final class Sessions: ObservableObject {
     func closeTerminals(ofAccount accountId: String) {
         for s in open where s.accountId == accountId { close(s.id) }
         onServer.removeAll { $0.accountId == accountId }
-    }
-
-    /// The host's key changed and you know why (the server was
-    /// reinstalled): the old key leaves Known hosts (every saved entry of
-    /// that host, port and fingerprint you can change) and the terminal
-    /// connects again, asking to trust the new one. Returns why it could
-    /// not, if so.
-    func forgetChangedKey(_ s: TerminalSession) -> String? {
-        guard let change = s.hostKeyChange else { return nil }
-        let all = (try? core.listKnownHosts(filter: ItemFilter(accountIds: nil, vaultIds: nil, includeDevice: true))) ?? []
-        let sameHost = all.filter { $0.host.caseInsensitiveCompare(change.host) == .orderedSame && $0.port == change.port }
-        let old = sameHost.filter { $0.fingerprint == change.expected }
-        let targets = old.isEmpty ? sameHost : old
-        guard !targets.isEmpty else { return String(localized: "terminal.host_key.nothing_to_forget") }
-        guard targets.allSatisfy(\.canForget) else { return String(localized: "terminal.host_key.use_only") }
-        do {
-            for k in targets { try core.deleteKnownHost(id: k.id, accountId: k.accountId) }
-        } catch {
-            return userMessage(error)
-        }
-        onHostChanged?()
-        s.hostKeyChange = nil
-        s.reconnect()
-        return nil
     }
 
     func closeAll() {

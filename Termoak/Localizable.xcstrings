@@ -2973,6 +2973,102 @@
         }
       }
     },
+    "auth.key_changed.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trusting the new key replaces the saved one in Known hosts and the connection goes on."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si confías en la clave nueva, sustituye a la guardada en Hosts conocidos y la conexión sigue."
+          }
+        }
+      }
+    },
+    "auth.key_changed.message %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key of %@ is not the one saved in Known hosts. If you don't know why (the server was reinstalled or got a new key), don't continue: someone could be intercepting the connection."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave de %@ no es la que está guardada en Hosts conocidos. Si no sabes por qué (el servidor se ha reinstalado o tiene una clave nueva), no sigas: alguien podría estar interceptando la conexión."
+          }
+        }
+      }
+    },
+    "auth.key_changed.new": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key now"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave ahora"
+          }
+        }
+      }
+    },
+    "auth.key_changed.old": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave guardada"
+          }
+        }
+      }
+    },
+    "auth.key_changed.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host key changed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave del host ha cambiado"
+          }
+        }
+      }
+    },
+    "auth.key_changed.trust": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trust the new key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confiar en la clave nueva"
+          }
+        }
+      }
+    },
     "auth.passphrase": {
       "localizations": {
         "en": {
@@ -8705,6 +8801,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Grupos"
+          }
+        }
+      }
+    },
+    "hosts.menu.connect_recorded": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect, recorded"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectar y grabar"
           }
         }
       }
@@ -20036,6 +20148,22 @@
         }
       }
     },
+    "terminal.latency.tooltip_server": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Latency to the server (round trip)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Latencia hasta el servidor (ida y vuelta)"
+          }
+        }
+      }
+    },
     "terminal.menu.clear": {
       "localizations": {
         "en": {
@@ -20084,6 +20212,22 @@
         }
       }
     },
+    "terminal.menu.share_recording": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share recording"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compartir la grabación"
+          }
+        }
+      }
+    },
     "terminal.menu.terminate_server": {
       "localizations": {
         "en": {
@@ -20128,6 +20272,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Abrir otra sesión"
+          }
+        }
+      }
+    },
+    "terminal.recording": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recording this terminal"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grabando este terminal"
           }
         }
       }

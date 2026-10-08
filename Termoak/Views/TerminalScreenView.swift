@@ -87,6 +87,8 @@ private struct TerminalContent: View {
     @State private var closingAll = false
     /// The tab being renamed.
     @State private var renaming: TerminalSession?
+    /// The recording of this terminal, being shared or saved to Files.
+    @State private var sharingRecording: RecordingFileItem?
 
     /// On a tablet (or a big phone in landscape) the panel goes on the side.
     private var side: Bool { sizeClass == .regular }
@@ -135,6 +137,7 @@ private struct TerminalContent: View {
             AuthPromptView(prompt: p) { session.prompt = nil }.interactiveDismissDisabled()
         }
         .sheet(isPresented: $customizing) { KeyboardEditor().environmentObject(settings) }
+        .sheet(item: $sharingRecording) { f in ActivityView(items: [f.url]) }
         .sheet(isPresented: $showingPeople) {
             ParticipantsSheet(session: session, canShare: canShare) {
                 // One sheet after the other.
@@ -237,7 +240,7 @@ private struct TerminalContent: View {
         let covered: [Bool] = [
             session.prompt != nil, customizing, showingPeople, sharing, showingActivity, showingFiles,
             tunnelsHost != nil, filling != nil, sessions.pasteRequest != nil, terminating, quickConnect, showingSettings,
-            showingShortcuts, closingAll, renaming != nil, desktop?.covered ?? false,
+            showingShortcuts, closingAll, renaming != nil, sharingRecording != nil, desktop?.covered ?? false,
         ]
         return !covered.contains(true)
     }
@@ -384,6 +387,7 @@ private struct TerminalContent: View {
                 Text(subtitle).font(.caption2).foregroundColor(.secondary).lineLimit(1)
             }
             if showsLatency { latencyBadge.padding(.leading, 4) }
+            if recordingPath != nil { recordingBadge }
             Spacer()
             pasteButton
             if sessions.splitAvailable {
@@ -417,6 +421,7 @@ private struct TerminalContent: View {
             placeBadge
             if session.isTelnet { TelnetBadge() }
             if showsLatency { latencyBadge }
+            if recordingPath != nil { recordingBadge }
             Spacer(minLength: 8)
             if filesSource != nil {
                 Button { showingFiles = true } label: { barIcon("folder") }
@@ -463,10 +468,22 @@ private struct TerminalContent: View {
             .fixedSize()
     }
 
-    /// Terminals of this device measure their latency (SSH or Telnet); the
-    /// server sessions' is not known here.
+    /// Terminals of this device measure their latency (SSH or Telnet), and
+    /// server sessions the round trip to the server.
     private var showsLatency: Bool {
         session.measuresLatency && !session.asleep
+    }
+
+    /// The recording of a terminal of this device that is recorded.
+    private var recordingPath: String? { (session as? LocalTerminal)?.recordingPath }
+
+    /// A red dot while the terminal is recorded on this device.
+    private var recordingBadge: some View {
+        Image(systemName: "record.circle")
+            .font(.caption.weight(.semibold))
+            .foregroundColor(Brand.red)
+            .accessibilityLabel("terminal.recording")
+            .help(Text("terminal.recording"))
     }
 
     /// Round trip to the host, like the desktop's: gray below 150 ms, amber
@@ -486,7 +503,7 @@ private struct TerminalContent: View {
             .padding(.horizontal, 6).padding(.vertical, 3)
             .background(color.opacity(0.12), in: Capsule())
             .fixedSize()
-            .help(Text("terminal.latency.tooltip_host \(session.label)"))
+            .help(session.persistent ? Text("terminal.latency.tooltip_server") : Text("terminal.latency.tooltip_host \(session.label)"))
             .accessibilityLabel(Text("terminal.latency.accessibility \(text)"))
     }
 
@@ -566,6 +583,12 @@ private struct TerminalContent: View {
             }
             if activitySessionId != nil {
                 Button { showingActivity = true } label: { Label("activity.menu", systemImage: "clock.arrow.circlepath") }
+            }
+            if let path = recordingPath {
+                // The .cast file so far (asciicast), to share or save to Files.
+                Button { sharingRecording = RecordingFileItem(url: URL(fileURLWithPath: path)) } label: {
+                    Label("terminal.menu.share_recording", systemImage: "record.circle")
+                }
             }
             Divider()
             if filesSource != nil {
@@ -817,6 +840,11 @@ private struct SnippetVariablesForm: View {
     }
 }
 
+private struct RecordingFileItem: Identifiable {
+    let url: URL
+    var id: String { url.path }
+}
+
 private struct SnippetChoice: Identifiable {
     let snippet: Snippet
     let action: SnippetAction
@@ -840,7 +868,12 @@ struct AuthPromptView: View {
                         Button("common.cancel") { respond(nil) }.keyboardShortcut(.cancelAction)
                     }
                     ToolbarItem(placement: .confirmationAction) {
-                        Button(isHostKey ? String(localized: "auth.trust") : String(localized: "common.ok")) { respond(answers) }
+                        if isKeyChange {
+                            // Not the default action: you have to mean it.
+                            Button("auth.key_changed.trust") { respond(answers) }.foregroundColor(.red)
+                        } else {
+                            Button(isHostKey ? String(localized: "auth.trust") : String(localized: "common.ok")) { respond(answers) }
+                        }
                     }
                 }
         }
@@ -856,9 +889,15 @@ struct AuthPromptView: View {
         return false
     }
 
+    private var isKeyChange: Bool {
+        if case .hostKeyChanged = prompt.kind { return true }
+        return false
+    }
+
     private var title: String {
         switch prompt.kind {
         case .hostKey: return String(localized: "auth.unknown_server")
+        case .hostKeyChanged: return String(localized: "auth.key_changed.title")
         case .fields(let req):
             switch req.kind {
             case .password: return String(localized: "common.password")
@@ -882,6 +921,8 @@ struct AuthPromptView: View {
                     .font(.system(.footnote, design: .monospaced))
                     .textSelection(.enabled)
             }
+        case .hostKeyChanged(let change):
+            HostKeyChangeSections(change: change)
         case .fields(let req):
             if !req.instructions.isEmpty {
                 Section { Text(req.instructions) }
@@ -906,6 +947,43 @@ struct AuthPromptView: View {
     private func respond(_ value: [String]?) {
         prompt.respond(value)
         onClose()
+    }
+}
+
+/// A known server presents another key: the warning, the key type and
+/// both fingerprints (the saved one and the new one).
+private struct HostKeyChangeSections: View {
+    let change: HostKeyChange
+
+    private var place: String { change.port == 22 ? change.host : "\(change.host):\(change.port)" }
+
+    var body: some View {
+        Section {
+            Label {
+                Text("auth.key_changed.message \(place)")
+            } icon: {
+                Image(systemName: "exclamationmark.shield.fill").foregroundColor(.red)
+            }
+            HStack {
+                Text("common.type")
+                Spacer()
+                Text(change.keyType).foregroundColor(.secondary)
+            }
+        }
+        Section("auth.key_changed.old") { fingerprint(change.oldFingerprint) }
+        Section {
+            fingerprint(change.newFingerprint)
+        } header: {
+            Text("auth.key_changed.new")
+        } footer: {
+            Text("auth.key_changed.footer")
+        }
+    }
+
+    private func fingerprint(_ text: String) -> some View {
+        Text(text)
+            .font(.system(.footnote, design: .monospaced))
+            .textSelection(.enabled)
     }
 }
 

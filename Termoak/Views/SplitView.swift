@@ -164,9 +164,6 @@ struct SessionStage: View {
     @State private var didConnect = false
     /// The host opened in the editor from the failure card.
     @State private var editingHost: HostEdit?
-    /// The host's key changed: confirming to forget the old one.
-    @State private var forgettingKey = false
-    @State private var forgetError: String?
     @EnvironmentObject private var account: Accounts
 
     private var theme: TerminalTheme { session.theme }
@@ -213,27 +210,6 @@ struct SessionStage: View {
                 session.reconnect()
             }
             .environmentObject(model).environmentObject(account).environmentObject(sessions)
-        }
-        .confirmationDialog("terminal.host_key.forget_title", isPresented: $forgettingKey, titleVisibility: .visible) {
-            Button("terminal.host_key.forget", role: .destructive) {
-                steps = []
-                forgetError = sessions.forgetChangedKey(session)
-            }
-        } message: {
-            if let c = session.hostKeyChange {
-                Text("terminal.host_key.forget_message \(c.expected) \(c.actual)")
-            }
-        }
-        .alert("common.error", isPresented: Binding(get: { forgetError != nil }, set: { if !$0 { forgetError = nil } })) {
-            Button("common.ok", role: .cancel) {}
-        } message: { Text(forgetError ?? "") }
-    }
-
-    /// "Forget the old key…": only when the key changed (a terminal of this device).
-    @ViewBuilder private var forgetKeyButton: some View {
-        if session.hostKeyChange != nil {
-            Button { forgettingKey = true } label: { Label("terminal.host_key.forget_button", systemImage: "xmark.shield") }
-                .buttonStyle(.bordered)
         }
     }
 
@@ -303,7 +279,6 @@ struct SessionStage: View {
                         Button("common.close") { sessions.close(session.id) }.buttonStyle(.bordered)
                     }
                     .padding(.top, 4)
-                    forgetKeyButton
                 }
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -368,7 +343,6 @@ struct SessionStage: View {
                     Button("common.close") { sessions.close(session.id) }.buttonStyle(.bordered)
                 }
                 .padding(.top, 8)
-                forgetKeyButton
             }
         }
         .padding(cardPadding)

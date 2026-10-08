@@ -1,10 +1,14 @@
 import TermoakKit
 import Foundation
 
-/// Question pending while connecting (server fingerprint or fields to fill in).
+/// Question pending while connecting (server fingerprint, a known server
+/// whose key changed, or fields to fill in).
 struct AuthPrompt: Identifiable {
     enum Kind {
         case hostKey(host: String, port: UInt32, keyType: String, fingerprint: String)
+        /// The key of a known host (or of a jump host) is not the saved one:
+        /// trusting it replaces the saved key in Known hosts.
+        case hostKeyChanged(HostKeyChange)
         case fields(AuthRequest)
     }
 
@@ -14,9 +18,10 @@ struct AuthPrompt: Identifiable {
     let respond: ([String]?) -> Void
 }
 
-/// Bridge between the engine's `AuthHandler` (background thread, blocking)
-/// and the UI: publishes the question on the main thread and waits for the answer.
-final class AuthBridge: AuthHandler, @unchecked Sendable {
+/// Bridge between the engine's `AuthHandler` and `HostKeyChangeHandler`
+/// (background thread, blocking) and the UI: publishes the question on the
+/// main thread and waits for the answer.
+final class AuthBridge: AuthHandler, HostKeyChangeHandler, @unchecked Sendable {
     private let publish: @Sendable (AuthPrompt) -> Void
 
     init(publish: @escaping @Sendable (AuthPrompt) -> Void) {
@@ -29,6 +34,11 @@ final class AuthBridge: AuthHandler, @unchecked Sendable {
 
     func onPrompt(request: AuthRequest) -> [String]? {
         ask(.fields(request))
+    }
+
+    /// `false` keeps the engine's `HostKey` error (nothing is replaced).
+    func onHostKeyChanged(change: HostKeyChange) -> Bool {
+        ask(.hostKeyChanged(change)) != nil
     }
 
     private func ask(_ kind: AuthPrompt.Kind) -> [String]? {

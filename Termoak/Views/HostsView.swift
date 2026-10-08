@@ -938,6 +938,13 @@ struct HostsView: View {
         if desktop && !sessions.open.isEmpty {
             Button { connectInSplit(host) } label: { Label("hosts.menu.connect_split", systemImage: "rectangle.split.2x1") }
         }
+        // Recorded on this device (asciicast), to share or save afterwards
+        // (the host's setting may already record every session).
+        if !isStrict(host) && host.settings.recordSessions != true {
+            Button { sessions.openLocal(host, record: true) } label: {
+                Label("hosts.menu.connect_recorded", systemImage: "record.circle")
+            }
+        }
         // Telnet hosts: no server sessions, SFTP or tunnels (SSH only).
         if canOpenOnServer(host) && !host.isTelnet {
             Button { connect(host, onServer: true) } label: { Label("hosts.menu.persistent", systemImage: "icloud") }

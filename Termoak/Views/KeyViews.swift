@@ -365,7 +365,7 @@ struct InstallKeyView: View {
             defer { working = nil }
             let auth = AuthBridge { p in Task { @MainActor in prompt = p } }
             do {
-                let session = try await model.core.connect(hostId: h.id, auth: auth, accountId: h.accountId)
+                let session = try await model.core.connect(hostId: h.id, auth: auth, accountId: h.accountId, keyChanged: auth)
                 defer { Task.detached { try? await session.disconnect() } }
                 let added = try await Self.addKey(publicKey, over: session)
                 result = InstallResult(title: added ? String(localized: "keychain.install.done") : String(localized: "keychain.install.already"),
