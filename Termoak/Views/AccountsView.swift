@@ -271,6 +271,8 @@ struct AccountDetailView: View {
             do {
                 let report = try await account.signOut(id, discard: discard)
                 if report.signedOut {
+                    // Its terminals close too (its server sessions stay there).
+                    sessions.closeTerminals(ofAccount: id)
                     dismiss()
                 } else {
                     unsyncedCount = report.unsynced
