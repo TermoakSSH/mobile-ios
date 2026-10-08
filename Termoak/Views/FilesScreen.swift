@@ -219,37 +219,35 @@ struct FilesScreen: View {
 
     private func withAlerts<V: View>(_ view: V) -> some View {
         view
-            .alert("files.new_folder", isPresented: $newFolder) {
-                TextField("common.name", text: $name).textInputAutocapitalization(.never).autocorrectionDisabled()
-                Button("common.cancel", role: .cancel) {}
-                Button("files.create") { let n = name; Task { await browser.createFolder(n) } }
-                    .disabled(RemotePaths.invalidName(name))
+            .textPrompt(Text("files.new_folder"), isPresented: $newFolder, text: $name,
+                        placeholder: String(localized: "common.name"), confirm: String(localized: "files.create"),
+                        invalid: RemotePaths.invalidName) {
+                let n = name
+                Task { await browser.createFolder(n) }
             }
-            .alert("common.rename", isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
-                TextField("common.name", text: $name).textInputAutocapitalization(.never).autocorrectionDisabled()
-                Button("common.cancel", role: .cancel) {}
-                Button("common.rename") {
-                    if let f = renaming { let n = name; Task { await browser.rename(f, to: n) } }
-                }
-                .disabled(RemotePaths.invalidName(name))
+            .textPrompt(Text("common.rename"), isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } }),
+                        text: $name, placeholder: String(localized: "common.name"), confirm: String(localized: "common.rename"),
+                        invalid: RemotePaths.invalidName) {
+                if let f = renaming { let n = name; Task { await browser.rename(f, to: n) } }
             }
-            .alert("files.new_file", isPresented: $newFile) {
-                TextField("common.name", text: $name).textInputAutocapitalization(.never).autocorrectionDisabled()
-                Button("common.cancel", role: .cancel) {}
-                Button("files.create") { let n = name; Task { await browser.createFile(n) } }
-                    .disabled(RemotePaths.invalidName(name))
+            .textPrompt(Text("files.new_file"), isPresented: $newFile, text: $name,
+                        placeholder: String(localized: "common.name"), confirm: String(localized: "files.create"),
+                        invalid: RemotePaths.invalidName) {
+                let n = name
+                Task { await browser.createFile(n) }
             }
-            .alert("files.go_to", isPresented: $goingTo) {
-                TextField("files.path_placeholder", text: $typedPath).textInputAutocapitalization(.never).autocorrectionDisabled()
-                Button("common.cancel", role: .cancel) {}
-                Button("common.open") { let p = typedPath; Task { await browser.goTo(typed: p) } }
-            } message: { Text("files.go_to.message") }
-            .alert(Text("files.move.title \(moving?.name ?? "")"),
-                   isPresented: Binding(get: { moving != nil }, set: { if !$0 { moving = nil } })) {
-                TextField("files.path_placeholder", text: $typedPath).textInputAutocapitalization(.never).autocorrectionDisabled()
-                Button("common.cancel", role: .cancel) {}
-                Button("files.move") { if let f = moving { let p = typedPath; Task { await browser.move(f, toFolder: p) } } }
-            } message: { Text("files.move.message") }
+            .textPrompt(Text("files.go_to"), isPresented: $goingTo, text: $typedPath,
+                        placeholder: String(localized: "files.path_placeholder"), message: Text("files.go_to.message"),
+                        confirm: String(localized: "common.open")) {
+                let p = typedPath
+                Task { await browser.goTo(typed: p) }
+            }
+            .textPrompt(Text("files.move.title \(moving?.name ?? "")"),
+                        isPresented: Binding(get: { moving != nil }, set: { if !$0 { moving = nil } }), text: $typedPath,
+                        placeholder: String(localized: "files.path_placeholder"), message: Text("files.move.message"),
+                        confirm: String(localized: "files.move")) {
+                if let f = moving { let p = typedPath; Task { await browser.move(f, toFolder: p) } }
+            }
             .alert("common.error", isPresented: Binding(get: { browser.error != nil }, set: { if !$0 { browser.error = nil } })) {
                 Button("common.ok", role: .cancel) {}
             } message: { Text(browser.error ?? "") }

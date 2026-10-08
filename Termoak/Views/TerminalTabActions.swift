@@ -8,15 +8,12 @@ struct TabRenameAlert: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .alert("terminal.tab.rename_title", isPresented: Binding(get: { session != nil }, set: { if !$0 { session = nil } })) {
-                TextField("terminal.tab.rename_placeholder", text: $name)
-                Button("common.cancel", role: .cancel) {}
-                Button("common.save") {
-                    let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-                    session?.customTitle = trimmed.isEmpty ? nil : trimmed
-                }
-            } message: {
-                Text("terminal.tab.rename_hint")
+            .textPrompt(Text("terminal.tab.rename_title"),
+                        isPresented: Binding(get: { session != nil }, set: { if !$0 { session = nil } }), text: $name,
+                        placeholder: String(localized: "terminal.tab.rename_placeholder"), message: Text("terminal.tab.rename_hint"),
+                        confirm: String(localized: "common.save"), plain: false) {
+                let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+                session?.customTitle = trimmed.isEmpty ? nil : trimmed
             }
             .onChange(of: session?.id) { _ in name = session?.customTitle ?? "" }
     }

@@ -163,13 +163,9 @@ struct SettingsView: View {
                     }
                 }
             }
-            .alert("about.device_name", isPresented: $renamingDevice) {
-                TextField(UIDevice.current.name, text: $deviceName)
-                Button("common.cancel", role: .cancel) {}
-                Button("common.save") { saveDeviceName() }
-            } message: {
-                Text("about.device_name.footer")
-            }
+            .textPrompt(Text("about.device_name"), isPresented: $renamingDevice, text: $deviceName,
+                        placeholder: UIDevice.current.name, message: Text("about.device_name.footer"),
+                        confirm: String(localized: "common.save"), plain: false) { saveDeviceName() }
             .alert("common.error", isPresented: Binding(get: { deviceError != nil }, set: { if !$0 { deviceError = nil } })) {
                 Button("common.ok", role: .cancel) {}
             } message: { Text(deviceError ?? "") }

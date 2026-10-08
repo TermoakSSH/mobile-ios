@@ -47,13 +47,9 @@ struct TeamsView: View {
                 }
             }
         }
-        .alert("teams.new", isPresented: $creating) {
-            TextField("teams.name_placeholder", text: $newName)
-            Button("common.cancel", role: .cancel) {}
-            Button("teams.create") { create() }
-        } message: {
-            Text("teams.new_hint")
-        }
+        .textPrompt(Text("teams.new"), isPresented: $creating, text: $newName,
+                    placeholder: String(localized: "teams.name_placeholder"), message: Text("teams.new_hint"),
+                    confirm: String(localized: "teams.create"), plain: false) { create() }
         .alert("common.error", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("common.ok", role: .cancel) {}
         } message: { Text(error ?? "") }
@@ -192,11 +188,8 @@ private struct TeamDetailView: View {
         .listStyle(.insetGrouped)
         .navigationTitle(Text(verbatim: name.isEmpty ? team.name : name))
         .navigationBarTitleDisplayMode(.inline)
-        .alert("teams.rename", isPresented: $renaming) {
-            TextField("common.name", text: $newName)
-            Button("common.cancel", role: .cancel) {}
-            Button("common.rename") { rename() }
-        }
+        .textPrompt(Text("teams.rename"), isPresented: $renaming, text: $newName,
+                    placeholder: String(localized: "common.name"), confirm: String(localized: "common.rename"), plain: false) { rename() }
         .confirmationDialog(Text("teams.remove.title \(removing?.email ?? "")"),
                             isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }),
                             titleVisibility: .visible) {
