@@ -158,3 +158,67 @@ struct TransferSlots {
         return started
     }
 }
+
+/// An upload or download of the file browser, with its progress and what
+/// became of it. The engine stops a running one when its `TransferHandle` is
+/// cancelled (its error `Cancelled` is not a failure).
+struct Transfer: Identifiable, Equatable {
+    enum Status: Equatable { case waiting, running, done, failed, cancelled }
+
+    let id = UUID()
+    let name: String
+    let uploading: Bool
+    var done: UInt64 = 0
+    var total: UInt64?
+    var status: Status = .waiting
+    var error: String?
+
+    var fraction: Double? {
+        guard let total, total > 0 else { return nil }
+        return min(1, Double(done) / Double(total))
+    }
+
+    /// Waiting or running (it can be cancelled; the others can be removed).
+    var active: Bool { status == .waiting || status == .running }
+    /// Failed or cancelled: it can be started again.
+    var canRetry: Bool { status == .failed || status == .cancelled }
+
+    /// Cancel: a waiting or running one ends as cancelled; false if it had
+    /// already ended (nothing to stop).
+    @discardableResult mutating func cancel() -> Bool {
+        guard active else { return false }
+        status = .cancelled
+        error = nil
+        return true
+    }
+
+    /// Retry: a failed or cancelled one waits for its turn again, from zero.
+    @discardableResult mutating func retry() -> Bool {
+        guard canRetry else { return false }
+        status = .waiting
+        done = 0
+        error = nil
+        return true
+    }
+
+    /// The engine finished it: done, cancelled (its error was `Cancelled`,
+    /// shown without an error) or failed with `error`. Only a running one
+    /// changes (one cancelled here stays cancelled).
+    mutating func finish(error message: String?, cancelled: Bool) {
+        guard status == .running else { return }
+        if cancelled {
+            status = .cancelled
+            error = nil
+        } else if let message {
+            status = .failed
+            error = message
+        } else {
+            status = .done
+            done = total ?? done
+            error = nil
+        }
+    }
+
+    /// How many can be cancelled at once ("Cancel all" from two).
+    static func activeCount(_ list: [Transfer]) -> Int { list.filter(\.active).count }
+}

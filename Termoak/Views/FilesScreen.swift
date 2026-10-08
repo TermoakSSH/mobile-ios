@@ -507,11 +507,12 @@ struct FilesScreen: View {
         }
     }
 
-    /// The transfers: progress, and Cancel while they wait or run; Retry
-    /// and Remove once they failed or were cancelled.
+    /// The transfers: progress, and Cancel while they wait or run (Cancel
+    /// all with several); Retry and Remove once they failed or were cancelled.
     private var transfersBar: some View {
         ScrollView {
             VStack(spacing: 6) {
+                if browser.activeTransfers >= 2 { cancelAllRow }
                 ForEach(browser.transfers) { t in
                     TransferRow(transfer: t,
                                 onCancel: { browser.cancel(t.id) },
@@ -524,6 +525,16 @@ struct FilesScreen: View {
         .frame(maxHeight: 170)
         .fixedSize(horizontal: false, vertical: true)
         .background(.bar)
+    }
+
+    private var cancelAllRow: some View {
+        HStack {
+            Text("files.transfer.active \(browser.activeTransfers)").font(.caption).foregroundColor(.secondary)
+            Spacer(minLength: 0)
+            Button("files.transfer.cancel_all", role: .destructive) { browser.cancelAll() }
+                .font(.caption)
+                .buttonStyle(.borderless)
+        }
     }
 
     private func icon(_ f: RemoteFile) -> String { fileIcon(f) }

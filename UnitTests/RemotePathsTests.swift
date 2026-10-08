@@ -96,4 +96,58 @@ final class RemotePathsTests: XCTestCase {
         XCTAssertEqual(slots.running, [ids[4]])
         XCTAssertTrue(slots.enqueue(ids[0]))
     }
+
+    func testTransferCancelRetryFinish() {
+        var t = Transfer(name: "a.log", uploading: false)
+        XCTAssertTrue(t.active)
+        XCTAssertFalse(t.retry(), "a waiting one is not retried")
+        t.status = .running
+        t.done = 50
+        t.total = 100
+        XCTAssertTrue(t.cancel())
+        XCTAssertEqual(t.status, .cancelled)
+        XCTAssertNil(t.error)
+        XCTAssertFalse(t.cancel(), "nothing left to stop")
+        // The engine's Cancelled arriving afterwards changes nothing.
+        t.finish(error: "Cancelled", cancelled: true)
+        XCTAssertEqual(t.status, .cancelled)
+        XCTAssertNil(t.error)
+
+        XCTAssertTrue(t.retry())
+        XCTAssertEqual(t.status, .waiting)
+        XCTAssertEqual(t.done, 0)
+        t.status = .running
+        t.finish(error: "No such file", cancelled: false)
+        XCTAssertEqual(t.status, .failed)
+        XCTAssertEqual(t.error, "No such file")
+        XCTAssertTrue(t.canRetry)
+
+        XCTAssertTrue(t.retry())
+        XCTAssertNil(t.error)
+        t.status = .running
+        // Cancelled in the engine (the handle): cancelled, not an error.
+        t.finish(error: "Cancelled", cancelled: true)
+        XCTAssertEqual(t.status, .cancelled)
+        XCTAssertNil(t.error)
+
+        XCTAssertTrue(t.retry())
+        t.status = .running
+        t.total = 10
+        t.finish(error: nil, cancelled: false)
+        XCTAssertEqual(t.status, .done)
+        XCTAssertEqual(t.done, 10)
+        XCTAssertFalse(t.cancel())
+        XCTAssertFalse(t.retry())
+    }
+
+    func testTransferActiveCount() {
+        var a = Transfer(name: "a", uploading: true)
+        let b = Transfer(name: "b", uploading: false)
+        var c = Transfer(name: "c", uploading: false)
+        a.status = .running
+        c.status = .done
+        XCTAssertEqual(Transfer.activeCount([a, b, c]), 2)
+        a.cancel()
+        XCTAssertEqual(Transfer.activeCount([a, b, c]), 1)
+    }
 }

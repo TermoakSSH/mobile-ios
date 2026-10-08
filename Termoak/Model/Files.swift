@@ -13,8 +13,10 @@ protocol RemoteFileSystem: AnyObject {
     func write(_ path: String, data: Data) async throws
     func home() async throws -> String
     func list(_ path: String) async throws -> [RemoteFile]
-    func download(_ remote: String, to local: URL, progress: TransferListener) async throws
-    func upload(_ local: URL, to remote: String, progress: TransferListener) async throws
+    /// `cancel`: cancelling it stops the transfer in the engine, which then
+    /// throws `TermoakError.Cancelled` (a download leaves no file behind).
+    func download(_ remote: String, to local: URL, progress: TransferListener, cancel: TransferHandle) async throws
+    func upload(_ local: URL, to remote: String, progress: TransferListener, cancel: TransferHandle) async throws
     func createFolder(_ path: String) async throws
     func rename(_ from: String, to: String) async throws
     func delete(_ path: String, recursive: Bool) async throws
@@ -39,11 +41,11 @@ final class SshFileSystem: RemoteFileSystem {
     func read(_ path: String, maxBytes: UInt64) async throws -> Data { try await session.sftpRead(path: path, maxBytes: maxBytes) }
     func write(_ path: String, data: Data) async throws { try await session.sftpWrite(path: path, data: data) }
     func list(_ path: String) async throws -> [RemoteFile] { try await session.sftpList(path: path) }
-    func download(_ remote: String, to local: URL, progress: TransferListener) async throws {
-        _ = try await session.sftpDownload(remotePath: remote, localPath: local.path, listener: progress)
+    func download(_ remote: String, to local: URL, progress: TransferListener, cancel: TransferHandle) async throws {
+        _ = try await session.sftpDownload(remotePath: remote, localPath: local.path, listener: progress, cancel: cancel)
     }
-    func upload(_ local: URL, to remote: String, progress: TransferListener) async throws {
-        _ = try await session.sftpUpload(localPath: local.path, remotePath: remote, listener: progress)
+    func upload(_ local: URL, to remote: String, progress: TransferListener, cancel: TransferHandle) async throws {
+        _ = try await session.sftpUpload(localPath: local.path, remotePath: remote, listener: progress, cancel: cancel)
     }
     func createFolder(_ path: String) async throws { try await session.sftpMkdir(path: path, recursive: false) }
     func rename(_ from: String, to: String) async throws { try await session.sftpRename(from: from, to: to) }
@@ -78,11 +80,13 @@ final class ServerFileSystem: RemoteFileSystem {
         throw TermoakError.Invalid(message: String(localized: "files.error.edit_ssh_only"))
     }
     func list(_ path: String) async throws -> [RemoteFile] { try await core.serverSftpList(hostId: hostId, path: path, accountId: accountId) }
-    func download(_ remote: String, to local: URL, progress: TransferListener) async throws {
-        _ = try await core.serverSftpDownload(hostId: hostId, remotePath: remote, localPath: local.path, listener: progress, accountId: accountId)
+    func download(_ remote: String, to local: URL, progress: TransferListener, cancel: TransferHandle) async throws {
+        _ = try await core.serverSftpDownload(hostId: hostId, remotePath: remote, localPath: local.path, listener: progress,
+                                              accountId: accountId, cancel: cancel)
     }
-    func upload(_ local: URL, to remote: String, progress: TransferListener) async throws {
-        _ = try await core.serverSftpUpload(hostId: hostId, localPath: local.path, remotePath: remote, listener: progress, accountId: accountId)
+    func upload(_ local: URL, to remote: String, progress: TransferListener, cancel: TransferHandle) async throws {
+        _ = try await core.serverSftpUpload(hostId: hostId, localPath: local.path, remotePath: remote, listener: progress,
+                                            accountId: accountId, cancel: cancel)
     }
     func createFolder(_ path: String) async throws { try await core.serverSftpMkdir(hostId: hostId, path: path, parents: false, accountId: accountId) }
     func rename(_ from: String, to: String) async throws { try await core.serverSftpRename(hostId: hostId, from: from, to: to, accountId: accountId) }
@@ -91,27 +95,6 @@ final class ServerFileSystem: RemoteFileSystem {
         throw TermoakError.Invalid(message: String(localized: "files.error.chmod_ssh_only"))
     }
     func close() {}
-}
-
-/// An upload or download, with its progress and what became of it.
-struct Transfer: Identifiable, Equatable {
-    enum Status: Equatable { case waiting, running, done, failed, cancelled }
-
-    let id = UUID()
-    let name: String
-    let uploading: Bool
-    var done: UInt64 = 0
-    var total: UInt64?
-    var status: Status = .waiting
-    var error: String?
-
-    var fraction: Double? {
-        guard let total, total > 0 else { return nil }
-        return min(1, Double(done) / Double(total))
-    }
-
-    /// Waiting or running (it can be cancelled; the others can be removed).
-    var active: Bool { status == .waiting || status == .running }
 }
 
 /// What a download is for.
@@ -222,6 +205,8 @@ final class FileBrowser: ObservableObject {
     /// Transfers waiting for a slot (resumed when one is free, or cancelled).
     private var turns: [UUID: CheckedContinuation<Void, Never>] = [:]
     private var jobs: [UUID: Task<Void, Never>] = [:]
+    /// The engine's handle of each running start: Cancel stops it there.
+    private var handles: [UUID: TransferHandle] = [:]
     /// How to start each transfer again (failed or cancelled ones).
     private var retries: [UUID: () -> Void] = [:]
     /// Each start of a transfer (a retry is another one): an earlier start
@@ -276,9 +261,8 @@ final class FileBrowser: ObservableObject {
         }
     }
 
-    /// Leaving the browser: the waiting and running transfers stop (a
-    /// running one may still finish in the engine) and our own connection
-    /// closes.
+    /// Leaving the browser: the waiting and running transfers stop (in the
+    /// engine too) and our own connection closes.
     func close() {
         for t in transfers where t.active { cancel(t.id) }
         fileSystem?.close()
@@ -420,11 +404,16 @@ final class FileBrowser: ObservableObject {
     func download(_ f: RemoteFile, for purpose: DownloadPurpose) {
         guard let fileSystem else { return }
         let t = Transfer(name: f.name, uploading: false)
-        add(t) { [weak self] listener in
+        add(t) { [weak self] listener, cancel in
             let folder = FileManager.default.temporaryDirectory.appendingPathComponent("sftp-\(UUID().uuidString)", isDirectory: true)
             try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
             let target = folder.appendingPathComponent(RemotePaths.uploadName(f.name))
-            try await fileSystem.download(f.path, to: target, progress: listener)
+            do {
+                try await fileSystem.download(f.path, to: target, progress: listener, cancel: cancel)
+            } catch {
+                try? FileManager.default.removeItem(at: folder)
+                throw error
+            }
             guard let self, self.status(t.id) == .running else {
                 try? FileManager.default.removeItem(at: folder)
                 return
@@ -440,38 +429,46 @@ final class FileBrowser: ObservableObject {
         guard let fileSystem, !files.isEmpty else { return }
         let title = files.count == 1 ? files[0].name : String(localized: "files.items \(files.count)")
         let t = Transfer(name: title, uploading: false)
-        add(t) { [weak self] listener in
+        add(t) { [weak self] listener, cancel in
             let folder = FileManager.default.temporaryDirectory.appendingPathComponent("sftp-\(UUID().uuidString)", isDirectory: true)
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            var plan: [DownloadStep] = []
-            var tops: [(file: RemoteFile, local: URL)] = []
-            for f in files {
-                let local = folder.appendingPathComponent(RemotePaths.uploadName(f.name), isDirectory: f.kind == .dir)
-                tops.append((f, local))
-                if f.kind == .dir {
-                    try await FileBrowser.walk(fileSystem, f.path, into: local, plan: &plan)
-                } else {
-                    plan.append(DownloadStep(remote: f.path, local: local, size: f.size))
-                }
-            }
-            let total = plan.reduce(0) { $0 + $1.size }
-            var base: UInt64 = 0
-            for step in plan {
-                guard let self, self.status(t.id) == .running else {
-                    try? FileManager.default.removeItem(at: folder)
-                    return
-                }
-                try await fileSystem.download(step.remote, to: step.local,
-                                              progress: BatchListener(base: base, total: total, inner: listener))
-                base += step.size
-            }
-            let urls = try tops.map { $0.file.kind == .dir ? try FileBrowser.zip($0.local) : $0.local }
-            guard let self, self.status(t.id) == .running else {
+            do {
+                try await self?.downloadBatch(t.id, files, into: folder, from: fileSystem, purpose: purpose,
+                                              listener: listener, cancel: cancel)
+            } catch {
+                // Cancelled or failed: nothing half-downloaded stays behind.
                 try? FileManager.default.removeItem(at: folder)
-                return
+                throw error
             }
-            self.downloaded = DownloadedFile(urls: urls, purpose: purpose)
         }
+    }
+
+    /// The work of `downloadMany`: walks the folders, downloads every file
+    /// (stopping when cancelled) and zips the folders.
+    private func downloadBatch(_ id: UUID, _ files: [RemoteFile], into folder: URL, from fileSystem: RemoteFileSystem,
+                               purpose: DownloadPurpose, listener: TransferListener, cancel: TransferHandle) async throws {
+        var plan: [DownloadStep] = []
+        var tops: [(file: RemoteFile, local: URL)] = []
+        for f in files {
+            let local = folder.appendingPathComponent(RemotePaths.uploadName(f.name), isDirectory: f.kind == .dir)
+            tops.append((f, local))
+            if f.kind == .dir {
+                try await FileBrowser.walk(fileSystem, f.path, into: local, plan: &plan, cancel: cancel)
+            } else {
+                plan.append(DownloadStep(remote: f.path, local: local, size: f.size))
+            }
+        }
+        let total = plan.reduce(0) { $0 + $1.size }
+        var base: UInt64 = 0
+        for step in plan {
+            guard status(id) == .running, !cancel.isCancelled() else { throw TermoakError.Cancelled(message: "") }
+            try await fileSystem.download(step.remote, to: step.local,
+                                          progress: BatchListener(base: base, total: total, inner: listener), cancel: cancel)
+            base += step.size
+        }
+        let urls = try tops.map { $0.file.kind == .dir ? try FileBrowser.zip($0.local) : $0.local }
+        guard status(id) == .running else { throw TermoakError.Cancelled(message: "") }
+        downloaded = DownloadedFile(urls: urls, purpose: purpose)
     }
 
     /// One file to download of a batch.
@@ -484,12 +481,14 @@ final class FileBrowser: ObservableObject {
     /// The files inside a remote folder (and its folders), with where each
     /// one goes; empty folders are created here. Links and special files are
     /// left out.
-    private static func walk(_ fs: RemoteFileSystem, _ remote: String, into local: URL, plan: inout [DownloadStep]) async throws {
+    private static func walk(_ fs: RemoteFileSystem, _ remote: String, into local: URL, plan: inout [DownloadStep],
+                             cancel: TransferHandle) async throws {
+        if cancel.isCancelled() { throw TermoakError.Cancelled(message: "") }
         try FileManager.default.createDirectory(at: local, withIntermediateDirectories: true)
         for e in try await fs.list(remote) where e.name != "." && e.name != ".." {
             let target = local.appendingPathComponent(RemotePaths.uploadName(e.name), isDirectory: e.kind == .dir)
             switch e.kind {
-            case .dir: try await walk(fs, e.path, into: target, plan: &plan)
+            case .dir: try await walk(fs, e.path, into: target, plan: &plan, cancel: cancel)
             case .file: plan.append(DownloadStep(remote: e.path, local: target, size: e.size))
             default: continue
             }
@@ -535,34 +534,54 @@ final class FileBrowser: ObservableObject {
         var taken = Set(entries.map(\.name))
         for (local, picked) in request.files {
             let name = replace ? picked : RemotePaths.freeName(picked, taken: taken)
+            // A cancelled upload leaves what was written on the host: a new
+            // file is removed then (one being replaced is already cut).
+            let isNew = !taken.contains(name)
             taken.insert(name)
             let remote = RemotePaths.child(request.folder.isEmpty ? "/" : request.folder, name)
-            add(Transfer(name: name, uploading: true)) { [weak self] listener in
+            add(Transfer(name: name, uploading: true)) { [weak self] listener, cancel in
                 let access = local.startAccessingSecurityScopedResource()
                 defer { if access { local.stopAccessingSecurityScopedResource() } }
-                try await fileSystem.upload(local, to: remote, progress: listener)
+                do {
+                    try await fileSystem.upload(local, to: remote, progress: listener, cancel: cancel)
+                } catch {
+                    if isNew && FileBrowser.isCancelled(error) {
+                        try? await fileSystem.delete(remote, recursive: false)
+                    }
+                    if let self, self.path == request.folder { await self.reload() }
+                    throw error
+                }
                 if let self, self.path == request.folder { await self.reload() }
             }
         }
     }
 
-    /// Cancels a waiting or running transfer. A running one stops here at
-    /// once, but the engine may finish it in the background (its async calls
-    /// can't be cancelled yet).
+    /// Cancels a waiting or running transfer: a running one is stopped in
+    /// the engine too (its `TransferHandle`), so it ends at once.
     func cancel(_ id: UUID) {
-        guard let i = transfers.firstIndex(where: { $0.id == id }), transfers[i].active else { return }
-        transfers[i].status = .cancelled
+        guard let i = transfers.firstIndex(where: { $0.id == id }), transfers[i].cancel() else { return }
+        handles.removeValue(forKey: id)?.cancel()
         jobs[id]?.cancel()
         jobs[id] = nil
         release(id)
     }
 
+    /// Cancels every waiting and running transfer.
+    func cancelAll() {
+        for t in transfers where t.active { cancel(t.id) }
+    }
+
+    var activeTransfers: Int { Transfer.activeCount(transfers) }
+
     func retry(_ id: UUID) {
-        guard let run = retries[id], let i = transfers.firstIndex(where: { $0.id == id }), !transfers[i].active else { return }
-        transfers[i].status = .waiting
-        transfers[i].done = 0
-        transfers[i].error = nil
+        guard let run = retries[id], let i = transfers.firstIndex(where: { $0.id == id }), transfers[i].retry() else { return }
         run()
+    }
+
+    /// The engine's `Cancelled` (a `TransferHandle` was cancelled).
+    nonisolated static func isCancelled(_ error: Error) -> Bool {
+        if case TermoakError.Cancelled = error { return true }
+        return false
     }
 
     /// Removes a finished, failed or cancelled transfer from the list.
@@ -581,7 +600,7 @@ final class FileBrowser: ObservableObject {
         change(&transfers[i])
     }
 
-    private func add(_ t: Transfer, _ action: @escaping (TransferListener) async throws -> Void) {
+    private func add(_ t: Transfer, _ action: @escaping (TransferListener, TransferHandle) async throws -> Void) {
         transfers.append(t)
         let run = { [weak self] in self?.start(t.id, action) }
         retries[t.id] = { run() }
@@ -590,9 +609,11 @@ final class FileBrowser: ObservableObject {
 
     /// Runs a transfer in its turn, with progress, and leaves it done,
     /// failed or cancelled.
-    private func start(_ id: UUID, _ action: @escaping (TransferListener) async throws -> Void) {
+    private func start(_ id: UUID, _ action: @escaping (TransferListener, TransferHandle) async throws -> Void) {
         let attempt = (attempts[id] ?? 0) + 1
         attempts[id] = attempt
+        let handle = TransferHandle()
+        handles[id] = handle
         jobs[id] = Task { [weak self] in
             guard let self else { return }
             await self.waitTurn(id)
@@ -611,12 +632,10 @@ final class FileBrowser: ObservableObject {
             /// Still this start's transfer, and running.
             @MainActor func current() -> Bool { self.attempts[id] == attempt && self.status(id) == .running }
             do {
-                try await action(listener)
+                try await action(listener, handle)
                 guard current() else { return }
-                self.set(id) { t in
-                    t.status = .done
-                    t.done = t.total ?? t.done
-                }
+                self.set(id) { $0.finish(error: nil, cancelled: false) }
+                self.handles[id] = nil
                 self.retries[id] = nil
                 self.release(id)
                 // Done ones leave the list after a moment.
@@ -624,11 +643,11 @@ final class FileBrowser: ObservableObject {
                 self.transfers.removeAll { $0.id == id && $0.status == .done }
             } catch {
                 guard current() else { return }
+                // Cancelled in the engine (not here): shown as cancelled, not as an error.
+                let cancelled = FileBrowser.isCancelled(error) || handle.isCancelled()
                 let why = userMessage(error)
-                self.set(id) { t in
-                    t.status = .failed
-                    t.error = why
-                }
+                self.set(id) { $0.finish(error: why, cancelled: cancelled) }
+                self.handles[id] = nil
                 self.release(id)
             }
             self.jobs[id] = nil

@@ -22,6 +22,8 @@ struct ConnectionsView: View {
     @State private var activity: SharingItem?
     /// A recording being downloaded (session id), and the downloaded file to share or save.
     @State private var downloadingRecording: String?
+    /// Stops the recording being downloaded (the engine's handle).
+    @State private var recordingCancel: TransferHandle?
     @State private var recordingFile: RecordingFile?
 
     private var serverEmpty: Bool {
@@ -181,7 +183,7 @@ struct ConnectionsView: View {
                         }
                         Spacer(minLength: 0)
                         if downloadingRecording == r.id {
-                            ProgressView()
+                            recordingProgress
                         } else if r.recording {
                             Image(systemName: "record.circle").foregroundColor(.secondary)
                                 .accessibilityLabel(Text("activity.recorded"))
@@ -194,10 +196,8 @@ struct ConnectionsView: View {
                             Button { showActivity(id: r.id, title: title, accountId: accountId) } label: {
                                 Label("activity.menu", systemImage: "clock.arrow.circlepath")
                             }
-                            if canDownloadRecording(accountId) {
-                                Button { downloadRecording(id: r.id, title: title) } label: {
-                                    Label("sessions.recording.download", systemImage: "arrow.down.circle")
-                                }
+                            Button { downloadRecording(id: r.id, title: title, accountId: accountId) } label: {
+                                Label("sessions.recording.download", systemImage: "arrow.down.circle")
                             }
                         }
                     }
@@ -243,26 +243,42 @@ struct ConnectionsView: View {
     }
 
     /// Who typed in one of your sessions (open or closed).
-    /// The engine downloads recordings of the current account's sessions
-    /// (other accounts: needs a per-account call).
-    private func canDownloadRecording(_ accountId: String) -> Bool {
-        model.core.currentAccount()?.id == accountId
+    /// A recording being downloaded: a spinner that cancels it when tapped.
+    private var recordingProgress: some View {
+        Button { recordingCancel?.cancel() } label: {
+            HStack(spacing: 6) {
+                ProgressView()
+                Image(systemName: "xmark.circle.fill").foregroundColor(.secondary)
+            }
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel(Text("common.cancel"))
     }
 
-    /// Downloads a recording (`.cast`, asciicast) to share it or save it to Files.
-    private func downloadRecording(id: String, title: String) {
+    /// Downloads a recording (`.cast`, asciicast) of any signed-in account's
+    /// session to share it or save it to Files; it can be cancelled.
+    private func downloadRecording(id: String, title: String, accountId: String) {
         guard downloadingRecording == nil else { return }
         downloadingRecording = id
+        let cancel = TransferHandle()
+        recordingCancel = cancel
         let safe = title.components(separatedBy: CharacterSet(charactersIn: "/\\:")).joined(separator: "-")
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent("recording-\(UUID().uuidString)", isDirectory: true)
         let file = folder.appendingPathComponent("\(safe.isEmpty ? id : safe).cast")
         Task {
-            defer { downloadingRecording = nil }
+            defer {
+                downloadingRecording = nil
+                recordingCancel = nil
+            }
             do {
                 try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-                _ = try await model.core.downloadRecording(sessionId: id, localPath: file.path, listener: nil)
+                _ = try await model.core.account(accountId: accountId)
+                    .downloadRecording(sessionId: id, localPath: file.path, listener: nil, cancel: cancel)
                 recordingFile = RecordingFile(url: file)
             } catch {
+                try? FileManager.default.removeItem(at: folder)
+                // Cancelled with the button: nothing to say.
+                if case TermoakError.Cancelled = error { return }
                 self.error = userMessage(error)
             }
         }
