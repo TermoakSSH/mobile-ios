@@ -246,7 +246,7 @@ final class FileBrowser: ObservableObject {
                 let auth = AuthBridge { [weak self] p in
                     Task { @MainActor in self?.prompt = p }
                 }
-                fileSystem = SshFileSystem(session: try await core.connect(hostId: hostId, auth: auth, accountId: accountId), own: true)
+                fileSystem = SshFileSystem(session: try await core.connect(hostId: hostId, auth: auth, accountId: accountId, keyChanged: auth), own: true)
             }
             home = try await fileSystem!.home()
             await go(to: home)

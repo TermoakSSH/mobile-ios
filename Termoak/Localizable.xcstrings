@@ -20372,6 +20372,22 @@
         }
       }
     },
+    "terminal.ask_ai.select_first": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select some text first"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primero selecciona un texto"
+          }
+        }
+      }
+    },
     "terminal.asleep.label": {
       "localizations": {
         "en": {
@@ -20720,6 +20736,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Latencia hasta el servidor (ida y vuelta)"
+          }
+        }
+      }
+    },
+    "terminal.menu.ask_ai": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask AI about the selection"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preguntar a la IA por la selección"
           }
         }
       }

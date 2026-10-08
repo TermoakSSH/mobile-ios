@@ -527,6 +527,17 @@ private struct TerminalContent: View {
         }
     }
 
+    /// "Ask AI about this", like the desktop's: the selected text goes to the
+    /// copilot as a removable chip (redacted by the engine before sending).
+    private func askAiAboutSelection() {
+        guard let text = session.view.getSelection(), !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            session.showFlash(String(localized: "terminal.ask_ai.select_first"))
+            return
+        }
+        sessions.copilot(for: session).attach(selection: text)
+        sessions.copilotOpen = true
+    }
+
     private var pasteButton: some View {
         Button { session.pasteClipboard() } label: {
             Image(systemName: "doc.on.clipboard").frame(width: 36, height: 40).contentShape(Rectangle()).hoverEffect()
@@ -626,6 +637,7 @@ private struct TerminalContent: View {
             Label("terminal.menu.copy_screen", systemImage: "doc.on.doc")
         }
         Button { finding = true } label: { Label("shortcut.find", systemImage: "magnifyingglass") }
+        Button { askAiAboutSelection() } label: { Label("terminal.menu.ask_ai", systemImage: "sparkles") }
         Button { session.clearTerminal() } label: { Label("terminal.menu.clear", systemImage: "eraser") }
         Button { settings.changeFontSize(1) } label: { Label("common.font_larger", systemImage: "textformat.size.larger") }
         Button { settings.changeFontSize(-1) } label: { Label("common.font_smaller", systemImage: "textformat.size.smaller") }
