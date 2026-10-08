@@ -124,11 +124,39 @@ enum DownloadPurpose: Equatable {
     case save
 }
 
-/// A downloaded file the screen hands to Quick Look, the share sheet or Files.
+/// Downloaded files the screen hands to Quick Look, the share sheet or
+/// Files (several when several were chosen; folders as .zip).
 struct DownloadedFile: Identifiable, Equatable {
-    let url: URL
+    let urls: [URL]
     let purpose: DownloadPurpose
-    var id: String { url.path }
+    var url: URL { urls[0] }
+    var id: String { urls.map(\.path).joined(separator: "|") }
+
+    init(url: URL, purpose: DownloadPurpose) {
+        self.init(urls: [url], purpose: purpose)
+    }
+
+    init(urls: [URL], purpose: DownloadPurpose) {
+        self.urls = urls
+        self.purpose = purpose
+    }
+}
+
+/// The progress of one file of a batch, as part of the whole batch.
+private final class BatchListener: TransferListener, @unchecked Sendable {
+    private let base: UInt64
+    private let total: UInt64
+    private let inner: TransferListener
+
+    init(base: UInt64, total: UInt64, inner: TransferListener) {
+        self.base = base
+        self.total = total
+        self.inner = inner
+    }
+
+    func onProgress(transferred: UInt64, total _: UInt64?) {
+        inner.onProgress(transferred: base + transferred, total: total)
+    }
 }
 
 /// Files picked to upload into a folder; `conflicts`: names that already
@@ -293,6 +321,32 @@ final class FileBrowser: ObservableObject {
         await perform { try await $0.delete(f.path, recursive: f.kind == .dir) }
     }
 
+    /// Deletes several files and folders (the first error is shown; the
+    /// others are still tried).
+    func delete(_ files: [RemoteFile]) async {
+        await perform { fs in
+            var first: Error?
+            for f in files {
+                do { try await fs.delete(f.path, recursive: f.kind == .dir) } catch { if first == nil { first = error } }
+            }
+            if let first { throw first }
+        }
+    }
+
+    /// Moves several files and folders into another folder.
+    func move(_ files: [RemoteFile], toFolder typed: String) async {
+        guard let folder = TextFiles.resolve(typed, current: path, home: home) else { return }
+        await perform { fs in
+            var first: Error?
+            for f in files {
+                let target = RemotePaths.child(folder, f.name)
+                guard target != f.path else { continue }
+                do { try await fs.rename(f.path, to: target) } catch { if first == nil { first = error } }
+            }
+            if let first { throw first }
+        }
+    }
+
     /// "Go to…": a typed path (absolute, `~/…` or inside this folder).
     func goTo(typed: String) async {
         guard let target = TextFiles.resolve(typed, current: path, home: home) else { return }
@@ -377,6 +431,86 @@ final class FileBrowser: ObservableObject {
             }
             self.downloaded = DownloadedFile(url: target, purpose: purpose)
         }
+    }
+
+    /// Downloads several files and folders (folders whole, walking them) as
+    /// one transfer into a temporary folder; `downloaded` then hands them
+    /// over, each folder as a .zip.
+    func downloadMany(_ files: [RemoteFile], for purpose: DownloadPurpose) {
+        guard let fileSystem, !files.isEmpty else { return }
+        let title = files.count == 1 ? files[0].name : String(localized: "files.items \(files.count)")
+        let t = Transfer(name: title, uploading: false)
+        add(t) { [weak self] listener in
+            let folder = FileManager.default.temporaryDirectory.appendingPathComponent("sftp-\(UUID().uuidString)", isDirectory: true)
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            var plan: [DownloadStep] = []
+            var tops: [(file: RemoteFile, local: URL)] = []
+            for f in files {
+                let local = folder.appendingPathComponent(RemotePaths.uploadName(f.name), isDirectory: f.kind == .dir)
+                tops.append((f, local))
+                if f.kind == .dir {
+                    try await FileBrowser.walk(fileSystem, f.path, into: local, plan: &plan)
+                } else {
+                    plan.append(DownloadStep(remote: f.path, local: local, size: f.size))
+                }
+            }
+            let total = plan.reduce(0) { $0 + $1.size }
+            var base: UInt64 = 0
+            for step in plan {
+                guard let self, self.status(t.id) == .running else {
+                    try? FileManager.default.removeItem(at: folder)
+                    return
+                }
+                try await fileSystem.download(step.remote, to: step.local,
+                                              progress: BatchListener(base: base, total: total, inner: listener))
+                base += step.size
+            }
+            let urls = try tops.map { $0.file.kind == .dir ? try FileBrowser.zip($0.local) : $0.local }
+            guard let self, self.status(t.id) == .running else {
+                try? FileManager.default.removeItem(at: folder)
+                return
+            }
+            self.downloaded = DownloadedFile(urls: urls, purpose: purpose)
+        }
+    }
+
+    /// One file to download of a batch.
+    private struct DownloadStep {
+        let remote: String
+        let local: URL
+        let size: UInt64
+    }
+
+    /// The files inside a remote folder (and its folders), with where each
+    /// one goes; empty folders are created here. Links and special files are
+    /// left out.
+    private static func walk(_ fs: RemoteFileSystem, _ remote: String, into local: URL, plan: inout [DownloadStep]) async throws {
+        try FileManager.default.createDirectory(at: local, withIntermediateDirectories: true)
+        for e in try await fs.list(remote) where e.name != "." && e.name != ".." {
+            let target = local.appendingPathComponent(RemotePaths.uploadName(e.name), isDirectory: e.kind == .dir)
+            switch e.kind {
+            case .dir: try await walk(fs, e.path, into: target, plan: &plan)
+            case .file: plan.append(DownloadStep(remote: e.path, local: target, size: e.size))
+            default: continue
+            }
+        }
+    }
+
+    /// A folder as a .zip next to it (iOS zips it for "uploading" a folder).
+    private static func zip(_ folder: URL) throws -> URL {
+        let target = folder.deletingLastPathComponent().appendingPathComponent(folder.lastPathComponent + ".zip")
+        var coordination: NSError?
+        var failure: Error?
+        NSFileCoordinator().coordinate(readingItemAt: folder, options: .forUploading, error: &coordination) { zipped in
+            do {
+                try? FileManager.default.removeItem(at: target)
+                try FileManager.default.copyItem(at: zipped, to: target)
+            } catch {
+                failure = error
+            }
+        }
+        if let e = coordination ?? failure { throw e }
+        return target
     }
 
     /// Files picked in Files to upload to the folder on screen: if some

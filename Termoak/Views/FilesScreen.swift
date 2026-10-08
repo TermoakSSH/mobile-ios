@@ -25,8 +25,13 @@ struct FilesScreen: View {
     @State private var pickingPhotos = false
     @State private var name = ""
     @State private var preview: URL?
-    @State private var sharing: URL?
-    @State private var saving: URL?
+    @State private var sharing: [URL]?
+    @State private var saving: [URL]?
+    /// Choosing several files (by path) to share, save, move or delete them.
+    @State private var selecting = false
+    @State private var selected: Set<String> = []
+    @State private var deletingSelection = false
+    @State private var movingSelection = false
     /// File highlighted with a hardware keyboard (by path).
     @State private var cursor: String?
     @ObservedObject private var keyboard = HardwareKeyboard.shared
@@ -45,14 +50,15 @@ struct FilesScreen: View {
             .onChange(of: browser.path) { _ in
                 search = ""
                 cursor = nil
+                selected = []
             }
             .onChange(of: browser.downloaded) { file in
                 guard let file else { return }
                 browser.downloaded = nil
                 switch file.purpose {
                 case .preview: preview = file.url
-                case .share: sharing = file.url
-                case .save: saving = file.url
+                case .share: sharing = file.urls
+                case .save: saving = file.urls
                 }
             }
             .onDisappear { browser.close() }
@@ -72,8 +78,14 @@ struct FilesScreen: View {
             .navigationTitle(browser.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.close") { dismiss() } }
-                ToolbarItem(placement: .primaryAction) { actionsMenu }
+                if selecting {
+                    ToolbarItem(placement: .cancellationAction) { Button(selectAllTitle) { toggleSelectAll() } }
+                    ToolbarItem(placement: .confirmationAction) { Button("common.done") { endSelection() } }
+                    ToolbarItemGroup(placement: .bottomBar) { selectionActions }
+                } else {
+                    ToolbarItem(placement: .cancellationAction) { Button("common.close") { dismiss() } }
+                    ToolbarItem(placement: .primaryAction) { actionsMenu }
+                }
             }
         }
         .navigationViewStyle(.stack)
@@ -122,6 +134,7 @@ struct FilesScreen: View {
                 Button { name = ""; newFile = true } label: { Label("files.new_file", systemImage: "doc.badge.plus") }
             }
             Button { typedPath = browser.path; goingTo = true } label: { Label("files.go_to", systemImage: "arrow.right.circle") }
+            Button { startSelection(nil) } label: { Label("files.select", systemImage: "checkmark.circle") }
             Divider()
             sortMenu
             Toggle(isOn: $browser.showHidden) { Label("files.show_hidden", systemImage: "eye") }
@@ -166,11 +179,11 @@ struct FilesScreen: View {
             .sheet(item: Binding(get: { preview.map(IdentifiableURL.init) }, set: { preview = $0?.url })) { u in
                 QuickLookPreview(url: u.url) { preview = nil }.ignoresSafeArea()
             }
-            .sheet(item: Binding(get: { sharing.map(IdentifiableURL.init) }, set: { sharing = $0?.url })) { u in
-                ShareSheet(url: u.url)
+            .sheet(item: Binding(get: { sharing.map(IdentifiableURLs.init) }, set: { sharing = $0?.urls })) { u in
+                ShareSheet(urls: u.urls)
             }
-            .sheet(item: Binding(get: { saving.map(IdentifiableURL.init) }, set: { saving = $0?.url })) { u in
-                SaveToFiles(url: u.url) { saving = nil }.ignoresSafeArea()
+            .sheet(item: Binding(get: { saving.map(IdentifiableURLs.init) }, set: { saving = $0?.urls })) { u in
+                SaveToFiles(urls: u.urls) { saving = nil }.ignoresSafeArea()
             }
             .sheet(item: Binding(get: { changingPermissions.map(IdentifiableFile.init) }, set: { changingPermissions = $0?.file })) { e in
                 PermissionsEditor(file: e.file) { mode in Task { await browser.setPermissions(e.file, mode: mode) } }
@@ -197,6 +210,16 @@ struct FilesScreen: View {
                 } else {
                     Text("files.delete.file_message")
                 }
+            }
+            .confirmationDialog(Text("files.delete_selection.title \(selectedFiles.count)"), isPresented: $deletingSelection,
+                                titleVisibility: .visible) {
+                Button("common.delete", role: .destructive) {
+                    let files = selectedFiles
+                    endSelection()
+                    Task { await browser.delete(files) }
+                }
+            } message: {
+                Text("files.delete_selection.message")
             }
             // Some picked files already exist in the folder.
             .confirmationDialog(Text("files.replace.title \(browser.uploadAsk?.conflicts.count ?? 0)"),
@@ -242,6 +265,14 @@ struct FilesScreen: View {
                 let p = typedPath
                 Task { await browser.goTo(typed: p) }
             }
+            .textPrompt(Text("files.move_selection.title \(selectedFiles.count)"), isPresented: $movingSelection, text: $typedPath,
+                        placeholder: String(localized: "files.path_placeholder"), message: Text("files.move.message"),
+                        confirm: String(localized: "files.move")) {
+                let files = selectedFiles
+                let p = typedPath
+                endSelection()
+                Task { await browser.move(files, toFolder: p) }
+            }
             .textPrompt(Text("files.move.title \(moving?.name ?? "")"),
                         isPresented: Binding(get: { moving != nil }, set: { if !$0 { moving = nil } }), text: $typedPath,
                         placeholder: String(localized: "files.path_placeholder"), message: Text("files.move.message"),
@@ -261,6 +292,7 @@ struct FilesScreen: View {
             uploading, newFolder, renaming != nil, deleting != nil, changingPermissions != nil, showingInfo != nil,
             preview != nil, sharing != nil, saving != nil, browser.prompt != nil, browser.error != nil,
             browser.uploadAsk != nil, newFile, goingTo, moving != nil, editingText != nil, pickingPhotos,
+            selecting, deletingSelection, movingSelection,
         ]
         return shown.contains(true)
     }
@@ -339,9 +371,68 @@ struct FilesScreen: View {
         .background(Color(.secondarySystemBackground))
     }
 
+    // MARK: Selection
+
+    /// The chosen files, in the order of the list.
+    private var selectedFiles: [RemoteFile] { filtered.filter { selected.contains($0.path) } }
+
+    private var selectAllTitle: String {
+        !filtered.isEmpty && selected.count == filtered.count ? String(localized: "hosts.select.none") : String(localized: "hosts.select.all")
+    }
+
+    private func toggleSelectAll() {
+        selected = selected.count == filtered.count ? [] : Set(filtered.map(\.path))
+    }
+
+    private func startSelection(_ f: RemoteFile?) {
+        selected = f.map { [$0.path] } ?? []
+        withAnimation { selecting = true }
+    }
+
+    private func endSelection() {
+        withAnimation { selecting = false }
+        selected = []
+    }
+
+    private func toggle(_ f: RemoteFile) {
+        if selected.contains(f.path) { selected.remove(f.path) } else { selected.insert(f.path) }
+    }
+
+    /// Bottom bar while selecting: share or save them (folders as .zip),
+    /// move them, delete them.
+    @ViewBuilder private var selectionActions: some View {
+        let none = selected.isEmpty
+        Button { browser.downloadMany(selectedFiles, for: .share); endSelection() } label: {
+            Image(systemName: "square.and.arrow.up")
+        }
+        .disabled(none)
+        .accessibilityLabel(Text("files.share"))
+        Spacer()
+        Button { browser.downloadMany(selectedFiles, for: .save); endSelection() } label: {
+            Image(systemName: "folder")
+        }
+        .disabled(none)
+        .accessibilityLabel(Text("files.save_to_files"))
+        Spacer()
+        Button { typedPath = browser.path; movingSelection = true } label: { Image(systemName: "arrow.right.square") }
+            .disabled(none)
+            .accessibilityLabel(Text("files.move_to"))
+        Spacer()
+        Text("files.selected \(selected.count)").font(.footnote).foregroundColor(.secondary)
+        Spacer()
+        Button(role: .destructive) { deletingSelection = true } label: { Image(systemName: "trash") }
+            .disabled(none)
+            .accessibilityLabel(Text("common.delete"))
+    }
+
     private func row(_ f: RemoteFile) -> some View {
-        Button { open(f) } label: {
+        Button { if selecting { toggle(f) } else { open(f) } } label: {
             HStack(spacing: 12) {
+                if selecting {
+                    Image(systemName: selected.contains(f.path) ? "checkmark.circle.fill" : "circle")
+                        .font(.title3)
+                        .foregroundColor(selected.contains(f.path) ? .accentColor : .secondary)
+                }
                 Image(systemName: icon(f))
                     .font(.title3)
                     .foregroundColor(f.kind == .dir ? Brand.blue : .secondary)
@@ -351,7 +442,7 @@ struct FilesScreen: View {
                     Text(detail(f)).font(.caption).foregroundColor(.secondary).lineLimit(1)
                 }
                 Spacer(minLength: 0)
-                if f.kind == .dir { Image(systemName: "chevron.right").font(.caption).foregroundColor(.secondary) }
+                if f.kind == .dir && !selecting { Image(systemName: "chevron.right").font(.caption).foregroundColor(.secondary) }
             }
             .contentShape(Rectangle())
         }
@@ -371,6 +462,15 @@ struct FilesScreen: View {
                     Label("files.save_to_files", systemImage: "folder")
                 }
             }
+            if f.kind == .dir {
+                Button { browser.downloadMany([f], for: .share) } label: {
+                    Label("files.share_zip", systemImage: "square.and.arrow.up")
+                }
+                Button { browser.downloadMany([f], for: .save) } label: {
+                    Label("files.save_zip", systemImage: "folder")
+                }
+            }
+            Button { startSelection(f) } label: { Label("files.select", systemImage: "checkmark.circle") }
             if f.kind == .file && browser.canEdit {
                 Button { edit(f) } label: { Label("files.edit", systemImage: "square.and.pencil") }
             }
@@ -503,6 +603,11 @@ private struct SearchDismisser: View {
     }
 }
 
+private struct IdentifiableURLs: Identifiable {
+    let urls: [URL]
+    var id: String { urls.map(\.path).joined(separator: "|") }
+}
+
 private struct IdentifiableURL: Identifiable {
     let url: URL
     var id: String { url.path }
@@ -545,9 +650,9 @@ private struct QuickLookPreview: UIViewControllerRepresentable {
 
 /// System share sheet (includes "Save to Files").
 private struct ShareSheet: UIViewControllerRepresentable {
-    let url: URL
+    let urls: [URL]
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        UIActivityViewController(activityItems: urls, applicationActivities: nil)
     }
     func updateUIViewController(_ vc: UIActivityViewController, context: Context) {}
 }
@@ -759,11 +864,11 @@ private struct FileInfoView: View {
 
 /// "Save to Files": the system's folder picker with a copy of the file.
 private struct SaveToFiles: UIViewControllerRepresentable {
-    let url: URL
+    let urls: [URL]
     let onDone: () -> Void
 
     func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
-        let picker = UIDocumentPickerViewController(forExporting: [url], asCopy: true)
+        let picker = UIDocumentPickerViewController(forExporting: urls, asCopy: true)
         picker.delegate = context.coordinator
         return picker
     }
