@@ -120,57 +120,8 @@ protocol SessionShareApi: AnyObject {
 
 extension TermoakCore: SessionShareApi {}
 
-extension AccountHandle: SessionShareApi {
-    func shareServerSessionWith(sessionId: String, target: ShareTarget, options: ShareOptions) async throws -> ShareInvite {
-        var email: String?, teamId: String?, link = false
-        switch target {
-        case .user(let e): email = e
-        case .team(let t): teamId = t
-        case .link: link = true
-        }
-        let body = ShareJson.shareBody(email: email, teamId: teamId, link: link, control: options.control,
-                                       expiresInMinutes: options.expiresInMinutes, requireApproval: options.requireApproval,
-                                       autoGrant: options.autoGrant, controlMinutes: options.controlMinutes)
-        let json = try await apiPost(path: "/api/v1/sessions/\(sessionId)/shares", bodyJson: ShareJson.encode(body))
-        let i = ShareJson.invite(ShareJson.object(json))
-        return ShareInvite(shareId: i.shareId, permission: i.permission, token: i.token, link: i.link, appLink: i.appLink)
-    }
-
-    func listServerSessionShares(sessionId: String) async throws -> [SessionShareInfo] {
-        let json = try await apiGet(path: "/api/v1/sessions/\(sessionId)/shares")
-        return ShareJson.array(json).map { Self.info(ShareJson.share($0)) }
-    }
-
-    func updateServerSessionShare(sessionId: String, shareId: String, changes: ShareChanges) async throws -> SessionShareInfo {
-        let body = ShareJson.changesBody(control: changes.control, expiresInMinutes: changes.expiresInMinutes, noExpiry: changes.noExpiry,
-                                         requireApproval: changes.requireApproval, autoGrant: changes.autoGrant,
-                                         controlMinutes: changes.controlMinutes, noControlLimit: changes.noControlLimit)
-        let json = try await apiPatch(path: "/api/v1/sessions/\(sessionId)/shares/\(shareId)", bodyJson: ShareJson.encode(body))
-        return Self.info(ShareJson.share(ShareJson.object(json)))
-    }
-
-    func revokeServerSessionShare(sessionId: String, shareId: String) async throws {
-        _ = try await apiDelete(path: "/api/v1/sessions/\(sessionId)/shares/\(shareId)")
-    }
-
-    func stopSharingServerSession(sessionId: String) async throws -> UInt32 {
-        ShareJson.revokedCount(ShareJson.object(try await apiDelete(path: "/api/v1/sessions/\(sessionId)/shares")))
-    }
-
-    private static func info(_ s: ShareJson.Share) -> SessionShareInfo {
-        let kind: ShareKind
-        switch s.kind {
-        case .user: kind = .user
-        case .team: kind = .team
-        case .link: kind = .link
-        }
-        return SessionShareInfo(id: s.id, sessionId: s.sessionId, kind: kind, control: s.control, userId: s.userId,
-                                userEmail: s.userEmail, userName: s.userName, teamId: s.teamId, teamName: s.teamName,
-                                expiresAt: s.expiresAt, revoked: s.revoked, active: s.active, requireApproval: s.requireApproval,
-                                autoGrant: s.autoGrant, createdAt: s.createdAt, participants: s.participants,
-                                controlMinutes: s.controlMinutes)
-    }
-}
+// The engine has these calls for every account (core 0.6.1).
+extension AccountHandle: SessionShareApi {}
 
 extension TermoakCore {
     /// Who manages the invitations of a server session of `accountId`: the
