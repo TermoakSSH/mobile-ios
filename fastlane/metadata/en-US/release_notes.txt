@@ -1,0 +1,8 @@
+• Command palette (⌘K or the bolt button): find hosts, open tabs, sessions running on the server, snippets and actions
+• Import hosts from your SSH config, CSV and other SSH clients; export them, with their secrets sealed by a passphrase
+• Host status: a dot with each host's response time (turn on Check host status in the settings)
+• AI in the terminal: Explain and Fix under a command that failed, and ask the copilot about the selected text
+• Names for your accounts (Work, Personal…) and an option to hide email addresses
+• The 15 terminal themes of the desktop app
+• Files: cancelling a transfer stops it at once, and you can select several files
+• Fixes and improvements

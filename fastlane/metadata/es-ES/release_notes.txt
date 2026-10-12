@@ -1,0 +1,8 @@
+• Paleta de comandos (⌘K o el botón del rayo): busca servidores, pestañas abiertas, sesiones en el servidor, snippets y acciones
+• Importa servidores de tu configuración SSH, de CSV y de otros clientes SSH; expórtalos, con sus secretos sellados con una frase de contraseña
+• Estado de los servidores: un punto con el tiempo de respuesta de cada uno (activa Comprobar el estado de los hosts en los ajustes)
+• IA en la terminal: Explicar y Arreglar bajo un comando que falla, y pregunta al copiloto por el texto seleccionado
+• Nombres para tus cuentas (Trabajo, Personal…) y una opción para ocultar los correos
+• Los 15 temas de terminal de la app de escritorio
+• Archivos: cancelar una transferencia la para al momento, y puedes seleccionar varios archivos
+• Correcciones y mejoras

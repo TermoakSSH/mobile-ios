@@ -1,0 +1,1 @@
+terminal,sftp,server,shell,devops,sysadmin,tunnel,keys,vault,linux,remote,telnet,ai,ipad,console

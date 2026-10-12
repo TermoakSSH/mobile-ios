@@ -1,0 +1,35 @@
+Termoak es un cliente SSH moderno para administrar tus servidores desde el iPhone y el iPad, con las mismas sesiones, servidores y claves que en tu ordenador.
+
+SESIONES QUE NO SE CORTAN
+Abre la terminal en el servidor de Termoak y sigue donde la dejaste: cambia de dispositivo, pierde la cobertura o bloquea el iPhone y, al volver, todo sigue ahí con su historial y sus procesos.
+
+TERMINAL COMPLETA
+• SSH con contraseña, claves (Ed25519, RSA, ECDSA) e identidades reutilizables, y Telnet para equipos antiguos
+• Jump hosts, proxy, agent forwarding y keep-alive
+• Barra de teclas extra (Esc, Ctrl, Tab, flechas…), gestos para mover el cursor y sugerencias de comandos
+• Snippets: guarda comandos y lánzalos en uno o varios servidores a la vez
+• Explorador de archivos SFTP con subidas, descargas y editor de texto
+• Reenvío de puertos (túneles)
+• Grabación de sesiones, temas y fuentes, la latencia en la barra y un aviso antes de pegar varias líneas
+• Detección automática del sistema de cada servidor, que se ve con su logo
+• Importa tus servidores desde un archivo de configuración SSH, CSV u otros clientes SSH
+
+IPAD Y TECLADOS
+En el iPad, Termoak funciona como la app de escritorio: pestañas, barra lateral, tus servidores en tarjetas y vista dividida con hasta cuatro terminales, escribiendo en todas a la vez si quieres. Compatible con teclados físicos y trackpads: Ctrl, Opción como Meta, teclas de función, atajos como ⌘K, ⌘T y ⌘W, desplazamiento y selección con el trackpad.
+
+BÓVEDA CIFRADA Y SINCRONIZADA
+Servidores, claves, identidades y snippets cifrados y sincronizados entre todos tus dispositivos. Los secretos nunca viajan en claro. Organízalos en vaults: uno personal, otros compartidos con personas o con tu equipo, con permisos de Editor o Solo uso (conectar sin ver contraseñas).
+
+COMPARTE TU TERMINAL
+Invita a una persona, a tu equipo o crea un enlace. Por defecto solo pueden mirar; pueden pedirte el teclado y tú decides cuándo darlo y durante cuánto tiempo.
+
+IA QUE PREGUNTA ANTES
+Pide a la IA que investigue un fallo o prepare un despliegue, desde su sección o desde el copiloto junto a tu terminal. Trabaja sola y te pide permiso antes de ejecutar algo delicado, enseñándote el comando exacto, su riesgo y los cambios en cada archivo. Funciona con tus propias claves de API.
+
+VARIAS CUENTAS
+Usa el servidor oficial termoak.com o tu propio servidor de Termoak, incluso varios a la vez, o guárdalo todo solo en este dispositivo, sin cuenta.
+
+SEGURIDAD
+Verificación en dos pasos, bloqueo de la app con Face ID, secretos cifrados y código abierto (AGPL-3.0) para que puedas auditarlo o instalar tu propio servidor.
+
+Gratis, sin anuncios y sin tarjeta. También disponible para Windows, macOS, Linux y Android.
