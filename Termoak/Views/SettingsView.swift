@@ -270,6 +270,8 @@ struct SettingsView: View {
             }
         }
         .task(id: account.server) {
+            // The demo (screenshots) goes nowhere.
+            guard !DemoMode.isOn else { return }
             let url = account.server ?? officialServerUrl()
             if let json = try? await serverInfo(url: url) { serverDetails = try? ServerDetails(url: url, json: json) }
         }

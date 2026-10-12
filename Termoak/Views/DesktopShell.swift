@@ -102,6 +102,8 @@ struct DesktopShell: View {
             }
         }
         .overlay(alignment: .top) { ShareToasts(notices: sessions.notices) }
+        // Demo mode (screenshots): the section of its scene.
+        .onAppear { if let s = DemoDirector.desktopSection { section = s } }
         // Off under the terminal (it has its own), the join sheet and quick connect.
         .background(DesktopHomeShortcuts(enabled: !sessions.showing && model.joining == nil && !quickConnect,
                                          onQuickConnect: { quickConnect = true },

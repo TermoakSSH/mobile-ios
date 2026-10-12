@@ -12,6 +12,10 @@ final class LocalVault: ObservableObject {
     func open() {
         guard core == nil else { return }
         do {
+            if DemoMode.isOn {
+                core = try DemoMode.makeCore()
+                return
+            }
             let dir = try FileManager.default
                 .url(for: .applicationSupportDirectory, in: .userDomainMask,
                      appropriateFor: nil, create: true)

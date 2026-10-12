@@ -19,6 +19,8 @@ struct TermoakApp: App {
     @State private var lastURL: (url: URL, at: Date)?
 
     init() {
+        // Demo mode (screenshots): its settings before anything reads them.
+        DemoMode.prepare()
         TerminalFont.registerBundled()
     }
 
@@ -282,6 +284,7 @@ private struct Root: View {
                 await model.restoreServerSessions()
                 model.account.sync()
                 RecentHostsStore.updateShortcutItems(core: model.core)
+                await DemoDirector.start(model)
             }
             .onChange(of: phase) { newPhase in
                 BackgroundNotices.shared.inBackground = newPhase == .background

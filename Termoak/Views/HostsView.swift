@@ -176,6 +176,7 @@ struct HostsView: View {
             onScreen = true
             load()
             if isRoot { account.sync() }
+            openDemoScene()
         }
         .onReceive(account.vaultChanged) { load() }
         .onChange(of: account.vaultFilter) { _ in load() }
@@ -1155,6 +1156,19 @@ struct HostsView: View {
     /// Use-only hosts.
     private func filesSource(_ host: SshHost) -> FileBrowser.Source {
         isStrict(host) ? .server(hostId: host.id, accountId: host.accountId) : .connect(hostId: host.id, accountId: host.accountId)
+    }
+
+    /// Demo mode (screenshots): the files or the editor of a host open by
+    /// themselves (DemoDirector).
+    private func openDemoScene() {
+        guard isRoot, let scene = DemoDirector.hostsScene(model.core) else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            if scene.files {
+                filesHost = scene.host
+            } else {
+                editing = HostEdit(host: scene.host)
+            }
+        }
     }
 
     private func load() {

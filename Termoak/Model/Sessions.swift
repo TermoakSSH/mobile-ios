@@ -201,12 +201,15 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
         gestureMode = settings.gestureMode
         gesture?.configure(gestureMode, cursorByButton: cursorByButton)
         #if DEBUG
-        // No blinking in the UI tests: otherwise the app is never "idle" and
-        // XCUITest waits a minute on every step.
-        if ProcessInfo.processInfo.environment["TERMOAK_TEST_HOST"] != nil {
+        let uiTest = ProcessInfo.processInfo.environment["TERMOAK_TEST_HOST"] != nil
+        #else
+        let uiTest = false
+        #endif
+        // No blinking in the UI tests (and the screenshots' demo): otherwise
+        // the app is never "idle" and XCUITest waits a minute on every step.
+        if uiTest || DemoMode.isOn {
             view.getTerminal().setCursorStyle(.steadyBlock)
         }
-        #endif
         terminal.accessibilityIdentifier = "terminal-view"
         // SwiftTerm releases Ctrl/Alt after the next keyboard press.
         let center = NotificationCenter.default

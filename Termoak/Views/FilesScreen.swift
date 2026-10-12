@@ -45,7 +45,11 @@ struct FilesScreen: View {
     var body: some View {
         // Split in parts: as one expression it is too much for the type checker.
         withAlerts(withDialogs(withSheets(navigation)))
-            .task { await browser.open() }
+            .task {
+                await browser.open()
+                // Demo mode (screenshots): some transfers under way.
+                browser.startDemoTransfers()
+            }
             // The search belongs to the folder: it is cleared when the folder changes.
             .onChange(of: browser.path) { _ in
                 search = ""

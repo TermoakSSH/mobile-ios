@@ -118,6 +118,8 @@ struct AiView: View {
         }
         .listStyle(.insetGrouped)
         .refreshable { await load() }
+        // Demo mode (screenshots): the task waiting for approvals opens.
+        .background(DemoTaskLink(accountId: aiAccountId))
     }
 
     private func load() async {
