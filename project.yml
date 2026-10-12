@@ -133,6 +133,22 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         PRODUCT_BUNDLE_IDENTIFIER: com.termoak.uitests
 
+  # App Store screenshots (scripts/screenshots.sh): the app in demo mode
+  # (Termoak/Demo/: made-up data, no server, sshd or network). Only
+  # `xcodebuild test -scheme TermoakScreenshots`; not in the .ipa.
+  TermoakScreenshots:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Screenshots
+    dependencies:
+      - target: Termoak
+    settings:
+      base:
+        TEST_TARGET_NAME: Termoak
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.termoak.screenshots
+
 schemes:
   Termoak:
     build:
@@ -142,3 +158,13 @@ schemes:
       targets:
         - TermoakTests
         - TermoakUITests
+  # The screenshots, with the app built as it ships (Release).
+  TermoakScreenshots:
+    build:
+      targets:
+        Termoak: all
+        TermoakScreenshots: [test]
+    test:
+      config: Release
+      targets:
+        - TermoakScreenshots

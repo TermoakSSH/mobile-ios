@@ -149,6 +149,29 @@ xcodebuild test -project Termoak.xcodeproj -scheme Termoak \
 `TEST_DIR` holds the private key `client` (the screenshots are left there)
 and `TEST_HOST` is `address:port:user`.
 
+### App Store screenshots
+
+`scripts/screenshots.sh` (Mac, Xcode 16 or later) takes the eight App Store
+screenshots on an iPhone 6.9" and an iPad 13" simulator, in English and
+Spanish, dark, with the status bar at 9:41, into
+`fastlane/screenshots/<language>/<device>/` (the store texts are in
+`fastlane/metadata/`):
+
+```sh
+scripts/screenshots.sh                                  # everything
+LANGUAGES=es-ES DEVICES=iphone scripts/screenshots.sh   # a part
+```
+
+It runs the `TermoakScreenshots` UI test (`Screenshots/`, scheme
+`TermoakScreenshots`, Release) with the app in demo mode: the launch argument
+`-TermoakDemo YES` (only Xcode or `xcodebuild` pass it; without it the demo
+code does nothing) opens an engine on an empty temporary folder, never the
+vault or the Keychain, with the made-up accounts, hosts, AI, sessions,
+terminals and files of `Termoak/Demo/`, and no network at all.
+`-TermoakDemoScene hosts|terminal|split|copilot|ai|files|editor|vaults|themes`
+chooses where it starts (Xcode: Edit Scheme → Run → Arguments, to look at a
+screen by hand).
+
 ### Troubleshooting
 
 | Symptom | Cause and fix |
