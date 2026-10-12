@@ -205,6 +205,7 @@ struct DesktopSidebar: View {
         .hoverEffect(.highlight)
         .accessibilityLabel(Text(verbatim: s.title))
         .accessibilityAddTraits(selected ? .isSelected : [])
+        .accessibilityIdentifier("sidebar-\(s.rawValue)")
     }
 
     /// Approvals waiting next to AI; a green dot with how many sessions run

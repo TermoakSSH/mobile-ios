@@ -71,6 +71,8 @@ struct QuickPanel: View {
         }
         .foregroundColor(theme.foregroundColor)
         .background(theme.barColor)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("quick-panel")
     }
 
     private var tabBar: some View {

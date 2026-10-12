@@ -59,7 +59,9 @@ struct HostCard<MenuItems: View>: View {
     }
 
     private var button: some View {
-        Button(action: onTap) { card }.buttonStyle(.plain)
+        Button(action: onTap) { card }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("host-\(host.label)")
     }
 
     private var card: some View {

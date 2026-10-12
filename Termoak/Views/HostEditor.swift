@@ -188,6 +188,7 @@ struct HostEditor: View {
                     }
                 }
             }
+            .accessibilityIdentifier("host-editor")
             .navigationTitle(original == nil ? String(localized: "common.new_host") : String(localized: "host_editor.edit_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

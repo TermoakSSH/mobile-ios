@@ -105,6 +105,7 @@ struct FilesScreen: View {
             }
         }
         .listStyle(.plain)
+        .accessibilityIdentifier("files-list")
         .overlay { listOverlay }
         .refreshable { await browser.reload() }
     }
@@ -521,6 +522,7 @@ struct FilesScreen: View {
         .frame(maxHeight: 170)
         .fixedSize(horizontal: false, vertical: true)
         .background(.bar)
+        .accessibilityIdentifier("files-transfers")
     }
 
     private var cancelAllRow: some View {

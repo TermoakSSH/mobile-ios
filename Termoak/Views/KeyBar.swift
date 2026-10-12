@@ -35,6 +35,7 @@ final class KeyBar: UIInputView {
         theme = settings.terminalTheme
         super.init(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: height), inputViewStyle: .default)
         autoresizingMask = .flexibleWidth
+        accessibilityIdentifier = "key-bar"
         build()
         reload()
         applyTheme(theme)

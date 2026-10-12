@@ -40,6 +40,7 @@ struct VaultsView: View {
                 Section {
                     ForEach(vaults(of: a), id: \.key) { v in
                         NavigationLink { VaultDetailView(vault: v) } label: { VaultRow(vault: v) }
+                            .accessibilityIdentifier("vault-\(v.id)")
                     }
                     if a.status == .active {
                         Button { creatingFor = CreateVaultItem(accountId: a.id) } label: {
@@ -254,6 +255,7 @@ struct VaultDetailView: View {
                 }
             }
         }
+        .accessibilityIdentifier("vault-detail")
         .navigationTitle(vault.displayName)
         .navigationBarTitleDisplayMode(.inline)
         .task { await reload() }

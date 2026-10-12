@@ -379,6 +379,8 @@ struct BroadcastBanner: View {
         .foregroundColor(.white)
         .padding(.horizontal, 12).padding(.vertical, 6)
         .background(Color.orange)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("broadcast-banner")
     }
 }
 

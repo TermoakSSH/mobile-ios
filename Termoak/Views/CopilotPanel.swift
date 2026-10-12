@@ -47,6 +47,8 @@ struct CopilotPanel: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(theme.barColor.ignoresSafeArea())
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("copilot-panel")
         .sheet(isPresented: $loggingIn) {
             LoginView(welcome: false) {}.environmentObject(account).environmentObject(settings)
         }

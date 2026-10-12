@@ -1712,6 +1712,7 @@ private struct HostRow: View {
         } else {
             Button(action: onConnect) { content }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("host-\(host.label)")
         }
     }
 

@@ -207,6 +207,7 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
             view.getTerminal().setCursorStyle(.steadyBlock)
         }
         #endif
+        terminal.accessibilityIdentifier = "terminal-view"
         // SwiftTerm releases Ctrl/Alt after the next keyboard press.
         let center = NotificationCenter.default
         observers = [

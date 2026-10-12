@@ -197,6 +197,8 @@ struct ApprovalCard: View {
 
     var body: some View {
         card
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("approval-card")
             .sheet(isPresented: $editing) {
                 ApprovalTextSheet(title: isPlan ? String(localized: "ai.approval.edit_plan") : String(localized: "ai.approval.edit"),
                                   hint: isPlan ? String(localized: "ai.approval.edit_plan_hint") : String(localized: "ai.approval.edit_hint"),
@@ -529,6 +531,7 @@ struct TaskView: View {
                         }
                         .padding(.vertical, 8)
                     }
+                    .accessibilityIdentifier("ai-task")
                     .dismissesKeyboardOnScroll(active: typing) { typing = false }
                     // The reply box stays under the conversation, above the
                     // keyboard when it is open (the conversation shrinks).

@@ -44,10 +44,12 @@ struct SettingsView: View {
                                 Text(verbatim: "\(account.list.count)").foregroundColor(.secondary)
                             }
                         }
+                        .accessibilityIdentifier("settings-accounts")
                         if account.list.contains(where: \.vaultsSupported) {
                             NavigationLink { VaultsView() } label: {
                                 Label("vaults.title", systemImage: "lock.shield")
                             }
+                            .accessibilityIdentifier("settings-vaults")
                         }
                         if account.loggedIn == true {
                             NavigationLink { TeamsView() } label: {
