@@ -7,6 +7,3 @@ xcuserdata/
 # Release builds (scripts/release-local.sh)
 /dist
 /target
-
-# App Store screenshots (scripts/screenshots.sh)
-/fastlane/screenshots
