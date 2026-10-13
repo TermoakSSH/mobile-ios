@@ -113,6 +113,7 @@ targets:
       - path: Termoak/Model/HostStatus.swift
       - path: Termoak/Model/ImportPlan.swift
       - path: Termoak/Model/PaletteCommands.swift
+      - path: Termoak/Model/AccountDeletion.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

@@ -117,6 +117,9 @@ struct AccountDetailView: View {
     @State private var error: String?
     @State private var renaming = false
     @State private var aliasText = ""
+    @State private var deletingAccount = false
+    /// The server deleted the account: sign out of it here when its sheet closes.
+    @State private var deletedOnServer = false
 
     private var info: AccountInfo? { account.account(accountId) }
 
@@ -222,21 +225,7 @@ struct AccountDetailView: View {
                     }
                 }
 
-                Section {
-                    Button(role: .destructive) { askSignOut() } label: {
-                        if info.status == .active {
-                            Label("accounts.sign_out", systemImage: "rectangle.portrait.and.arrow.right")
-                        } else {
-                            Label("accounts.remove", systemImage: "trash")
-                        }
-                    }
-                    .disabled(busy)
-                } footer: {
-                    Text("accounts.sign_out.footer")
-                }
-                if let error {
-                    Section { Text(error).foregroundColor(Brand.red) }
-                }
+                signOutSections(info)
             }
         }
         .navigationTitle(info?.displayName ?? "")
@@ -245,6 +234,11 @@ struct AccountDetailView: View {
             if let info {
                 LoginView(welcome: false, resume: info) {}.environmentObject(account).environmentObject(settings)
             }
+        }
+        .sheet(isPresented: $deletingAccount, onDismiss: finishDeletion) {
+            DeleteAccountView(accountId: accountId) { deletedOnServer = true }
+                .environmentObject(model)
+                .environmentObject(account)
         }
         .confirmationDialog(Text("accounts.sign_out.title \(info?.displayName ?? "")"), isPresented: $confirmSignOut,
                             titleVisibility: .visible) {
@@ -264,6 +258,30 @@ struct AccountDetailView: View {
         .textPrompt(Text("accounts.alias"), isPresented: $renaming, text: $aliasText,
                     placeholder: info?.email ?? "", message: Text("accounts.alias.message"),
                     confirm: String(localized: "common.save"), plain: false) { saveAlias() }
+    }
+
+    /// Sign out (or remove), its error and, for a signed-in account, delete
+    /// the account on its server (last).
+    @ViewBuilder private func signOutSections(_ info: AccountInfo) -> some View {
+        Section {
+            Button(role: .destructive) { askSignOut() } label: {
+                if info.status == .active {
+                    Label("accounts.sign_out", systemImage: "rectangle.portrait.and.arrow.right")
+                } else {
+                    Label("accounts.remove", systemImage: "trash")
+                }
+            }
+            .disabled(busy)
+        } footer: {
+            Text("accounts.sign_out.footer")
+        }
+        if let error {
+            Section { Text(error).foregroundColor(Brand.red) }
+        }
+        if info.status == .active {
+            DeleteAccountSection { deletingAccount = true }
+                .disabled(busy)
+        }
     }
 
     /// The name of this account on this device ("Work", "Personal").
@@ -311,6 +329,14 @@ struct AccountDetailView: View {
                 self.error = userMessage(error)
             }
         }
+    }
+
+    /// The account no longer exists on its server: out of this device as
+    /// signing out does (its unsynced changes have nowhere to go).
+    private func finishDeletion() {
+        guard deletedOnServer else { return }
+        deletedOnServer = false
+        signOut(discard: true)
     }
 
     private func signOut(discard: Bool) {

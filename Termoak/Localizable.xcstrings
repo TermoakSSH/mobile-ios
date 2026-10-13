@@ -241,6 +241,358 @@
         }
       }
     },
+    "accounts.delete.button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete my account…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar mi cuenta…"
+          }
+        }
+      }
+    },
+    "accounts.delete.code_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The one from your authenticator app or a recovery code."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El de tu app de autenticación o un código de recuperación."
+          }
+        }
+      }
+    },
+    "accounts.delete.confirm_label %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type %@ to confirm"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribe %@ para confirmar"
+          }
+        }
+      }
+    },
+    "accounts.delete.confirm_word": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DELETE"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BORRAR"
+          }
+        }
+      }
+    },
+    "accounts.delete.done": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your account has been deleted. Thanks for trying Termoak!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu cuenta se ha borrado. ¡Gracias por probar Termoak!"
+          }
+        }
+      }
+    },
+    "accounts.delete.error.code_required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This account has two-step verification: enter the code."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta cuenta tiene verificación en dos pasos: introduce el código."
+          }
+        }
+      }
+    },
+    "accounts.delete.error.last_admin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You're the only administrator of this server: appoint another one before deleting your account."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eres el único administrador de este servidor: nombra a otro antes de borrar tu cuenta."
+          }
+        }
+      }
+    },
+    "accounts.delete.error.last_team_owner": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A team would be left without an owner: appoint another owner or delete the team first."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un equipo se quedaría sin propietario: nombra a otro propietario o elimina el equipo primero."
+          }
+        }
+      }
+    },
+    "accounts.delete.error.last_team_owner.teams %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These teams would be left without an owner: %@. Appoint another owner or delete them first."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estos equipos se quedarían sin propietario: %@. Nombra a otro propietario o elimínalos primero."
+          }
+        }
+      }
+    },
+    "accounts.delete.error.password": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The password is not correct."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La contraseña no es correcta."
+          }
+        }
+      }
+    },
+    "accounts.delete.error.unsupported": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This server doesn't support deleting the account from the app: do it from its website."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este servidor no permite borrar la cuenta desde la app: hazlo desde su web."
+          }
+        }
+      }
+    },
+    "accounts.delete.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deleting the account is permanent."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar la cuenta es definitivo."
+          }
+        }
+      }
+    },
+    "accounts.delete.item_data": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your hosts, keys, snippets and the rest of your synced data are deleted."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se borran tus hosts, claves, snippets y el resto de datos sincronizados."
+          }
+        }
+      }
+    },
+    "accounts.delete.item_sessions": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your sessions on the server are closed and their recordings deleted."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se cierran tus sesiones en el servidor y se borran sus grabaciones."
+          }
+        }
+      }
+    },
+    "accounts.delete.item_teams": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You leave all your teams. If you are the only owner of a team with other people, first make someone else owner or delete it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sales de todos tus equipos. Si eres el único propietario de un equipo con más gente, primero nombra a otro propietario o bórralo."
+          }
+        }
+      }
+    },
+    "accounts.delete.item_vaults": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your personal vault and the vaults you created are deleted with everything in them; you lose access to the vaults shared with you."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se eliminan tu bóveda personal y las bóvedas que creaste, con todo lo que contienen; pierdes el acceso a las bóvedas compartidas contigo."
+          }
+        }
+      }
+    },
+    "accounts.delete.submit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete my account forever"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar mi cuenta para siempre"
+          }
+        }
+      }
+    },
+    "accounts.delete.text %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your account and all your data on this server (%@) will be deleted. This cannot be undone."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se borrarán tu cuenta y todos tus datos de este servidor (%@). No se puede deshacer."
+          }
+        }
+      }
+    },
+    "accounts.delete.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete your account"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar tu cuenta"
+          }
+        }
+      }
+    },
+    "accounts.delete.vaults_confirm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete them with my account"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminarlas con mi cuenta"
+          }
+        }
+      }
+    },
+    "accounts.delete.vaults_text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your vaults shared with other people will be deleted with your account, with everything in them, and their members will lose access to them."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus bóvedas compartidas con otras personas se eliminarán con tu cuenta, con todo lo que contienen, y sus miembros perderán el acceso."
+          }
+        }
+      }
+    },
+    "accounts.delete.vaults_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete your shared vaults too?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Eliminar también tus bóvedas compartidas?"
+          }
+        }
+      }
+    },
     "accounts.device_only": {
       "localizations": {
         "en": {
