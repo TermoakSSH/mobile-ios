@@ -386,6 +386,8 @@ private struct TerminalContent: View {
                 Text(session.displayTitle).font(.subheadline.weight(.semibold)).lineLimit(1)
                 Text(subtitle).font(.caption2).foregroundColor(.secondary).lineLimit(1)
             }
+            // The private network its host goes through: "via Office".
+            TerminalNetworkVia(hostId: session.hostId, accountId: session.accountId).padding(.leading, 4)
             if showsLatency { latencyBadge.padding(.leading, 4) }
             if recordingPath != nil { recordingBadge }
             Spacer()
@@ -420,6 +422,7 @@ private struct TerminalContent: View {
             .padding(.leading, 4)
             placeBadge
             if session.isTelnet { TelnetBadge() }
+            TerminalNetworkVia(hostId: session.hostId, accountId: session.accountId, color: Brand.blue)
             if showsLatency { latencyBadge }
             if recordingPath != nil { recordingBadge }
             Spacer(minLength: 8)

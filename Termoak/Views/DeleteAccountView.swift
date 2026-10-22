@@ -20,11 +20,9 @@ struct DeleteAccountSection: View {
 /// Deletes the account and all its data on its server (`DELETE /api/v1/me`
 /// through that account's own handle): what is deleted, the password, the
 /// two-step code if the account has it and the confirmation word. Your
-/// shared vaults with members are confirmed apart (the server's list of
-/// them does not reach the app through the engine's errors, so the warning
-/// is general; the same code works again: it is checked after that). Once
-/// deleted it
-/// says so; `onDeleted` runs right then and the account's page signs out of
+/// shared vaults with members are confirmed apart, naming the ones the
+/// server listed (the error's details, `apiError`; the same code works
+/// again: it is checked after that). Once deleted it says so; `onDeleted` runs right then and the account's page signs out of
 /// it on this device when this sheet closes.
 struct DeleteAccountView: View {
     let accountId: String
@@ -44,6 +42,8 @@ struct DeleteAccountView: View {
     @State private var deleting = false
     @State private var error: String?
     @State private var confirmingVaults = false
+    /// The shared vaults the server listed (named in that confirmation).
+    @State private var sharedVaults: [SharedVault] = []
     @State private var deleteSharedVaults = false
     @State private var deleted = false
     @State private var showingDone = false
@@ -102,8 +102,19 @@ struct DeleteAccountView: View {
             }
             Button("common.cancel", role: .cancel) {}
         } message: {
-            Text("accounts.delete.vaults_text")
+            Text(vaultsMessage)
         }
+    }
+
+    /// The warning, and the vaults that go with the account.
+    private var vaultsMessage: String {
+        let base = String(localized: "accounts.delete.vaults_text")
+        guard !sharedVaults.isEmpty else { return base }
+        let lines = sharedVaults.map { v -> String in
+            if let n = v.members { return "• " + String(localized: "accounts.delete.vault_members \(v.name) \(n)") }
+            return "• " + v.name
+        }
+        return base + "\n\n" + lines.joined(separator: "\n")
     }
 
     // MARK: Sections
@@ -229,15 +240,16 @@ struct DeleteAccountView: View {
         case .lastAdmin?:
             error = String(localized: "accounts.delete.error.last_admin")
         case .lastTeamOwner(let teams)?:
-            if let teams {
-                error = String(localized: "accounts.delete.error.last_team_owner.teams \(teams)")
+            if !teams.isEmpty {
+                error = String(localized: "accounts.delete.error.last_team_owner.teams \(AccountDeletionProblem.quoted(teams))")
             } else {
                 error = String(localized: "accounts.delete.error.last_team_owner")
             }
-        case .sharedVaults?:
+        case .sharedVaults(let vaults)?:
             if deleteSharedVaults {
                 error = userMessage(failure)
             } else {
+                sharedVaults = vaults
                 confirmingVaults = true
             }
         case .unsupported?:
@@ -255,9 +267,11 @@ struct DeleteAccountView: View {
         case .TotpInvalid:
             return .codeInvalid
         default:
-            // "the server responded 409 (last_admin): …" (404/405: an older
-            // server without this endpoint).
-            return AccountDeletionProblem.parse(e.message)
+            // The server's code and details (core 0.7's `apiError`; 404/405:
+            // an older server without this endpoint).
+            guard let info = e.apiError else { return nil }
+            return AccountDeletionProblem.from(ServerFailure(status: Int(info.status), code: info.code,
+                                                             message: info.message, detailsJson: info.detailsJson))
         }
     }
 }

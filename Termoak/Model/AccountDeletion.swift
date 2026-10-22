@@ -2,33 +2,32 @@ import Foundation
 
 // Deleting your account on its server (`DELETE /api/v1/me`, App Store rule:
 // apps with sign-up let you delete the account in the app). The request and
-// the server's refusals, read from the engine's English text, without the
-// engine's types so the unit tests compile this file on its own.
+// the server's refusals, from the error's status, code and details (the
+// engine's `apiError`, core 0.7), without the engine's types so the unit
+// tests compile this file on its own.
 
-/// An error response of the server as the engine writes it:
-/// "the server responded 409 (last_admin): you are the only administrator…".
+/// An error response of the server, as the engine's `apiError` gives it.
 struct ServerFailure: Equatable {
     let status: Int
-    /// The server's error code ("error" when the body had none).
+    /// The server's stable error code.
     let code: String
     /// The server's message (English).
     let message: String
+    /// The error's other fields (`teams`, `vaults`...), a JSON object.
+    var detailsJson: String = "{}"
 
-    /// `nil` if the text is not a server response.
-    static func parse(_ text: String) -> ServerFailure? {
-        guard let start = text.range(of: "the server responded ") else { return nil }
-        let rest = text[start.upperBound...]
-        let digits = rest.prefix { $0.isASCII && $0.isNumber }
-        guard let status = Int(digits) else { return nil }
-        let after = rest.dropFirst(digits.count)
-        guard after.hasPrefix(" ("), let close = after.firstIndex(of: ")") else {
-            return ServerFailure(status: status, code: "", message: "")
-        }
-        let code = String(after[after.index(after.startIndex, offsetBy: 2)..<close])
-        var tail = after[after.index(after: close)...]
-        if tail.hasPrefix(": ") { tail = tail.dropFirst(2) }
-        return ServerFailure(status: status, code: code, message: String(tail))
+    var details: [String: Any] {
+        guard let data = detailsJson.data(using: .utf8),
+              let o = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { return [:] }
+        return o
     }
+}
+
+/// A shared vault that would go with the account: its name and how many
+/// people use it.
+struct SharedVault: Equatable {
+    let name: String
+    let members: Int?
 }
 
 /// Why the server did not delete the account.
@@ -41,37 +40,40 @@ enum AccountDeletionProblem: Equatable {
     case codeInvalid
     /// `last_admin`: the only administrator of the server.
     case lastAdmin
-    /// `last_team_owner`: the only owner of these teams (as the server
-    /// wrote them, "\"Ops\", \"Dev\""), when they could be read.
-    case lastTeamOwner(teams: String?)
-    /// `shared_vaults`: your vaults shared with people go with the account;
-    /// confirm and send it again with `delete_shared_vaults`.
-    case sharedVaults
+    /// `last_team_owner`: the only owner of these teams (the error's
+    /// `teams`; empty when it has none).
+    case lastTeamOwner(teams: [String])
+    /// `shared_vaults`: your vaults shared with people go with the account
+    /// (the error's `vaults`); confirm and send it again with
+    /// `delete_shared_vaults`.
+    case sharedVaults([SharedVault])
     /// 404/405: a server without account deletion (an older version).
     case unsupported
 
-    /// `nil` if the text is not one of these refusals.
-    static func parse(_ text: String) -> AccountDeletionProblem? {
-        guard let f = ServerFailure.parse(text) else { return nil }
+    /// `nil` if the error is not one of these refusals.
+    static func from(_ f: ServerFailure) -> AccountDeletionProblem? {
         switch f.code {
         case "invalid_password": return .wrongPassword
         case "totp_required": return .codeRequired
         case "totp_invalid": return .codeInvalid
         case "last_admin": return .lastAdmin
-        case "last_team_owner": return .lastTeamOwner(teams: teamNames(f.message))
-        case "shared_vaults": return .sharedVaults
+        case "last_team_owner":
+            let teams = (f.details["teams"] as? [Any] ?? []).compactMap { $0 as? String }.filter { !$0.isEmpty }
+            return .lastTeamOwner(teams: teams)
+        case "shared_vaults":
+            let vaults = (f.details["vaults"] as? [Any] ?? []).compactMap { $0 as? [String: Any] }.compactMap { v -> SharedVault? in
+                guard let name = v["name"] as? String, !name.isEmpty else { return nil }
+                return SharedVault(name: name, members: (v["member_count"] as? NSNumber)?.intValue)
+            }
+            return .sharedVaults(vaults)
         default: break
         }
         return f.status == 404 || f.status == 405 ? .unsupported : nil
     }
 
-    /// The teams in "you are the only owner of \"Ops\", \"Dev\": appoint
-    /// another owner or delete the team first".
-    private static func teamNames(_ message: String) -> String? {
-        guard let a = message.range(of: "only owner of "),
-              let b = message.range(of: ": appoint another owner", range: a.upperBound..<message.endIndex) else { return nil }
-        let names = message[a.upperBound..<b.lowerBound].trimmingCharacters(in: .whitespaces)
-        return names.isEmpty ? nil : names
+    /// The teams as the message shows them: “Ops”, “Dev”.
+    static func quoted(_ teams: [String]) -> String {
+        teams.map { "“\($0)”" }.joined(separator: ", ")
     }
 }
 

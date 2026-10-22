@@ -142,6 +142,8 @@ struct HostEditor: View {
     @State private var favorite = false
     @State private var deviceOnly = false
     @State private var jumps: [String] = []
+    /// Private network (0.7): its own (`nil`: its group's, or direct).
+    @State private var networkId: String?
     @State private var proxyKind: ProxyKind?
     @State private var proxyHost = ""
     @State private var proxyPort = ""
@@ -604,6 +606,10 @@ struct HostEditor: View {
         // A Telnet host cannot go through jump hosts.
         if !telnet { jumpSection }
 
+        // The private network its first connection goes through (account vaults only).
+        NetworkPickerSection(accountId: place.accountId, vaultId: place.vaultId, groupId: groupId, groups: groups,
+                             networkId: $networkId, proxySet: proxyKind != nil)
+
         Section {
             Picker("common.type", selection: $proxyKind) {
                 Text("host_editor.no_proxy").tag(ProxyKind?.none)
@@ -873,6 +879,7 @@ struct HostEditor: View {
         deviceOnly = h.syncMode == .deviceOnly
         let s = h.settings
         jumps = s.jumpHostIds ?? []
+        networkId = s.networkId
         if let p = s.proxy {
             proxyKind = p.kind
             proxyHost = p.host
@@ -888,7 +895,7 @@ struct HostEditor: View {
         recordSessions = s.recordSessions ?? false
         hadProxyPassword = (try? model.core.hostHasProxyPassword(id: h.id, accountId: h.accountId)) ?? false
         // It starts open if the host uses anything in it.
-        showAdvanced = !jumps.isEmpty || s.proxy != nil || agentForwarding || s.keepaliveSecs != nil
+        showAdvanced = !jumps.isEmpty || s.proxy != nil || s.networkId != nil || agentForwarding || s.keepaliveSecs != nil
             || s.startupSnippetId != nil || !s.env.isEmpty || recordSessions
             || !(s.term ?? "").trimmingCharacters(in: .whitespaces).isEmpty || s.theme != nil
     }
@@ -948,6 +955,8 @@ struct HostEditor: View {
         } else {
             s.proxy = nil
         }
+        // This device can't use networks; elsewhere it is kept even when this screen didn't show it.
+        s.networkId = place.accountId == nil ? nil : networkId
         host.settings = s
 
         let secret: SecretChange

@@ -114,6 +114,7 @@ targets:
       - path: Termoak/Model/ImportPlan.swift
       - path: Termoak/Model/PaletteCommands.swift
       - path: Termoak/Model/AccountDeletion.swift
+      - path: Termoak/Model/Networks.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

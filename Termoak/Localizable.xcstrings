@@ -545,6 +545,66 @@
         }
       }
     },
+    "accounts.delete.vault_members %@ %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ (%#@n@)"
+          },
+          "substitutions": {
+            "n": {
+              "argNum": 2,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg person"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg people"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ (%#@n@)"
+          },
+          "substitutions": {
+            "n": {
+              "argNum": 2,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg persona"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg personas"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "accounts.delete.vaults_confirm": {
       "localizations": {
         "en": {
@@ -3645,6 +3705,22 @@
         }
       }
     },
+    "common.copy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar"
+          }
+        }
+      }
+    },
     "common.copy_path": {
       "localizations": {
         "en": {
@@ -5509,6 +5585,22 @@
         }
       }
     },
+    "error.key_exists": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The network already has a private key: replace it to generate a new one."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La red ya tiene clave privada: sustitúyela para generar otra."
+          }
+        }
+      }
+    },
     "error.network %@": {
       "localizations": {
         "en": {
@@ -5521,6 +5613,102 @@
           "stringUnit": {
             "state": "translated",
             "value": "No se pudo conectar con el servidor: %@"
+          }
+        }
+      }
+    },
+    "error.network_dial_failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The private network could not reach the host."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La red privada no ha podido llegar al host."
+          }
+        }
+      }
+    },
+    "error.network_dial_failed.detail %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The private network could not reach the host: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La red privada no ha podido llegar al host: %@"
+          }
+        }
+      }
+    },
+    "error.network_not_found": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The host uses a private network that is not in its vault (deleted or not synced yet). Choose another network for it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El host usa una red privada que no está en su bóveda (borrada o aún sin sincronizar). Elige otra red para él."
+          }
+        }
+      }
+    },
+    "error.network_unavailable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Private networks are not available on this server right now."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las redes privadas no están disponibles ahora en este servidor."
+          }
+        }
+      }
+    },
+    "error.network_unavailable.device": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This host is reached through a private network: only its account's server reaches it. Sign in to that account (its server needs private networks), or open a server session."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A este host se llega por una red privada: solo llega el servidor de su cuenta. Inicia sesión en esa cuenta (su servidor necesita redes privadas) o abre una sesión en el servidor."
+          }
+        }
+      }
+    },
+    "error.not_in_network": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This host is not in a private network: connect to it directly."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este host no está en una red privada: conéctate directamente."
           }
         }
       }
@@ -5557,6 +5745,130 @@
         }
       }
     },
+    "error.not_wireguard": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only WireGuard networks have a key generated by the server."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo las redes WireGuard tienen una clave generada por el servidor."
+          }
+        }
+      }
+    },
+    "error.plan_limit.max_networks %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%#@n@"
+          },
+          "substitutions": {
+            "n": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "Your plan allows %arg private network. Delete it or change your plan to add more."
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "Your plan allows %arg private networks. Delete one or change your plan to add more."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%#@n@"
+          },
+          "substitutions": {
+            "n": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "Tu plan permite %arg red privada. Bórrala o cambia de plan para añadir más."
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "Tu plan permite %arg redes privadas. Borra alguna o cambia de plan para añadir más."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "error.plan_limit.max_networks_unknown": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your plan does not allow more private networks."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu plan no permite más redes privadas."
+          }
+        }
+      }
+    },
+    "error.relay_limit %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many connections through private networks are open (%lld). Close some and try again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay demasiadas conexiones abiertas por redes privadas (%lld). Cierra alguna y vuelve a intentarlo."
+          }
+        }
+      }
+    },
+    "error.relay_limit_unknown": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many connections through private networks are open. Close some and try again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay demasiadas conexiones abiertas por redes privadas. Cierra alguna y vuelve a intentarlo."
+          }
+        }
+      }
+    },
     "error.secret_hidden": {
       "localizations": {
         "en": {
@@ -5569,6 +5881,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Este vault es de Solo uso para ti: sus contraseñas y claves no se muestran."
+          }
+        }
+      }
+    },
+    "error.unsupported_kind": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This server cannot join this kind of network yet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este servidor aún no puede unirse a este tipo de red."
           }
         }
       }
@@ -15344,6 +15672,2942 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bóveda"
+          }
+        }
+      }
+    },
+    "networks.add": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add network"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir red"
+          }
+        }
+      }
+    },
+    "networks.add_host": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir un host"
+          }
+        }
+      }
+    },
+    "networks.add_host.address": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Address"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dirección"
+          }
+        }
+      }
+    },
+    "networks.add_host.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A host reached through this network, in its vault. Add its key or identity later."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un host al que se llega por esta red, en su bóveda. Añade su clave o identidad después."
+          }
+        }
+      }
+    },
+    "networks.add_host.in_subnet %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An address inside %@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una dirección dentro de %@."
+          }
+        }
+      }
+    },
+    "networks.add_host.ok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir host"
+          }
+        }
+      }
+    },
+    "networks.add_host.title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a host in “%@”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir un host en «%@»"
+          }
+        }
+      }
+    },
+    "networks.conf.error.bad_endpoint %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Endpoint of peer %lld must be host:port"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El Endpoint del peer %lld debe ser host:puerto"
+          }
+        }
+      }
+    },
+    "networks.conf.error.bad_key %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is not a valid WireGuard key (32 bytes in base64)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ no es una clave de WireGuard válida (32 bytes en base64)"
+          }
+        }
+      }
+    },
+    "networks.conf.error.bad_line %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Line %lld is not “Key = Value”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La línea %lld no es «Clave = Valor»"
+          }
+        }
+      }
+    },
+    "networks.conf.error.bad_number %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is not a valid number"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ no es un número válido"
+          }
+        }
+      }
+    },
+    "networks.conf.error.mixed_psk": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The peers use different preshared keys: Termoak keeps one per network"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los peers usan claves precompartidas distintas: Termoak guarda una por red"
+          }
+        }
+      }
+    },
+    "networks.conf.error.no_address": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add the server's address inside the tunnel (Address in [Interface])"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añade la dirección del servidor dentro del túnel (Address en [Interface])"
+          }
+        }
+      }
+    },
+    "networks.conf.error.no_allowed_ips %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peer %lld needs its AllowedIPs"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El peer %lld necesita sus AllowedIPs"
+          }
+        }
+      }
+    },
+    "networks.conf.error.no_endpoint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At least one peer needs an Endpoint: the server is the side that connects"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al menos un peer necesita Endpoint: el servidor es el que conecta"
+          }
+        }
+      }
+    },
+    "networks.conf.error.no_peer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The configuration has no [Peer]: add the other end of the tunnel"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La configuración no tiene [Peer]: añade el otro extremo del túnel"
+          }
+        }
+      }
+    },
+    "networks.conf.error.not_a_conf": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is not a WireGuard configuration: it needs an [Interface] and a [Peer] section"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esto no es una configuración de WireGuard: necesita una sección [Interface] y otra [Peer]"
+          }
+        }
+      }
+    },
+    "networks.conf.error.peer_without_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A [Peer] has no PublicKey"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un [Peer] no tiene PublicKey"
+          }
+        }
+      }
+    },
+    "networks.created %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Network “%@” added"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Red «%@» añadida"
+          }
+        }
+      }
+    },
+    "networks.delete.done %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Network “%@” deleted"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Red «%@» borrada"
+          }
+        }
+      }
+    },
+    "networks.delete.hosts %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%#@n@"
+          },
+          "substitutions": {
+            "n": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg host uses it: it will not connect until you choose another network or Direct."
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg hosts use it: they will not connect until you choose another network or Direct."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%#@n@"
+          },
+          "substitutions": {
+            "n": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg host la usa: no conectará hasta que elijas otra red o Directa."
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg hosts la usan: no conectarán hasta que elijas otra red o Directa."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "networks.delete.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server leaves the network at once. Hosts and groups that use it will not connect until you choose another network for them."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servidor sale de la red al momento. Los hosts y grupos que la usan no conectarán hasta que elijas otra red para ellos."
+          }
+        }
+      }
+    },
+    "networks.delete.title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete “%@”?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Borrar «%@»?"
+          }
+        }
+      }
+    },
+    "networks.detail.addresses": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Address in the tunnel"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dirección en el túnel"
+          }
+        }
+      }
+    },
+    "networks.detail.allowed_ips": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allowed IPs"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IP permitidas"
+          }
+        }
+      }
+    },
+    "networks.detail.configuration": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configuration"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configuración"
+          }
+        }
+      }
+    },
+    "networks.detail.dns": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DNS"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DNS"
+          }
+        }
+      }
+    },
+    "networks.detail.endpoint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Endpoint"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Endpoint"
+          }
+        }
+      }
+    },
+    "networks.detail.handshake": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last handshake"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Último handshake"
+          }
+        }
+      }
+    },
+    "networks.detail.hosts %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%#@n@"
+          },
+          "substitutions": {
+            "n": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg host uses it"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg hosts use it"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%#@n@"
+          },
+          "substitutions": {
+            "n": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg host la usa"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg hosts la usan"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "networks.detail.keepalive": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep-alive"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep-alive"
+          }
+        }
+      }
+    },
+    "networks.detail.never": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "never"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "nunca"
+          }
+        }
+      }
+    },
+    "networks.detail.no_hosts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No host uses it yet. Choose it in a host or group (Advanced → Network) or add hosts from its devices."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ningún host la usa todavía. Elígela en un host o grupo (Avanzado → Red) o añade hosts desde sus dispositivos."
+          }
+        }
+      }
+    },
+    "networks.detail.node_addresses": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server's addresses"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direcciones del servidor"
+          }
+        }
+      }
+    },
+    "networks.detail.peer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peer"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peer"
+          }
+        }
+      }
+    },
+    "networks.detail.read_only": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can use this network but not change it (Use-only vault)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Puedes usar esta red pero no cambiarla (bóveda de Solo uso)."
+          }
+        }
+      }
+    },
+    "networks.detail.state": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "State in the server"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estado en el servidor"
+          }
+        }
+      }
+    },
+    "networks.detail.streams": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connections open"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conexiones abiertas"
+          }
+        }
+      }
+    },
+    "networks.detail.traffic": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Traffic"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tráfico"
+          }
+        }
+      }
+    },
+    "networks.down": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bring down"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apagar"
+          }
+        }
+      }
+    },
+    "networks.down.done %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” is down. It comes up again when a host needs it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%@» está apagada. Vuelve a levantarse cuando un host la necesite."
+          }
+        }
+      }
+    },
+    "networks.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No private networks yet"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no hay redes privadas"
+          }
+        }
+      }
+    },
+    "networks.empty_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a WireGuard network (paste its .conf or let the server generate the key), then choose it in a host or group under Advanced → Network."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añade una red WireGuard (pega su .conf o deja que el servidor genere la clave) y elígela en un host o grupo en Avanzado → Red."
+          }
+        }
+      }
+    },
+    "networks.entry_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WireGuard networks your server joins to reach your hosts."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redes WireGuard en las que entra tu servidor para llegar a tus hosts."
+          }
+        }
+      }
+    },
+    "networks.form.conf": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WireGuard configuration (.conf)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configuración de WireGuard (.conf)"
+          }
+        }
+      }
+    },
+    "networks.form.conf_edit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WireGuard configuration (.conf): change it, or paste a new one"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configuración de WireGuard (.conf): cámbiala o pega una nueva"
+          }
+        }
+      }
+    },
+    "networks.form.conf_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paste the .conf of the server's end of the tunnel (the one your WireGuard server or router makes for a new client), open the file, or start from the template. Without a PrivateKey, the server generates it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pega el .conf del extremo del servidor en el túnel (el que tu servidor WireGuard o router crea para un cliente nuevo), abre el archivo o empieza con la plantilla. Sin PrivateKey, el servidor la genera."
+          }
+        }
+      }
+    },
+    "networks.form.conf_key_kept": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The private key is not shown: it stays as it is unless you add a PrivateKey line"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave privada no se muestra: se mantiene salvo que añadas una línea PrivateKey"
+          }
+        }
+      }
+    },
+    "networks.form.conf_ok %@ %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Addresses: %1$@ · peers: %2$lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direcciones: %1$@ · peers: %2$lld"
+          }
+        }
+      }
+    },
+    "networks.form.description": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Description (optional)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descripción (opcional)"
+          }
+        }
+      }
+    },
+    "networks.form.edit_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit private network"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editar red privada"
+          }
+        }
+      }
+    },
+    "networks.form.error_conf": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paste or open the WireGuard configuration"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pega o abre la configuración de WireGuard"
+          }
+        }
+      }
+    },
+    "networks.form.error_name": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Give the network a name"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ponle un nombre a la red"
+          }
+        }
+      }
+    },
+    "networks.form.error_psk_needs_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To change the preshared key, include the PrivateKey too"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para cambiar la clave precompartida, incluye también la PrivateKey"
+          }
+        }
+      }
+    },
+    "networks.form.generate_instead": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ignore this private key and generate a new one on the server"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ignorar esta clave privada y generar una nueva en el servidor"
+          }
+        }
+      }
+    },
+    "networks.form.generate_new": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generate a new key on the server"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generar una clave nueva en el servidor"
+          }
+        }
+      }
+    },
+    "networks.form.ignored %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not used by Termoak: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termoak no usa: %@"
+          }
+        }
+      }
+    },
+    "networks.form.import": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open .conf…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir .conf…"
+          }
+        }
+      }
+    },
+    "networks.form.import_failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't read that file"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ha podido leer ese archivo"
+          }
+        }
+      }
+    },
+    "networks.form.import_too_big": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That file is too big for a WireGuard configuration"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ese archivo es demasiado grande para una configuración de WireGuard"
+          }
+        }
+      }
+    },
+    "networks.form.keepalive_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tip: PersistentKeepalive = 25 keeps NAT open and shows the handshake right away."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consejo: PersistentKeepalive = 25 mantiene abierto el NAT y muestra el handshake enseguida."
+          }
+        }
+      }
+    },
+    "networks.form.key_from_conf": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Private key: the one in the .conf (stored encrypted, never shown again)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave privada: la del .conf (se guarda cifrada y no se vuelve a mostrar)"
+          }
+        }
+      }
+    },
+    "networks.form.key_generated": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Private key: the server generates it and shows you its public key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave privada: la genera el servidor y te muestra su clave pública"
+          }
+        }
+      }
+    },
+    "networks.form.key_kept": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Private key: the stored one is kept"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave privada: se mantiene la guardada"
+          }
+        }
+      }
+    },
+    "networks.form.key_replaced": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Private key: the server generates a new one and replaces the current one (the other side will need the new public key)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave privada: el servidor genera una nueva y sustituye la actual (el otro extremo necesitará la nueva clave pública)"
+          }
+        }
+      }
+    },
+    "networks.form.kind": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kind"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipo"
+          }
+        }
+      }
+    },
+    "networks.form.kind_soon_both": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tailscale and ZeroTier: coming soon."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tailscale y ZeroTier: próximamente."
+          }
+        }
+      }
+    },
+    "networks.form.name": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name (Office, Home lab…)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre (Oficina, Laboratorio…)"
+          }
+        }
+      }
+    },
+    "networks.form.new_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add private network"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir red privada"
+          }
+        }
+      }
+    },
+    "networks.form.no_vault": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No vault where you can add networks (you need to be an Editor in an account vault)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay ninguna bóveda donde puedas añadir redes (necesitas ser Editor en una bóveda de una cuenta)"
+          }
+        }
+      }
+    },
+    "networks.form.psk_from_conf": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preshared key: the one in the .conf (stored encrypted)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave precompartida: la del .conf (se guarda cifrada)"
+          }
+        }
+      }
+    },
+    "networks.form.secret_note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keys travel to your Termoak server only, and are stored encrypted in the vault like passwords."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las claves solo viajan a tu servidor de Termoak y se guardan cifradas en la bóveda, como las contraseñas."
+          }
+        }
+      }
+    },
+    "networks.form.template": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Template"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plantilla"
+          }
+        }
+      }
+    },
+    "networks.form.vault": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bóveda"
+          }
+        }
+      }
+    },
+    "networks.form.vault_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hosts and groups of this vault can use it. A team vault's networks are shared with the team."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los hosts y grupos de esta bóveda pueden usarla. Las redes de la bóveda de un equipo se comparten con el equipo."
+          }
+        }
+      }
+    },
+    "networks.handshake %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "handshake %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "handshake %@"
+          }
+        }
+      }
+    },
+    "networks.host_added %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host “%@” added: it connects through the network"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host «%@» añadido: se conecta por la red"
+          }
+        }
+      }
+    },
+    "networks.in_vault %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · in %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · en %2$@"
+          }
+        }
+      }
+    },
+    "networks.key.copied": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiado"
+          }
+        }
+      }
+    },
+    "networks.key.copy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy the public key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar la clave pública"
+          }
+        }
+      }
+    },
+    "networks.key.description": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add it as a peer on the other side of the tunnel (your WireGuard server or router)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añádela como peer en el otro extremo del túnel (tu servidor WireGuard o tu router)."
+          }
+        }
+      }
+    },
+    "networks.key.generate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generate key on the server"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generar clave en el servidor"
+          }
+        }
+      }
+    },
+    "networks.key.generated_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server's key is ready"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave del servidor está lista"
+          }
+        }
+      }
+    },
+    "networks.key.missing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This network has no private key yet: generate it on the server, or edit the network and paste a .conf with its PrivateKey."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta red aún no tiene clave privada: genérala en el servidor o edita la red y pega un .conf con su PrivateKey."
+          }
+        }
+      }
+    },
+    "networks.key.peer_block": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[Peer] for the other side"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[Peer] para el otro extremo"
+          }
+        }
+      }
+    },
+    "networks.key.pending": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The network has a private key; its public key appears after the next sync."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La red tiene clave privada; su clave pública aparece tras la próxima sincronización."
+          }
+        }
+      }
+    },
+    "networks.key.private_note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The private key stays on the server, encrypted in your vault like a password. It is never shown."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave privada se queda en el servidor, cifrada en tu bóveda como una contraseña. Nunca se muestra."
+          }
+        }
+      }
+    },
+    "networks.key.public": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Public key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave pública"
+          }
+        }
+      }
+    },
+    "networks.key.replace": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generate a new key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generar una clave nueva"
+          }
+        }
+      }
+    },
+    "networks.key.replace_message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server generates a new private key. The other side must get the new public key as a peer: until then the network cannot connect."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servidor genera una clave privada nueva. El otro extremo debe recibir la nueva clave pública como peer: hasta entonces la red no conectará."
+          }
+        }
+      }
+    },
+    "networks.key.replace_ok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replace key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sustituir clave"
+          }
+        }
+      }
+    },
+    "networks.key.replace_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replace the network's key?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Sustituir la clave de la red?"
+          }
+        }
+      }
+    },
+    "networks.key.snippet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peer to add on the other side"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peer que añadir en el otro extremo"
+          }
+        }
+      }
+    },
+    "networks.key.step_allowed %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow the server's address in the tunnel: %@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permite la dirección del servidor en el túnel: %@."
+          }
+        }
+      }
+    },
+    "networks.key.step_peer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On your WireGuard server or router, add a peer with this public key."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En tu servidor WireGuard o router, añade un peer con esta clave pública."
+          }
+        }
+      }
+    },
+    "networks.key.step_test": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Come back and press Test: you should see a handshake."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuelve y pulsa Probar: deberías ver un handshake."
+          }
+        }
+      }
+    },
+    "networks.key.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server's public key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave pública del servidor"
+          }
+        }
+      }
+    },
+    "networks.key.title_of %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Public key of “%@”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave pública de «%@»"
+          }
+        }
+      }
+    },
+    "networks.missing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Missing network"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Red no encontrada"
+          }
+        }
+      }
+    },
+    "networks.netd.dial_failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The network could not reach the host: the connection was refused or the address is outside the network."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La red no ha podido llegar al host: se ha rechazado la conexión o la dirección está fuera de la red."
+          }
+        }
+      }
+    },
+    "networks.netd.invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The network's configuration is not valid."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La configuración de la red no es válida."
+          }
+        }
+      }
+    },
+    "networks.netd.limit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server has too many networks or connections open right now. Try again later."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servidor tiene demasiadas redes o conexiones abiertas ahora mismo. Inténtalo más tarde."
+          }
+        }
+      }
+    },
+    "networks.netd.needs_auth": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server's node is waiting to be authorized in the network."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El nodo del servidor espera a que lo autoricen en la red."
+          }
+        }
+      }
+    },
+    "networks.netd.network_error": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The network could not start on the server (check its key and endpoint)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La red no ha podido arrancar en el servidor (revisa su clave y su endpoint)."
+          }
+        }
+      }
+    },
+    "networks.netd.timeout": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The host did not answer through the network in time. Check that the WireGuard peer has the server's public key and that its endpoint is reachable."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El host no ha respondido a tiempo por la red. Comprueba que el peer de WireGuard tiene la clave pública del servidor y que su endpoint es accesible."
+          }
+        }
+      }
+    },
+    "networks.no_handshake": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no handshake yet"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "aún sin handshake"
+          }
+        }
+      }
+    },
+    "networks.no_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no private key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "sin clave privada"
+          }
+        }
+      }
+    },
+    "networks.peers.add_at %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add host %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir host %@"
+          }
+        }
+      }
+    },
+    "networks.peers.add_in %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a host in %@…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir un host en %@…"
+          }
+        }
+      }
+    },
+    "networks.peers.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The network has no devices to show."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La red no tiene dispositivos que mostrar."
+          }
+        }
+      }
+    },
+    "networks.peers.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add hosts at the addresses of the network's devices."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añade hosts en las direcciones de los dispositivos de la red."
+          }
+        }
+      }
+    },
+    "networks.peers.hint_wireguard": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WireGuard only knows its peers and their allowed IPs: add a host at one of their addresses (for a subnet, type the host's address)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WireGuard solo conoce sus peers y sus IP permitidas: añade un host en alguna de sus direcciones (para una subred, escribe la dirección del host)."
+          }
+        }
+      }
+    },
+    "networks.peers.loading": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asking the network…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preguntando a la red…"
+          }
+        }
+      }
+    },
+    "networks.peers.offline": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No recent handshake"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin handshake reciente"
+          }
+        }
+      }
+    },
+    "networks.peers.online": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Online"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectado"
+          }
+        }
+      }
+    },
+    "networks.peers.seen %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "seen %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "visto %@"
+          }
+        }
+      }
+    },
+    "networks.peers.show": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Devices → add hosts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispositivos → añadir hosts"
+          }
+        }
+      }
+    },
+    "networks.peers.title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Devices of “%@”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispositivos de «%@»"
+          }
+        }
+      }
+    },
+    "networks.picker.direct": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direct (no network)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Directa (sin red)"
+          }
+        }
+      }
+    },
+    "networks.picker.direct_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It connects directly (or through the proxy, if any)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se conecta directamente (o por el proxy, si hay)."
+          }
+        }
+      }
+    },
+    "networks.picker.group_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The hosts of the group (and of its subgroups) connect through this network unless they choose another."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los hosts del grupo (y de sus subgrupos) se conectan por esta red salvo que elijan otra."
+          }
+        }
+      }
+    },
+    "networks.picker.how": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Termoak server reaches it through the network; SSH stays end to end."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servidor de Termoak llega por la red; el SSH sigue siendo de extremo a extremo."
+          }
+        }
+      }
+    },
+    "networks.picker.inherit %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Same as group “%1$@” (via %2$@)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Igual que el grupo «%1$@» (por %2$@)"
+          }
+        }
+      }
+    },
+    "networks.picker.inherited_from %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From group “%@”:"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Del grupo «%@»:"
+          }
+        }
+      }
+    },
+    "networks.picker.label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Network"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Red"
+          }
+        }
+      }
+    },
+    "networks.picker.missing_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That network is not in this vault (deleted or not synced): it will not connect until you choose another one."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esa red no está en esta bóveda (borrada o sin sincronizar): no conectará hasta que elijas otra."
+          }
+        }
+      }
+    },
+    "networks.picker.no_networks": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This vault has no private networks yet: add one in Settings → Accounts → your account → Private networks."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta bóveda aún no tiene redes privadas: añade una en Ajustes → Cuentas → tu cuenta → Redes privadas."
+          }
+        }
+      }
+    },
+    "networks.picker.proxy_ignored": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With a private network the proxy is not used."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con una red privada no se usa el proxy."
+          }
+        }
+      }
+    },
+    "networks.saved %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Network “%@” saved"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Red «%@» guardada"
+          }
+        }
+      }
+    },
+    "networks.saved_without_key %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The network was saved, but the key could not be generated: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La red se ha guardado, pero no se ha podido generar la clave: %@"
+          }
+        }
+      }
+    },
+    "networks.state.down": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Down"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apagada"
+          }
+        }
+      }
+    },
+    "networks.state.down_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not running now: it comes up when a host needs it, or with Test."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No está en marcha: se levanta cuando un host la necesita, o con Probar."
+          }
+        }
+      }
+    },
+    "networks.state.error": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error"
+          }
+        }
+      }
+    },
+    "networks.state.error_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The network could not start."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La red no ha podido arrancar."
+          }
+        }
+      }
+    },
+    "networks.state.needs_auth": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for authorization"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando autorización"
+          }
+        }
+      }
+    },
+    "networks.state.needs_auth_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server's node waits to be authorized in the network."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El nodo del servidor espera a que lo autoricen en la red."
+          }
+        }
+      }
+    },
+    "networks.state.needs_auth_short": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authorize"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autorizar"
+          }
+        }
+      }
+    },
+    "networks.state.starting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starting"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrancando"
+          }
+        }
+      }
+    },
+    "networks.state.starting_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server is starting the network."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servidor está arrancando la red."
+          }
+        }
+      }
+    },
+    "networks.state.unknown": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "State unknown"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estado desconocido"
+          }
+        }
+      }
+    },
+    "networks.state.unknown_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server did not say (it may not reach its networks right now)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servidor no lo ha dicho (puede que ahora no llegue a sus redes)."
+          }
+        }
+      }
+    },
+    "networks.state.up": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectada"
+          }
+        }
+      }
+    },
+    "networks.state.up_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Running: the other side answered."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En marcha: el otro extremo ha respondido."
+          }
+        }
+      }
+    },
+    "networks.state.waiting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for the peer"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando al peer"
+          }
+        }
+      }
+    },
+    "networks.state.waiting_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Running, but the other side has not answered yet: check the peer's endpoint and that it has the server's public key as a peer."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En marcha, pero el otro extremo aún no ha respondido: revisa el endpoint del peer y que tenga la clave pública del servidor como peer."
+          }
+        }
+      }
+    },
+    "networks.state.waiting_short": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando"
+          }
+        }
+      }
+    },
+    "networks.subtitle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your Termoak server joins these networks and reaches the hosts in them. Your devices need no VPN."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu servidor de Termoak entra en estas redes y llega a sus hosts. Tus dispositivos no necesitan VPN."
+          }
+        }
+      }
+    },
+    "networks.test": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probar"
+          }
+        }
+      }
+    },
+    "networks.test.auth_failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The host answered, but it did not accept the credentials."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El host responde, pero no acepta las credenciales."
+          }
+        }
+      }
+    },
+    "networks.test.connect_failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not connect to the host."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ha podido conectar con el host."
+          }
+        }
+      }
+    },
+    "networks.test.error %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” could not start: %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%1$@» no ha podido arrancar: %2$@"
+          }
+        }
+      }
+    },
+    "networks.test.failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The test failed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La prueba ha fallado"
+          }
+        }
+      }
+    },
+    "networks.test.failed_via %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Via %1$@: %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "networks.test.host %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test through %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probar por %@"
+          }
+        }
+      }
+    },
+    "networks.test.host_key_changed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The host's key changed: check it before trusting it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave del host ha cambiado: compruébala antes de confiar en ella."
+          }
+        }
+      }
+    },
+    "networks.test.host_key_unknown": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The host's key is not known yet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no se conoce la clave del host."
+          }
+        }
+      }
+    },
+    "networks.test.no_handshake %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” is up, but the peer has not answered yet. Check its endpoint and that it has the server's public key."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%@» está levantada, pero el peer aún no ha respondido. Revisa su endpoint y que tenga la clave pública del servidor."
+          }
+        }
+      }
+    },
+    "networks.test.ok %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” is connected: the peer answered."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%@» está conectada: el peer ha respondido."
+          }
+        }
+      }
+    },
+    "networks.test.ok_via %@ %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Via %1$@ · %2$lld ms"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por %1$@ · %2$lld ms"
+          }
+        }
+      }
+    },
+    "networks.test.state %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@”: %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%1$@»: %2$@"
+          }
+        }
+      }
+    },
+    "networks.test.telnet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server does not test Telnet hosts."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servidor no prueba hosts Telnet."
+          }
+        }
+      }
+    },
+    "networks.test.timeout": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The host did not answer in time."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El host no ha respondido a tiempo."
+          }
+        }
+      }
+    },
+    "networks.test.trust": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trust the key and test"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confiar en la clave y probar"
+          }
+        }
+      }
+    },
+    "networks.test.trust_text %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server does not know the key of “%@” yet. Check that its fingerprint is this one before trusting it:"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servidor aún no conoce la clave de «%@». Comprueba que su huella es esta antes de confiar en ella:"
+          }
+        }
+      }
+    },
+    "networks.test.trust_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trust the host's key?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Confiar en la clave del host?"
+          }
+        }
+      }
+    },
+    "networks.test_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test brings the network up in the server and waits for the other side to answer."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probar levanta la red en el servidor y espera a que responda el otro extremo."
+          }
+        }
+      }
+    },
+    "networks.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Private networks"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redes privadas"
+          }
+        }
+      }
+    },
+    "networks.traffic %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↓ %1$@ · ↑ %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↓ %1$@ · ↑ %2$@"
+          }
+        }
+      }
+    },
+    "networks.unsupported": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Private networks are not available"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las redes privadas no están disponibles"
+          }
+        }
+      }
+    },
+    "networks.unsupported_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in to an account whose Termoak server has private networks. This device cannot hold networks."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicia sesión en una cuenta cuyo servidor de Termoak tenga redes privadas. Este dispositivo no puede guardar redes."
+          }
+        }
+      }
+    },
+    "networks.usage %lld %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld of %2$lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "networks.usage_full": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are using all the networks of your plan. Delete one or change your plan to add more."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estás usando todas las redes de tu plan. Borra alguna o cambia de plan para añadir más."
+          }
+        }
+      }
+    },
+    "networks.usage_label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Networks in your plan"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redes de tu plan"
+          }
+        }
+      }
+    },
+    "networks.usage_note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Networks in your vaults and in the vaults of teams you own count towards your plan."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuentan las redes de tus bóvedas y de las bóvedas de los equipos de los que eres propietario."
+          }
+        }
+      }
+    },
+    "networks.usage_unlimited %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld (no limit)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld (sin límite)"
+          }
+        }
+      }
+    },
+    "networks.vault_unknown": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another vault"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otra bóveda"
+          }
+        }
+      }
+    },
+    "networks.via %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "via %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "por %@"
+          }
+        }
+      }
+    },
+    "networks.via_latency %@ %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "via %1$@ · %2$lld ms"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "por %1$@ · %2$lld ms"
           }
         }
       }

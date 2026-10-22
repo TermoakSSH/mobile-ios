@@ -1,34 +1,32 @@
 import XCTest
 
-/// Deleting the account: the request and the server's refusals as the
-/// engine writes them (Termoak/Model/AccountDeletion.swift).
+/// Deleting the account: the request and the server's refusals from the
+/// error's status, code and details (the engine's `apiError`;
+/// Termoak/Model/AccountDeletion.swift).
 final class AccountDeletionTests: XCTestCase {
-    func testServerFailure() {
-        XCTAssertEqual(ServerFailure.parse("the server responded 403 (invalid_password): the password is not correct"),
-                       ServerFailure(status: 403, code: "invalid_password", message: "the password is not correct"))
-        XCTAssertEqual(ServerFailure.parse("the server responded 405 (error): "),
-                       ServerFailure(status: 405, code: "error", message: ""))
-        XCTAssertNil(ServerFailure.parse("network: connection refused"))
-        XCTAssertNil(ServerFailure.parse("the server responded soon"))
+    private func problem(_ status: Int, _ code: String, _ details: String = "{}") -> AccountDeletionProblem? {
+        AccountDeletionProblem.from(ServerFailure(status: status, code: code, message: "message", detailsJson: details))
     }
 
     func testProblems() {
-        XCTAssertEqual(AccountDeletionProblem.parse("the server responded 403 (invalid_password): the password is not correct"), .wrongPassword)
-        XCTAssertEqual(AccountDeletionProblem.parse("the server responded 401 (totp_required): enter the two-step verification code"), .codeRequired)
-        XCTAssertEqual(AccountDeletionProblem.parse("the server responded 401 (totp_invalid): the verification code is not correct"), .codeInvalid)
-        XCTAssertEqual(AccountDeletionProblem.parse(
-            "the server responded 409 (last_admin): you are the only administrator: appoint another one before deleting your account"), .lastAdmin)
-        XCTAssertEqual(AccountDeletionProblem.parse(
-            "the server responded 409 (last_team_owner): you are the only owner of \"Ops\", \"Dev\": appoint another owner or delete the team first"),
-            .lastTeamOwner(teams: "\"Ops\", \"Dev\""))
-        XCTAssertEqual(AccountDeletionProblem.parse("the server responded 409 (last_team_owner): something else"), .lastTeamOwner(teams: nil))
-        XCTAssertEqual(AccountDeletionProblem.parse(
-            "the server responded 409 (shared_vaults): your shared vaults with members will be deleted with the account: confirm with delete_shared_vaults"),
-            .sharedVaults)
-        XCTAssertEqual(AccountDeletionProblem.parse("the server responded 404 (error): Not Found"), .unsupported)
-        XCTAssertEqual(AccountDeletionProblem.parse("the server responded 405 (error): "), .unsupported)
-        XCTAssertNil(AccountDeletionProblem.parse("the server responded 500 (internal): boom"))
-        XCTAssertNil(AccountDeletionProblem.parse("Not available in the demo"))
+        XCTAssertEqual(problem(403, "invalid_password"), .wrongPassword)
+        XCTAssertEqual(problem(401, "totp_required"), .codeRequired)
+        XCTAssertEqual(problem(401, "totp_invalid"), .codeInvalid)
+        XCTAssertEqual(problem(409, "last_admin"), .lastAdmin)
+        // The teams come from the error's details, not from its text.
+        XCTAssertEqual(problem(409, "last_team_owner", "{\"teams\":[\"Ops\",\"Dev\"]}"), .lastTeamOwner(teams: ["Ops", "Dev"]))
+        XCTAssertEqual(problem(409, "last_team_owner"), .lastTeamOwner(teams: []))
+        XCTAssertEqual(AccountDeletionProblem.quoted(["Ops", "Dev"]), "“Ops”, “Dev”")
+        // The shared vaults that block it ({id, name, member_count}).
+        XCTAssertEqual(
+            problem(409, "shared_vaults",
+                    "{\"vaults\":[{\"id\":\"v1\",\"name\":\"Ops\",\"member_count\":3},{\"id\":\"v2\",\"name\":\"Family\"},{\"name\":\"\"}]}"),
+            .sharedVaults([SharedVault(name: "Ops", members: 3), SharedVault(name: "Family", members: nil)]))
+        XCTAssertEqual(problem(409, "shared_vaults", "not json"), .sharedVaults([]))
+        XCTAssertEqual(problem(404, "error"), .unsupported)
+        XCTAssertEqual(problem(405, "error"), .unsupported)
+        XCTAssertNil(problem(500, "internal"))
+        XCTAssertNil(problem(0, "network_unavailable"))
     }
 
     func testBody() {

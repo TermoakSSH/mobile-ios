@@ -107,6 +107,8 @@ struct ItemPlace: Hashable, Identifiable {
 /// Text of an error for the user: the rules of vaults and accounts are
 /// translated here; anything else keeps the engine's message.
 func userMessage(_ error: Error) -> String {
+    // Private networks (0.7): by the error's code and details (`apiError`).
+    if let text = networkErrorText(error) { return text }
     guard let e = error as? TermoakError else { return errorMessage(error) }
     switch e {
     case .VaultReadOnly: return String(localized: "error.vault_read_only")

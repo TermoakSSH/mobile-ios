@@ -120,6 +120,7 @@ struct AccountDetailView: View {
     @State private var deletingAccount = false
     /// The server deleted the account: sign out of it here when its sheet closes.
     @State private var deletedOnServer = false
+    @ObservedObject private var networkBook = NetworkBook.shared
 
     private var info: AccountInfo? { account.account(accountId) }
 
@@ -210,6 +211,22 @@ struct AccountDetailView: View {
                 } else if info.status == .active {
                     Section {
                         Text("vaults.unsupported").font(.footnote).foregroundColor(.secondary)
+                    }
+                }
+
+                // Private networks: only when its server has them (never This device).
+                if info.status == .active && networkBook.isSupported(info.id) {
+                    Section {
+                        NavigationLink {
+                            NetworksView(accountId: info.id)
+                                .environmentObject(model)
+                                .environmentObject(account)
+                        } label: {
+                            Label("networks.title", systemImage: "point.3.connected.trianglepath.dotted")
+                        }
+                        .accessibilityIdentifier("account-networks")
+                    } footer: {
+                        Text("networks.entry_hint")
                     }
                 }
 

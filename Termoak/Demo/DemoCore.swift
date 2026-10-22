@@ -250,6 +250,14 @@ final class DemoCore: TermoakCore, @unchecked Sendable {
     override func listGroups(filter: ItemFilter?) throws -> [HostGroup] { backend.groups(filter) }
     override func getGroup(id: String, accountId: String?) throws -> HostGroup { try backend.group(id, accountId) }
     override func saveGroup(group: HostGroup) throws -> HostGroup { backend.save(group) }
+
+    // MARK: Private networks (0.7): the demo has none.
+
+    override func listNetworks(filter: ItemFilter?) throws -> [PrivateNetwork] { [] }
+    override func getNetwork(id: String, accountId: String?) throws -> PrivateNetwork { throw DemoMode.unavailable }
+    override func saveNetwork(network: PrivateNetwork, secrets: NetworkSecrets?) throws -> PrivateNetwork { throw DemoMode.unavailable }
+    override func deleteNetwork(id: String, accountId: String?) throws { throw DemoMode.unavailable }
+    override func networkSecrets(id: String, accountId: String?) throws -> NetworkSecrets { throw DemoMode.unavailable }
     override func deleteGroup(id: String, accountId: String?) throws { backend.deleteGroup(id, accountId) }
 
     override func listSnippets(filter: ItemFilter?) throws -> [Snippet] { backend.snippets(filter) }

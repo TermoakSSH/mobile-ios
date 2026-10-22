@@ -33,6 +33,8 @@ struct HostsView: View {
     @State private var editing: HostEdit?
     @State private var filesHost: SshHost?
     @State private var tunnelsHost: SshHost?
+    /// A host being tested from the server through its private network.
+    @State private var networkTesting: SshHost?
     @State private var deleting: SshHost?
     @State private var editedGroup: GroupEdit?
     @State private var deletingGroup: HostGroup?
@@ -168,6 +170,7 @@ struct HostsView: View {
     var body: some View {
         // Split in parts: as one expression it is too much for the type checker.
         withDialogs(withMoreSheets(withSheets(withToolbar(content))))
+            .hostNetworkTests($networkTesting) { flash($0) }
         .overlay(alignment: .bottom) { toastView }
         // Status dots (Settings → Host status): the hosts on screen.
         .hostStatusChecks(probedHosts, active: onScreen && !sessions.showing && !covered)
@@ -1018,6 +1021,8 @@ struct HostsView: View {
             Label("hosts.menu.copy_address", systemImage: "doc.on.doc")
         }
         HostStatusMenuItem(host: host)
+        // Through its private network: the server tests it (only when asked).
+        HostNetworkTestMenuItem(host: host) { networkTesting = host }
         if desktop && host.canEdit { moveToGroupMenu(host) }
         if !account.list.isEmpty && !host.isUseOnly {
             let place = account.place(accountId: host.accountId, vaultId: host.vaultId)
@@ -1176,6 +1181,8 @@ struct HostsView: View {
             hosts = try model.core.listHosts(filter: account.hostFilter)
             groups = try model.core.listGroups(filter: account.hostFilter)
                 .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+            // The network of each host (its own or its groups'): "via Office" on the rows.
+            NetworkBook.shared.index(core: model.core, hosts: hosts, groups: groups)
         } catch {
             show(error)
         }
@@ -1749,8 +1756,9 @@ private struct HostRow: View {
                     HostStatusDot(host: host, showsLatency: true)
                 }
                 Text(hostSubtitle(host)).font(.subheadline).foregroundColor(.secondary).lineLimit(1)
-                if !host.tags.isEmpty || showVault || host.isUseOnly {
+                if !host.tags.isEmpty || showVault || host.isUseOnly || NetworkBook.shared.network(of: host) != nil {
                     HStack(spacing: 4) {
+                        NetworkViaChip(host: host)
                         if showVault && (vault != nil || host.accountId == nil) { VaultChip(vault: vault) }
                         if host.isUseOnly { UseOnlyBadge() }
                         ForEach(Array(host.tags.prefix(3).enumerated()), id: \.offset) { _, tag in
@@ -1812,6 +1820,8 @@ private struct GroupEditor: View {
     @State private var defaults = HostSettings()
     @State private var identities: [SshIdentity] = []
     @State private var keys: [SshKey] = []
+    /// The groups of its vault (the network its parents give).
+    @State private var groups: [HostGroup] = []
 
     /// A new top-level group: choose its vault.
     private var choosesPlace: Bool {
@@ -1825,6 +1835,9 @@ private struct GroupEditor: View {
                 if choosesPlace { PlacePicker(place: $place) }
                 Section { GroupColorPicker(color: $color) }
                 GroupDefaultsSection(settings: $defaults, identities: identities, keys: keys)
+                // Private network (0.7) for the hosts inside: `nil` inherits the parent group's (or direct).
+                NetworkPickerSection(accountId: place.accountId, vaultId: place.vaultId, groupId: original.parentId,
+                                     groups: groups, networkId: $defaults.networkId, forGroup: true)
                 if let error { Text(error).foregroundColor(Brand.red) }
             }
             .navigationTitle(original.id.isEmpty ? String(localized: "hosts.group.new") : String(localized: "hosts.group.edit"))
@@ -1875,6 +1888,9 @@ private struct GroupEditor: View {
         }
         identities = ((try? model.core.listIdentities(filter: filter)) ?? []).filter { usable($0.accountId, $0.vaultId) }
         keys = ((try? model.core.listKeys(filter: filter)) ?? []).filter { usable($0.accountId, $0.vaultId) }
+        groups = ((try? model.core.listGroups(filter: filter)) ?? []).filter { $0.id != original.id }
+        // This device can't use networks.
+        if p.accountId == nil { defaults.networkId = nil }
         if let i = defaults.identityId, !identities.contains(where: { $0.id == i }) { defaults.identityId = nil }
         if let k = defaults.keyId, !keys.contains(where: { $0.id == k }) { defaults.keyId = nil }
     }

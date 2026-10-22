@@ -121,6 +121,7 @@ struct HostCard<MenuItems: View>: View {
             } else if !host.isTelnet {
                 SmallBadge(text: "SSH", color: Brand.blue)
             }
+            NetworkViaChip(host: host)
             if showVault && (vault != nil || host.accountId == nil) { VaultChip(vault: vault) }
             if host.isUseOnly { UseOnlyBadge() }
             ForEach(Array(host.tags.prefix(3).enumerated()), id: \.offset) { _, tag in

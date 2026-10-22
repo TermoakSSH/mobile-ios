@@ -560,7 +560,13 @@ final class Accounts: ObservableObject {
     private func updateEvents() {
         let active = Set(list.filter { $0.status == .active }.map(\.id))
         for id in events.keys where !active.contains(id) { stopEvents(id) }
-        for id in active where events[id] == nil { startEvents(id) }
+        for id in active where events[id] == nil {
+            startEvents(id)
+            // Private networks: the server's features may have changed since
+            // the account last started (NETWORKS.md §8.1).
+            let core = core
+            Task { @MainActor in await NetworkBook.shared.refreshFeatures(id, core: core) }
+        }
     }
 
     private func startEvents(_ accountId: String) {
@@ -599,6 +605,7 @@ final class Accounts: ObservableObject {
     }
 
     private func stopEvents(_ accountId: String) {
+        Task { @MainActor in NetworkBook.shared.forget(accountId) }
         guard let e = events.removeValue(forKey: accountId) else { return }
         e.task.cancel()
         e.subscription?.unsubscribe()
