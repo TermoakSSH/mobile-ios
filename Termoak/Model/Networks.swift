@@ -60,9 +60,14 @@ enum NetState: Equatable {
     case starting
     /// Running, but the WireGuard peer never answered (no handshake yet).
     case waiting
-    /// Running, and the other side answered.
+    /// Running, and the other side answered (Tailscale: the node is in the tailnet).
     case up
+    /// Waiting for authorization (ZeroTier, or a Tailscale state this version doesn't know).
     case needsAuth
+    /// Tailscale: the server's node must be logged in (an Editor opens the login URL).
+    case needsLogin
+    /// Tailscale: the node is logged in and waits for approval in the admin console.
+    case needsApproval
     case error
     /// Not asked yet, or the server didn't answer: not an error page.
     case unknown
@@ -78,6 +83,73 @@ struct NetStatus: Equatable {
     var txBytes: Int64? = nil
     var streams: Int64? = nil
     var nodeAddresses: [String] = []
+    /// Tailscale, with `needs_auth`: `login` or `approval`.
+    var auth: String? = nil
+    /// Tailscale: the control server (`nil`: Tailscale's).
+    var controlUrl: String? = nil
+    var tailnet: String? = nil
+    var magicDnsSuffix: String? = nil
+    /// Tailscale: devices the server's node sees.
+    var peerCount: Int? = nil
+    var ephemeral: Bool? = nil
+    /// Tailscale: the last error as the control server said it.
+    var lastError: String? = nil
+    /// The server's node: its name, MagicDNS name and id.
+    var nodeName: String? = nil
+    var nodeDnsName: String? = nil
+    var nodeId: String? = nil
+    /// Tailscale: the login page (only Editors get it).
+    var authUrl: String? = nil
+}
+
+/// Tailscale/Headscale settings of a network (`tailscale`); `ephemeral`
+/// `nil`: yes with an auth key, no without one.
+struct TsConfig: Equatable {
+    /// `nil`: Tailscale's control server; otherwise a Headscale URL.
+    var controlUrl: String? = nil
+    var hostname: String? = nil
+    var tags: [String] = []
+    var ephemeral: Bool? = nil
+}
+
+/// What an update does with the stored secret (Tailscale's auth key).
+enum SecretChange: Equatable {
+    /// No `secret` in the body: the stored one stays.
+    case keep
+    /// `secret: {auth_key}`.
+    case set(String)
+    /// `secret: null` removes it (`{}` would store an empty secret and
+    /// `has_secret` would stay true).
+    case clear
+}
+
+/// Why Tailscale settings can't be saved (the core's rules, checked again by the server).
+enum TsProblem: Equatable {
+    case controlUrlMissing, controlUrl, hostname, tags, tagsMax, authKey, keyMissing
+}
+
+/// A host of a vault as the devices list sees it (to mark devices already added).
+struct HostRef: Equatable {
+    var id: String
+    var label: String
+    var address: String
+    var networkId: String?
+}
+
+/// What happened to a tailnet, as the screens say it (the texts are in NetworkBook.swift).
+enum TailnetMessage: Equatable {
+    /// The server must be logged in (`name`: the network, when known).
+    case login(String?)
+    /// The server's node waits for approval.
+    case approval(String?)
+    /// It could not join the tailnet: netd's reason without its prefix.
+    case networkError(name: String, reason: String)
+    case timeout
+    case limit
+    /// A dial that failed inside the tailnet: netd's words (capitalized,
+    /// ending in a dot) and whether the ACL hint goes with them.
+    case dial(String, aclHint: Bool)
+    case unsupported
 }
 
 /// A network as the REST API gives it: the whole object is kept to send it
@@ -97,8 +169,11 @@ struct NetworkItem: Identifiable, Equatable {
     var peers: [WgPeer]
     /// The JSON as read.
     var json: String
+    /// Tailscale settings (kind `tailscale`).
+    var tailscale: TsConfig? = nil
 
     var isWireguard: Bool { kind == Networks.wireguard }
+    var isTailscale: Bool { kind == Networks.tailscale }
 }
 
 /// A device of a network (`GET /networks/{id}/peers`); WireGuard: its
@@ -111,8 +186,33 @@ struct NetPeer: Equatable, Identifiable {
     var lastSeen: Int64? = nil
     var publicKey: String? = nil
     var endpoint: String? = nil
+    var os: String? = nil
+    /// Tailscale: ACL tags.
+    var tags: [String] = []
+    /// Tailscale: subnets the device routes (exit nodes: `/0`).
+    var routes: [String] = []
 
     var id: String { (publicKey ?? "") + (name ?? "") + (dnsName ?? "") + addresses.joined(separator: ",") }
+
+    /// Its MagicDNS name without the trailing dot (`nas.tail1234.ts.net`).
+    var bareDnsName: String? {
+        guard var d = dnsName?.trimmingCharacters(in: .whitespaces) else { return nil }
+        while d.hasSuffix(".") { d.removeLast() }
+        return d.isEmpty ? nil : d
+    }
+
+    /// Tailscale: where a host on this device connects: its MagicDNS name, or its first IP.
+    var deviceAddress: String? {
+        if let d = bareDnsName { return d }
+        guard let a = addresses.first?.split(separator: "/").first.map(String.init)?.trimmingCharacters(in: .whitespaces),
+              !a.isEmpty else { return nil }
+        return a
+    }
+
+    /// Tailscale: the subnets of `routes` a host can be in (never an exit node's `/0`).
+    var hostRoutes: [String] {
+        routes.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty && !$0.hasSuffix("/0") }
+    }
 
     /// Its name, DNS name, endpoint or the start of its key.
     var title: String {
@@ -142,6 +242,7 @@ struct HostTest: Equatable {
     var errorCode: String? = nil
     var networkId: String? = nil
     var networkName: String? = nil
+    var networkKind: String? = nil
 }
 
 /// A group as the network inheritance sees it.
@@ -189,6 +290,8 @@ enum NetworkMessage: Equatable {
     case keyExists
     case notWireguard
     case notInNetwork
+    /// A tailnet's login, approval or dial, in words.
+    case tailnet(TailnetMessage)
 }
 
 enum Networks {
@@ -201,6 +304,13 @@ enum Networks {
     static let maxConfBytes = 64 * 1024
     /// Polls of the state after Test, about once a second.
     static let testPolls = 6
+    /// Polls of a Tailscale network's state after Test while it starts (`up` already waits 10 s): about 30 s.
+    static let tsTestPolls = 30
+    /// A login or an approval is followed every 2 s for 5 minutes at most.
+    static let loginPollSeconds = 2
+    static let loginWaitSeconds = 300
+    /// Most tags a node may ask for (the core's `TailscaleConfig::MAX_TAGS`).
+    static let maxTags = 20
     private static let maxDepth = 16
 
     /// Template of a new network's `.conf`.
@@ -237,6 +347,15 @@ enum Networks {
 
     private static func strings(_ v: Any?) -> [String] {
         (v as? [Any] ?? []).compactMap { $0 as? String }.filter { !$0.isEmpty }
+    }
+
+    /// Kinds of network the server can join (`features.network_kinds`): a
+    /// server without the field (0.7.0-next.2) joins WireGuard only; none
+    /// without `features.networks`.
+    static func kinds(infoJson: String) -> [String] {
+        guard let o = object(infoJson), let f = o["features"] as? [String: Any], f[feature] as? Bool == true else { return [] }
+        guard let list = f["network_kinds"] as? [Any] else { return [wireguard] }
+        return list.compactMap { $0 as? String }.filter { !$0.isEmpty }
     }
 
     /// Whether a server's `/api/v1/info` says it has private networks.
@@ -423,17 +542,31 @@ enum Networks {
             rxBytes: int(o, "rx_bytes"),
             txBytes: int(o, "tx_bytes"),
             streams: int(o, "streams"),
-            nodeAddresses: strings((o["node"] as? [String: Any])?["addresses"])
+            nodeAddresses: strings((o["node"] as? [String: Any])?["addresses"]),
+            auth: str(o, "auth"),
+            controlUrl: str(o, "control_url"),
+            tailnet: str(o, "tailnet"),
+            magicDnsSuffix: str(o, "magic_dns_suffix"),
+            peerCount: int(o, "peer_count").map(Int.init),
+            ephemeral: o["ephemeral"] as? Bool,
+            lastError: str(o, "last_error"),
+            nodeName: (o["node"] as? [String: Any]).flatMap { str($0, "name") },
+            nodeDnsName: (o["node"] as? [String: Any]).flatMap { str($0, "dns_name") },
+            nodeId: (o["node"] as? [String: Any]).flatMap { str($0, "node_id") },
+            authUrl: (o["node"] as? [String: Any]).flatMap { str($0, "auth_url") }
         )
     }
 
-    /// The state shown: `up` without a WireGuard handshake is "waiting".
+    /// The state shown: `up` without a WireGuard handshake is "waiting"; a
+    /// Tailscale node that needs authorization needs a login or an approval.
     static func state(_ s: NetStatus?, kind: String) -> NetState {
         guard let s else { return .unknown }
         switch s.state {
         case "down": return .down
         case "starting": return .starting
-        case "needs_auth": return .needsAuth
+        case "needs_auth":
+            guard kind == tailscale else { return .needsAuth }
+            return s.auth == "approval" ? .needsApproval : .needsLogin
         case "error": return .error
         case "up": return kind == wireguard && s.lastHandshakeAt == nil ? .waiting : .up
         default: return .unknown
@@ -463,7 +596,11 @@ enum Networks {
             dns: strings(wg?["dns"]),
             mtu: wg.flatMap { int($0, "mtu") }.map(Int.init),
             peers: peers(of: wg?["peers"]),
-            json: text(o)
+            json: text(o),
+            tailscale: (o["tailscale"] as? [String: Any]).map { t in
+                TsConfig(controlUrl: str(t, "control_url"), hostname: str(t, "hostname"), tags: strings(t["tags"]),
+                         ephemeral: t["ephemeral"] as? Bool)
+            }
         )
     }
 
@@ -478,7 +615,8 @@ enum Networks {
         (array(json) ?? []).compactMap { $0 as? [String: Any] }.map { p in
             NetPeer(name: str(p, "name"), dnsName: str(p, "dns_name"), addresses: strings(p["addresses"]),
                     online: p["online"] as? Bool, lastSeen: int(p, "last_seen").flatMap { $0 > 0 ? $0 : nil },
-                    publicKey: str(p, "public_key"), endpoint: str(p, "endpoint"))
+                    publicKey: str(p, "public_key"), endpoint: str(p, "endpoint"),
+                    os: str(p, "os"), tags: strings(p["tags"]), routes: strings(p["routes"]))
         }
     }
 
@@ -487,7 +625,8 @@ enum Networks {
         let net = o["network"] as? [String: Any]
         return HostTest(ok: o["ok"] as? Bool ?? false, latencyMs: int(o, "latency_ms"), fingerprint: str(o, "fingerprint"),
                         error: str(o, "error"), errorCode: str(o, "error_code"),
-                        networkId: net.flatMap { str($0, "id") }, networkName: net.flatMap { str($0, "name") })
+                        networkId: net.flatMap { str($0, "id") }, networkName: net.flatMap { str($0, "name") },
+                        networkKind: net.flatMap { str($0, "kind") })
     }
 
     /// `(networks billed to you, max)` of `GET /me/plan` (`max` nil: no limit).
@@ -537,6 +676,229 @@ enum Networks {
         ]
         if let v = network.vaultId { o["vault_id"] = v }
         return text(o)
+    }
+
+    // MARK: Tailscale / Headscale
+
+    /// The node's name when none is set: `termoak-` and the last 8 hex
+    /// digits of the id (as netd does).
+    static func defaultHostname(_ id: String?) -> String {
+        let hex = (id ?? "").replacingOccurrences(of: "-", with: "").lowercased()
+        return "termoak-" + (hex.count >= 8 ? String(hex.suffix(8)) : "xxxxxxxx")
+    }
+
+    /// `tag:a, tag:b` → `[tag:a, tag:b]`.
+    static func parseTags(_ text: String) -> [String] {
+        text.split(whereSeparator: { $0 == "," || $0 == " " || $0 == "\n" }).map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+    }
+
+    /// `https://hs.example.com/` → `https://hs.example.com`.
+    static func cleanControlUrl(_ url: String) -> String {
+        var u = url.trimmingCharacters(in: .whitespacesAndNewlines)
+        while u.hasSuffix("/") { u.removeLast() }
+        return u
+    }
+
+    private static func matches(_ s: String, _ pattern: String) -> Bool {
+        s.range(of: pattern, options: .regularExpression) != nil
+    }
+
+    /// What stops saving Tailscale settings and a new auth key (the core's
+    /// rules, NETWORKS.md §8.1; the server checks them again): `controlUrl`
+    /// `nil` is Tailscale's control server, `""` a Headscale without its
+    /// URL. `nil`: it can be saved. The key is never part of the text.
+    static func tailscaleProblem(controlUrl: String?, hostname: String?, tags: [String], authKey: String?) -> TsProblem? {
+        if let controlUrl {
+            let url = controlUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+            if url.isEmpty { return .controlUrlMissing }
+            let rest: Substring
+            if url.hasPrefix("https://") { rest = url.dropFirst(8) } else if url.hasPrefix("http://") { rest = url.dropFirst(7) } else { return .controlUrl }
+            let authority = rest.split(separator: "/", omittingEmptySubsequences: false).first ?? ""
+            if authority.isEmpty || authority.contains("@") || url.contains("?") || url.contains("#")
+                || url.unicodeScalars.contains(where: { CharacterSet.whitespacesAndNewlines.contains($0) || CharacterSet.controlCharacters.contains($0) }) {
+                return .controlUrl
+            }
+        }
+        let h = (hostname ?? "").trimmingCharacters(in: .whitespaces)
+        if !h.isEmpty && !matches(h, "^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?$") { return .hostname }
+        if tags.count > maxTags { return .tagsMax }
+        if tags.contains(where: { !matches($0.trimmingCharacters(in: .whitespaces), "^tag:[A-Za-z0-9][A-Za-z0-9_-]{0,62}$") }) { return .tags }
+        if let k = authKey?.trimmingCharacters(in: .whitespaces), !k.isEmpty,
+           k.count > 1024 || k.unicodeScalars.contains(where: { $0.value < 0x21 || $0.value > 0x7e }) {
+            return .authKey
+        }
+        return nil
+    }
+
+    /// Body of a Tailscale network's create (`vaultId` set) or update (the
+    /// network as read, in `base`, sent back whole with `ephemeral`): name,
+    /// description, kind and settings; the secret as `secret` says (`keep`:
+    /// no `secret`, `set`: `{auth_key}`, `clear`: `null`).
+    static func tailscaleBody(base: String?, vaultId: String?, name: String, description: String,
+                              ts: TsConfig, secret: SecretChange) -> String {
+        var o = base.flatMap(object) ?? [:]
+        o["id"] = nil
+        o["name"] = name
+        o["description"] = description
+        o["kind"] = tailscale
+        var t = o["tailscale"] as? [String: Any] ?? [:]
+        let url = ts.controlUrl.map(cleanControlUrl).flatMap { $0.isEmpty ? nil : $0 }
+        t["control_url"] = url.map { $0 as Any } ?? NSNull()
+        let host = (ts.hostname ?? "").trimmingCharacters(in: .whitespaces)
+        t["hostname"] = host.isEmpty ? NSNull() : host as Any
+        t["tags"] = ts.tags.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+        t["ephemeral"] = ts.ephemeral.map { $0 as Any } ?? NSNull()
+        o["tailscale"] = t
+        if let vaultId { o["vault_id"] = vaultId }
+        switch secret {
+        case .keep: o["secret"] = nil
+        case .set(let key): o["secret"] = ["auth_key": key.trimmingCharacters(in: .whitespaces)]
+        case .clear: o["secret"] = NSNull()
+        }
+        return text(o)
+    }
+
+    /// "Tailscale", or the Headscale server's host (`https://hs.example.com:8080/x` → `hs.example.com:8080`).
+    static func controlServerLabel(_ url: String?) -> String {
+        guard let u = url?.trimmingCharacters(in: .whitespaces), !u.isEmpty else { return "Tailscale" }
+        let rest = u.range(of: "://").map { String(u[$0.upperBound...]) } ?? u
+        let host = rest.split(separator: "/", omittingEmptySubsequences: false).first.map(String.init) ?? ""
+        return host.isEmpty ? u : host
+    }
+
+    /// The node's address and the devices it sees ("100.64.0.3 · 4 devices"); `devices` makes the count's text.
+    static func tailnetSummary(_ s: NetStatus, devices: (Int) -> String) -> String {
+        ([s.nodeAddresses.first, devices(s.peerCount ?? 0)].compactMap { $0 }).joined(separator: " · ")
+    }
+
+    private static func bare(_ s: String?) -> String {
+        var t = (s ?? "").trimmingCharacters(in: .whitespaces)
+        while t.hasSuffix(".") { t.removeLast() }
+        return t.lowercased()
+    }
+
+    /// The host of `hosts` that already reaches `peer` through the network
+    /// `networkId`: same network, and its address is the device's name,
+    /// MagicDNS name (or its first label) or one of its IPs, or its label is
+    /// the device's name.
+    static func importedHost(_ peer: NetPeer, networkId: String, hosts: [HostRef]) -> HostRef? {
+        var names = Set<String>()
+        let dns = bare(peer.dnsName)
+        if !dns.isEmpty {
+            names.insert(dns)
+            if let short = dns.split(separator: ".").first { names.insert(String(short)) }
+        }
+        let name = bare(peer.name)
+        if !name.isEmpty { names.insert(name) }
+        for a in peer.addresses {
+            let ip = bare(a.split(separator: "/").first.map(String.init))
+            if !ip.isEmpty { names.insert(ip) }
+        }
+        return hosts.first { h in
+            h.networkId == networkId && (names.contains(bare(h.address)) || (!name.isEmpty && bare(h.label) == name))
+        }
+    }
+
+    /// Devices of a tailnet that can be added at once: not added yet and with an address.
+    static func newDevices(_ peers: [NetPeer], networkId: String, hosts: [HostRef]) -> [NetPeer] {
+        peers.filter { $0.deviceAddress != nil && importedHost($0, networkId: networkId, hosts: hosts) == nil }
+    }
+
+    /// Online devices first, then by name.
+    static func sortDevices(_ peers: [NetPeer]) -> [NetPeer] {
+        peers.sorted { a, b in
+            let ao = a.online == true, bo = b.online == true
+            if ao != bo { return ao }
+            return a.title.lowercased() < b.title.lowercased()
+        }
+    }
+
+    /// `GET /hosts?vault_id=…` as `HostRef`s.
+    static func hostRefs(_ json: String) -> [HostRef] {
+        (array(json) ?? []).compactMap { $0 as? [String: Any] }.map { h in
+            HostRef(id: h["id"] as? String ?? "", label: h["label"] as? String ?? "", address: h["address"] as? String ?? "",
+                    networkId: (h["settings"] as? [String: Any]).flatMap { str($0, "network_id") })
+        }
+    }
+
+    /// `POST /hosts` body for a device of a tailnet: its name, its MagicDNS name (or first IP), port 22.
+    static func deviceHostBody(_ peer: NetPeer, network: NetworkItem) -> String? {
+        guard let address = peer.deviceAddress else { return nil }
+        let label = (peer.name ?? "").trimmingCharacters(in: .whitespaces)
+        return hostBody(label: label.isEmpty ? address : label, address: address, port: 22, username: nil, network: network)
+    }
+
+    /// netd's English reason without its `the network "X" could not start: ` prefix.
+    static func tailscaleReason(_ message: String) -> String {
+        for marker in ["\" could not start: ", "\" waits for authorization: ", "\" is still starting: "] {
+            if let r = message.range(of: marker) { return String(message[r.upperBound...]).trimmingCharacters(in: .whitespaces) }
+        }
+        return message.trimmingCharacters(in: .whitespaces)
+    }
+
+    /// The network's name in netd's `the network "X" …` message.
+    private static func quotedName(_ message: String) -> String? {
+        guard let r = message.range(of: #"the network "(.*?)" (could not start|waits for authorization|is still starting)"#,
+                                    options: .regularExpression) else { return nil }
+        let m = String(message[r]).dropFirst("the network \"".count)
+        return m.range(of: "\" ").map { String(m[..<$0.lowerBound]) }
+    }
+
+    /// A dial that failed inside a tailnet: netd's words and, for an address or name it can't see, the ACL hint.
+    static func tailnetDial(_ message: String) -> TailnetMessage {
+        var text = message.trimmingCharacters(in: .whitespacesAndNewlines)
+        while text.hasSuffix(".") { text.removeLast() }
+        text = text.prefix(1).uppercased() + text.dropFirst()
+        return .dial(text + ".", aclHint: message.contains("outside the tailnet") || message.contains("no device named"))
+    }
+
+    /// What netd's English message says about a tailnet (host tests and
+    /// connections only carry it): a login or an approval, still starting
+    /// and could not join (`kindKnown`: the network is a tailnet), or a dial
+    /// outside the tailnet. `nil`: none of those.
+    static func tailscaleMessage(_ message: String, name: String?, kindKnown: Bool = false) -> TailnetMessage? {
+        let n = name ?? quotedName(message)
+        if let r = message.range(of: "waits for authorization") {
+            // "the node is logged in but must be approved": approval; "must be logged in": login.
+            return message[r.lowerBound...].contains("approv") ? .approval(n) : .login(n)
+        }
+        // Any kind can be "still starting": "the tailnet" only when it is one.
+        if kindKnown && message.contains("is still starting") { return .timeout }
+        if kindKnown, message.contains("could not start"), let n { return .networkError(name: n, reason: tailscaleReason(message)) }
+        if message.contains("outside the tailnet") || message.contains("no device named") { return tailnetDial(message) }
+        return nil
+    }
+
+    /// An error of a Tailscale network `name` on its screens (Test,
+    /// devices): what netd found (`netd_code` and `auth` of the error's
+    /// details), with the network's name. `nil`: other errors, as usual.
+    static func tailscaleError(code: String, detailsJson: String?, message: String?, name: String) -> TailnetMessage? {
+        let d = detailsJson.flatMap(object) ?? [:]
+        let netd = d["netd_code"] as? String ?? ""
+        let msg = message ?? ""
+        switch (code, netd) {
+        case ("network_dial_failed", "needs_auth"): return d["auth"] as? String == "approval" ? .approval(name) : .login(name)
+        case ("network_dial_failed", "network_error"): return .networkError(name: name, reason: tailscaleReason(msg))
+        case ("network_dial_failed", "dial_failed") where !msg.trimmingCharacters(in: .whitespaces).isEmpty: return tailnetDial(msg)
+        case ("network_dial_failed", "timeout"): return .timeout
+        case ("network_dial_failed", "limit"): return .limit
+        case ("network_unavailable", "unsupported_kind"): return .unsupported
+        default: return nil
+        }
+    }
+
+    /// Whether an error of the devices list means "log the server in first".
+    static func needsLogin(code: String?, detailsJson: String?) -> Bool {
+        code == "network_dial_failed" && (detailsJson.flatMap(object)?["netd_code"] as? String) == "needs_auth"
+    }
+
+    /// A failed host test through a tailnet (it carries no netd_code, only
+    /// netd's English message), in words; `nil`: not a tailnet's.
+    static func hostTestTailnet(_ t: HostTest) -> TailnetMessage? {
+        guard t.errorCode == "network_dial_failed", t.networkKind == tailscale,
+              let e = t.error, !e.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }
+        return tailscaleMessage(e, name: t.networkName, kindKnown: true) ?? tailnetDial(e)
     }
 
     // MARK: Peers → host addresses
@@ -644,10 +1006,15 @@ enum Networks {
             return d["limit"] as? String == "max_networks" ? .planLimit(max: max) : nil
         case "relay_limit": return .relayLimit(max: max)
         case "network_dial_failed":
+            if netd == "needs_auth", let auth = d["auth"] as? String {
+                return .tailnet(auth == "approval" ? .approval(nil) : .login(nil))
+            }
             if ["dial_failed", "timeout", "needs_auth", "network_error", "limit", "invalid"].contains(netd) { return .netd(netd) }
             if netd == "unsupported_kind" { return .unsupportedKind }
             // Through the relay the engine keeps the server's message only.
             if let detail, detail.contains("relay_limit") { return .relayLimit(max: nil) }
+            // Through the relay the engine keeps netd's English message only: a tailnet's says what happened.
+            if let detail, let t = tailscaleMessage(detail, name: nil) { return .tailnet(t) }
             if let detail, !detail.isEmpty, device { return .dialFailedDetail(detail) }
             return .dialFailed
         case "network_unavailable":

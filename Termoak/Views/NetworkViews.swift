@@ -89,11 +89,15 @@ struct NetworkPickerSection: View {
                 if networkId == nil, case .inherit(let group?, _, _)? = choices.first {
                     line += String(localized: "networks.picker.inherited_from \(group)") + " "
                 }
-                line += "\(Networks.kindLabel(net.kind)) · \(state.label())"
-                if let at = book.status(id)?.lastHandshakeAt {
+                line += "\(Networks.kindLabel(net.kind)) · \(state.label(kind: net.kind))"
+                if net.kind == Networks.tailscale, state == .up, let st = book.status(id) {
+                    line += " · " + tailnetSummaryText(st, connected: false)
+                } else if let at = book.status(id)?.lastHandshakeAt {
                     line += " · " + String(localized: "networks.handshake \(relativeTime(at))")
                 }
                 parts.append(line + ". " + String(localized: "networks.picker.how"))
+                // A host in a tailnet: what its address can be.
+                if net.kind == Networks.tailscale && !forGroup { parts.append(String(localized: "networks.ts.address_hint")) }
             } else {
                 parts.append(String(localized: "networks.picker.missing_hint"))
             }

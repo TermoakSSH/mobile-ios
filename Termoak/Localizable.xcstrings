@@ -16628,6 +16628,22 @@
         }
       }
     },
+    "networks.form.error_server %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server did not accept it: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servidor no lo ha aceptado: %@"
+          }
+        }
+      }
+    },
     "networks.form.generate_instead": {
       "localizations": {
         "en": {
@@ -16960,6 +16976,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Los hosts y grupos de esta bóveda pueden usarla. Las redes de la bóveda de un equipo se comparten con el equipo."
+          }
+        }
+      }
+    },
+    "networks.form.zerotier_soon": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZeroTier: coming soon"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZeroTier: próximamente"
           }
         }
       }
@@ -17844,6 +17876,22 @@
         }
       }
     },
+    "networks.state.cannot_join": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not on this server"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No en este servidor"
+          }
+        }
+      }
+    },
     "networks.state.down": {
       "localizations": {
         "en": {
@@ -18448,6 +18496,1850 @@
           "stringUnit": {
             "state": "translated",
             "value": "↓ %1$@ · ↑ %2$@"
+          }
+        }
+      }
+    },
+    "networks.ts.action.devices": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Devices and hosts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispositivos y hosts"
+          }
+        }
+      }
+    },
+    "networks.ts.address_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A MagicDNS name (nas or nas.tail1234.ts.net) or a 100.x address."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un nombre MagicDNS (nas o nas.tail1234.ts.net) o una dirección 100.x."
+          }
+        }
+      }
+    },
+    "networks.ts.approval.text %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve %@ in the tailnet's admin console (Machines). It connects by itself once approved."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aprueba %@ en la consola de la tailnet (Machines). Se conecta sola en cuanto se apruebe."
+          }
+        }
+      }
+    },
+    "networks.ts.approval.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for approval"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando aprobación"
+          }
+        }
+      }
+    },
+    "networks.ts.connected %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected · %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectada · %@"
+          }
+        }
+      }
+    },
+    "networks.ts.control_line %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Control server: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Servidor de control: %@"
+          }
+        }
+      }
+    },
+    "networks.ts.delete_note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server's node leaves the tailnet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El nodo del servidor sale de la tailnet."
+          }
+        }
+      }
+    },
+    "networks.ts.detail.control": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Control server"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Servidor de control"
+          }
+        }
+      }
+    },
+    "networks.ts.detail.ephemeral": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ephemeral"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Efímero"
+          }
+        }
+      }
+    },
+    "networks.ts.detail.ephemeral_default": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default (yes with an auth key, no without one)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por defecto (sí con clave, no sin ella)"
+          }
+        }
+      }
+    },
+    "networks.ts.detail.ephemeral_no": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No: it stays in the tailnet when it stops"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No: se queda en la tailnet cuando se para"
+          }
+        }
+      }
+    },
+    "networks.ts.detail.ephemeral_yes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes: it leaves the tailnet when it stops"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sí: sale de la tailnet cuando se para"
+          }
+        }
+      }
+    },
+    "networks.ts.detail.key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auth key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave de autenticación"
+          }
+        }
+      }
+    },
+    "networks.ts.detail.key_tags": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The auth key's tags"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las etiquetas de la clave"
+          }
+        }
+      }
+    },
+    "networks.ts.detail.magic_dns": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MagicDNS"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MagicDNS"
+          }
+        }
+      }
+    },
+    "networks.ts.detail.node": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server's node"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nodo del servidor"
+          }
+        }
+      }
+    },
+    "networks.ts.detail.node_id": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Node ID"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ID del nodo"
+          }
+        }
+      }
+    },
+    "networks.ts.detail.tailnet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tailnet name"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre de la tailnet"
+          }
+        }
+      }
+    },
+    "networks.ts.detail.with_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stored (never shown)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardada (nunca se muestra)"
+          }
+        }
+      }
+    },
+    "networks.ts.detail.without_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None: the server is logged in from a link"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ninguna: la sesión del servidor se inicia desde un enlace"
+          }
+        }
+      }
+    },
+    "networks.ts.devices %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%#@n@"
+          },
+          "substitutions": {
+            "n": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg device"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg devices"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%#@n@"
+          },
+          "substitutions": {
+            "n": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg dispositivo"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg dispositivos"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "networks.ts.empty_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a WireGuard or Tailscale network and choose it in your hosts or groups (Advanced → Network): the server will reach them through it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añade una red WireGuard o Tailscale y elígela en tus hosts o grupos (Avanzado → Red): el servidor llegará a ellos por la red."
+          }
+        }
+      }
+    },
+    "networks.ts.error.acl_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only the tailnet's devices and the subnets they route can be reached, and the tailnet's ACLs may hide some."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo se llega a los dispositivos de la tailnet y a las subredes que enrutan, y las ACL de la tailnet pueden ocultar algunos."
+          }
+        }
+      }
+    },
+    "networks.ts.error.approval %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server's node in “%@” is waiting for approval in the tailnet's admin console."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El nodo del servidor en «%@» espera aprobación en la consola de la tailnet."
+          }
+        }
+      }
+    },
+    "networks.ts.error.auth_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The auth key has spaces or characters it cannot have"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave de autenticación tiene espacios o caracteres que no puede tener"
+          }
+        }
+      }
+    },
+    "networks.ts.error.control_url": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Headscale URL must be like https://headscale.example.com (no user, query or fragment)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La URL de Headscale debe ser como https://headscale.example.com (sin usuario, consulta ni fragmento)"
+          }
+        }
+      }
+    },
+    "networks.ts.error.control_url_missing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write the address of your Headscale server"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribe la dirección de tu servidor Headscale"
+          }
+        }
+      }
+    },
+    "networks.ts.error.details %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Details: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detalles: %@"
+          }
+        }
+      }
+    },
+    "networks.ts.error.hostname": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The hostname is a DNS label: letters, digits and dashes, up to 63 (like termoak-office)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El nombre del nodo es una etiqueta DNS: letras, números y guiones, hasta 63 (como termoak-oficina)"
+          }
+        }
+      }
+    },
+    "networks.ts.error.key_missing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paste the new auth key, or keep the current one"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pega la clave nueva, o conserva la actual"
+          }
+        }
+      }
+    },
+    "networks.ts.error.limit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server runs too many Tailscale networks right now. Try again in a moment."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servidor tiene demasiadas redes Tailscale en marcha ahora mismo. Vuelve a probar en un momento."
+          }
+        }
+      }
+    },
+    "networks.ts.error.login %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server must be logged in to “%@” (see Private networks)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay que iniciar la sesión del servidor en «%@» (mira Redes privadas)."
+          }
+        }
+      }
+    },
+    "networks.ts.error.network_error %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” could not join the tailnet: %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%1$@» no ha podido entrar en la tailnet: %2$@"
+          }
+        }
+      }
+    },
+    "networks.ts.error.other_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use another key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar otra clave"
+          }
+        }
+      }
+    },
+    "networks.ts.error.tags": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tags look like tag:termoak (letters, digits, - and _)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las etiquetas son como tag:termoak (letras, números, - y _)"
+          }
+        }
+      }
+    },
+    "networks.ts.error.tags_max %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A node can ask for %lld tags at most"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un nodo puede pedir %lld etiquetas como mucho"
+          }
+        }
+      }
+    },
+    "networks.ts.error.timeout": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Still connecting to the tailnet. Try again in a moment."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía conectando a la tailnet. Vuelve a probar en un momento."
+          }
+        }
+      }
+    },
+    "networks.ts.form.advanced": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Advanced"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avanzado"
+          }
+        }
+      }
+    },
+    "networks.ts.form.control": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Control server"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Servidor de control"
+          }
+        }
+      }
+    },
+    "networks.ts.form.control_url": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Headscale URL"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "URL de Headscale"
+          }
+        }
+      }
+    },
+    "networks.ts.form.control_url_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The address of your Headscale server (http or https)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La dirección de tu servidor Headscale (http o https)."
+          }
+        }
+      }
+    },
+    "networks.ts.form.ephemeral": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove the server's node from the tailnet when it stops (ephemeral)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar el nodo del servidor de la tailnet cuando se pare (efímero)"
+          }
+        }
+      }
+    },
+    "networks.ts.form.ephemeral_default_off": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default without an auth key: off (a login done by hand is kept)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por defecto sin clave: desactivado (se conserva un inicio de sesión hecho a mano)."
+          }
+        }
+      }
+    },
+    "networks.ts.form.ephemeral_default_on": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default with an auth key: on (no old nodes pile up in the tailnet)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por defecto con clave: activado (no se acumulan nodos viejos en la tailnet)."
+          }
+        }
+      }
+    },
+    "networks.ts.form.ephemeral_set": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set by you. By default it is on with an auth key and off without one."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegido por ti. Por defecto está activado con clave y desactivado sin ella."
+          }
+        }
+      }
+    },
+    "networks.ts.form.hostname": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hostname"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre del nodo"
+          }
+        }
+      }
+    },
+    "networks.ts.form.hostname_auto %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "automatic: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "automático: %@"
+          }
+        }
+      }
+    },
+    "networks.ts.form.hostname_hint %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server's name in the tailnet and in MagicDNS (empty: %@)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El nombre del servidor en la tailnet y en MagicDNS (vacío: %@)."
+          }
+        }
+      }
+    },
+    "networks.ts.form.key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auth key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave de autenticación"
+          }
+        }
+      }
+    },
+    "networks.ts.form.key_add": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir una clave"
+          }
+        }
+      }
+    },
+    "networks.ts.form.key_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A reusable, ephemeral key, tagged (e.g. tag:termoak)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una clave reutilizable, efímera y con etiqueta (p. ej. tag:termoak)."
+          }
+        }
+      }
+    },
+    "networks.ts.form.key_hint_headscale": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Headscale: headscale preauthkeys create --user <id> --reusable --ephemeral --tags tag:termoak"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Headscale: headscale preauthkeys create --user <id> --reusable --ephemeral --tags tag:termoak"
+          }
+        }
+      }
+    },
+    "networks.ts.form.key_hint_none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without a key you log the server in from a link."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin clave, inicias la sesión del servidor desde un enlace."
+          }
+        }
+      }
+    },
+    "networks.ts.form.key_hint_tailscale": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tailscale: Admin console → Settings → Keys (Reusable, Ephemeral, Tags). An OAuth client secret (tskey-client-…) works too."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tailscale: consola de administración → Settings → Keys (Reusable, Ephemeral, Tags). También vale un secreto de cliente OAuth (tskey-client-…)."
+          }
+        }
+      }
+    },
+    "networks.ts.form.key_keep": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep the key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conservar la clave"
+          }
+        }
+      }
+    },
+    "networks.ts.form.key_keep_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The current auth key is kept. It is never shown again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se conserva la clave actual. No se vuelve a mostrar."
+          }
+        }
+      }
+    },
+    "networks.ts.form.key_new": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave nueva"
+          }
+        }
+      }
+    },
+    "networks.ts.form.key_new_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stored encrypted like your passwords and never shown again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se guarda cifrada como tus contraseñas y no se vuelve a mostrar."
+          }
+        }
+      }
+    },
+    "networks.ts.form.key_new_label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New auth key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave de autenticación nueva"
+          }
+        }
+      }
+    },
+    "networks.ts.form.key_none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin clave"
+          }
+        }
+      }
+    },
+    "networks.ts.form.key_none_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without a key, the server is logged in from a link (an Editor opens it)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin clave, la sesión del servidor se inicia desde un enlace (lo abre un editor)."
+          }
+        }
+      }
+    },
+    "networks.ts.form.key_optional": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auth key (optional)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave de autenticación (opcional)"
+          }
+        }
+      }
+    },
+    "networks.ts.form.key_remove": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove the key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar la clave"
+          }
+        }
+      }
+    },
+    "networks.ts.form.key_remove_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key is deleted. The next time, the server is logged in from a link."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave se borra. La próxima vez, la sesión del servidor se inicia desde un enlace."
+          }
+        }
+      }
+    },
+    "networks.ts.form.secret_note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The auth key travels to your Termoak server only, and is stored encrypted in the vault like a password."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave solo viaja a tu servidor de Termoak y se guarda cifrada en la bóveda, como una contraseña."
+          }
+        }
+      }
+    },
+    "networks.ts.form.tags": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tags"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Etiquetas"
+          }
+        }
+      }
+    },
+    "networks.ts.form.tags_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empty = the key's tags. Headscale only accepts the key's tags."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vacío = las etiquetas de la clave. Headscale solo acepta las de la clave."
+          }
+        }
+      }
+    },
+    "networks.ts.kind_option": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tailscale / Headscale"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tailscale / Headscale"
+          }
+        }
+      }
+    },
+    "networks.ts.login.open": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the login page"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir la página de inicio de sesión"
+          }
+        }
+      }
+    },
+    "networks.ts.login.text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in to the tailnet there; with Headscale an admin approves it with headscale auth register."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicia sesión en la tailnet allí; con Headscale, un administrador lo aprueba con headscale auth register."
+          }
+        }
+      }
+    },
+    "networks.ts.login.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log the server in"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicia sesión del servidor"
+          }
+        }
+      }
+    },
+    "networks.ts.login.use_only": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for an Editor to log the server in."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando a que un editor inicie la sesión del servidor."
+          }
+        }
+      }
+    },
+    "networks.ts.login.waiting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for the login…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando al inicio de sesión…"
+          }
+        }
+      }
+    },
+    "networks.ts.netd.needs_approval": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server's node is waiting for approval in the tailnet's admin console."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El nodo del servidor espera aprobación en la consola de la tailnet."
+          }
+        }
+      }
+    },
+    "networks.ts.netd.needs_login": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server must be logged in to the tailnet (see Private networks)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay que iniciar la sesión del servidor en la tailnet (mira Redes privadas)."
+          }
+        }
+      }
+    },
+    "networks.ts.peers.add": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir host"
+          }
+        }
+      }
+    },
+    "networks.ts.peers.add_all %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%#@n@"
+          },
+          "substitutions": {
+            "n": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "Add %arg host"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "Add %arg hosts"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%#@n@"
+          },
+          "substitutions": {
+            "n": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "Añadir %arg host"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "Añadir %arg hosts"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "networks.ts.peers.add_all_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Devices that are not hosts yet (port 22; add the user and key later)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispositivos que aún no son hosts (puerto 22; el usuario y la clave, después)."
+          }
+        }
+      }
+    },
+    "networks.ts.peers.add_failed %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” could not be added: %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ha podido añadir «%1$@»: %2$@"
+          }
+        }
+      }
+    },
+    "networks.ts.peers.added_all %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%#@n@"
+          },
+          "substitutions": {
+            "n": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg host added: it connects through the network"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg hosts added: they connect through the network"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%#@n@"
+          },
+          "substitutions": {
+            "n": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg host añadido: se conecta por la red"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg hosts añadidos: se conectan por la red"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "networks.ts.peers.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server's node sees no devices"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El nodo del servidor no ve ningún dispositivo"
+          }
+        }
+      }
+    },
+    "networks.ts.peers.empty_text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The tailnet's ACLs decide what it sees: allow its tags (e.g. tag:termoak) to reach your servers."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo que ve lo deciden las ACL de la tailnet: deja que sus etiquetas (p. ej. tag:termoak) lleguen a tus servidores."
+          }
+        }
+      }
+    },
+    "networks.ts.peers.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The tailnet's devices the server's node can see. Hosts use their MagicDNS name (port 22; add the user and key in the host)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los dispositivos de la tailnet que ve el nodo del servidor. Los hosts usan su nombre MagicDNS (puerto 22; el usuario y la clave, en el host)."
+          }
+        }
+      }
+    },
+    "networks.ts.peers.imported %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Added: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadido: %@"
+          }
+        }
+      }
+    },
+    "networks.ts.peers.needs_login": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log the server in first"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicia primero la sesión del servidor"
+          }
+        }
+      }
+    },
+    "networks.ts.peers.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only devices the tailnet's ACLs let the server see are listed."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo aparecen los dispositivos que las ACL de la tailnet dejan ver al servidor."
+          }
+        }
+      }
+    },
+    "networks.ts.peers.offline": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offline"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desconectado"
+          }
+        }
+      }
+    },
+    "networks.ts.peers.routes %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "routes %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "enruta %@"
+          }
+        }
+      }
+    },
+    "networks.ts.state.approval": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for approval"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando aprobación"
+          }
+        }
+      }
+    },
+    "networks.ts.state.approval_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve the server's node in the tailnet's admin console (Machines)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aprueba el nodo del servidor en la consola de la tailnet (Machines)."
+          }
+        }
+      }
+    },
+    "networks.ts.state.approval_short": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aprobar"
+          }
+        }
+      }
+    },
+    "networks.ts.state.down_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comes up when a host needs it (or with Test)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se levanta cuando un host la necesita (o con Probar)."
+          }
+        }
+      }
+    },
+    "networks.ts.state.login": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log the server in"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicia sesión del servidor"
+          }
+        }
+      }
+    },
+    "networks.ts.state.login_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server's node must be logged in to the tailnet: an Editor opens the login page."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay que iniciar la sesión del nodo del servidor en la tailnet: un editor abre la página de inicio de sesión."
+          }
+        }
+      }
+    },
+    "networks.ts.state.login_short": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log in"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciar sesión"
+          }
+        }
+      }
+    },
+    "networks.ts.state.starting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connecting to the tailnet…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectando a la tailnet…"
+          }
+        }
+      }
+    },
+    "networks.ts.state.starting_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server's node is joining the tailnet (a few seconds)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El nodo del servidor está entrando en la tailnet (unos segundos)."
+          }
+        }
+      }
+    },
+    "networks.ts.state.up_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Running: the server's node is in the tailnet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En marcha: el nodo del servidor está en la tailnet."
+          }
+        }
+      }
+    },
+    "networks.ts.test.approval %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” is waiting for approval: approve %2$@ in the tailnet's admin console (Machines)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%1$@» espera aprobación: aprueba %2$@ en la consola de la tailnet (Machines)."
+          }
+        }
+      }
+    },
+    "networks.ts.test.error %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” could not join the tailnet: %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%1$@» no ha podido entrar en la tailnet: %2$@"
+          }
+        }
+      }
+    },
+    "networks.ts.test.login %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” needs a login: open the login page to log the server in."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%@» necesita iniciar sesión: abre la página de inicio de sesión para el servidor."
+          }
+        }
+      }
+    },
+    "networks.ts.test.ok %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” is connected: %2$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%1$@» está conectada: %2$@."
+          }
+        }
+      }
+    },
+    "networks.ts.test.starting %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” is still connecting to the tailnet. Look again in a moment."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%@» sigue conectando a la tailnet. Vuelve a mirar en un momento."
+          }
+        }
+      }
+    },
+    "networks.ts.test_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test brings the server's node into the tailnet and shows its state."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probar mete el nodo del servidor en la tailnet y muestra su estado."
+          }
+        }
+      }
+    },
+    "networks.ts.unsupported": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This server cannot join Tailscale networks."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este servidor no puede entrar en redes Tailscale."
+          }
+        }
+      }
+    },
+    "networks.ts.with_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "with an auth key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "con clave de autenticación"
+          }
+        }
+      }
+    },
+    "networks.ts.without_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no auth key (login from a link)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "sin clave (inicio de sesión desde un enlace)"
           }
         }
       }

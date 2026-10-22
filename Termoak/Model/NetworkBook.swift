@@ -20,6 +20,12 @@ struct NetworksAPI {
         return Networks.supported(infoJson: json)
     }
 
+    /// The kinds of network the account's server joins (`features.network_kinds`; empty without networks).
+    func kinds() async throws -> [String] {
+        let json = try await call(.get, "/info")
+        return Networks.kinds(infoJson: json)
+    }
+
     /// The networks of every vault you can see.
     func list() async throws -> [NetworkItem] {
         let json = try await call(.get, "/networks")
@@ -55,18 +61,47 @@ struct NetworksAPI {
     func down(_ id: String) async throws { _ = try await call(.post, "/networks/\(id)/down", "{}") }
 
     /// Test: brings it up, then asks its state about once a second for a few
-    /// seconds until the WireGuard handshake appears.
+    /// seconds until the WireGuard handshake appears. A Tailscale node: while
+    /// it is starting, about 30 s (`up` already waited 10 s).
     func test(_ id: String, kind: String, onStatus: @MainActor (NetStatus) -> Void) async throws -> NetStatus {
         var st = try await up(id)
         await onStatus(st)
         var polls = 0
-        while polls < Networks.testPolls, [.waiting, .starting].contains(Networks.state(st, kind: kind)) {
+        let tailnet = kind == Networks.tailscale
+        let pending: [NetState] = tailnet ? [.starting] : [.waiting, .starting]
+        while polls < (tailnet ? Networks.tsTestPolls : Networks.testPolls), pending.contains(Networks.state(st, kind: kind)) {
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             st = await status(id) ?? st
             await onStatus(st)
             polls += 1
         }
         return st
+    }
+
+    /// A login or an approval of a Tailscale node: its state every 2 s until
+    /// it is no longer waiting (up, an error, or `down` when the network went
+    /// idle meanwhile: Test brings it back up already logged in), 5 minutes
+    /// at most. Returns the last state (`nil`: never read). Cancelled with
+    /// its task (the screen closes).
+    func watchLogin(_ id: String, onStatus: @MainActor (NetStatus) -> Void) async -> NetStatus? {
+        var last: NetStatus?
+        var waited = 0
+        while waited < Networks.loginWaitSeconds, !Task.isCancelled {
+            try? await Task.sleep(nanoseconds: UInt64(Networks.loginPollSeconds) * 1_000_000_000)
+            waited += Networks.loginPollSeconds
+            if Task.isCancelled { break }
+            guard let st = await status(id) else { continue }
+            last = st
+            await onStatus(st)
+            if st.state != "needs_auth" && st.state != "starting" { break }
+        }
+        return last
+    }
+
+    /// The hosts of a vault (to mark the devices already added); empty when they can't be read.
+    func hosts(vaultId: String?) async -> [HostRef] {
+        guard let json = try? await call(.get, "/hosts" + (vaultId.map { "?vault_id=\($0)" } ?? "")) else { return [] }
+        return Networks.hostRefs(json)
     }
 
     /// Devices of the network (it brings it up; Editors).
@@ -114,6 +149,8 @@ final class NetworkBook: ObservableObject {
     static let shared = NetworkBook()
 
     @Published private(set) var supported: [String: Bool] = [:]
+    /// Account → the kinds of network its server joins (`features.network_kinds`).
+    @Published private(set) var kinds: [String: [String]] = [:]
     @Published private(set) var statuses: [String: NetStatus] = [:]
     @Published private(set) var unknown: Set<String> = []
     @Published private(set) var tests: [String: HostTest] = [:]
@@ -135,14 +172,32 @@ final class NetworkBook: ObservableObject {
 
     var anySupported: Bool { supported.values.contains(true) }
 
+    /// Whether the account's server joins networks of `kind` (Tailscale only when `/info` lists it).
+    func kindSupported(_ accountId: String?, _ kind: String) -> Bool {
+        guard let accountId else { return false }
+        return kinds[accountId]?.contains(kind) == true
+    }
+
+    /// The kinds the account's server joins (empty: none, or not read yet).
+    func kinds(of accountId: String?) -> [String] { accountId.flatMap { kinds[$0] } ?? [] }
+
     /// Reads `/api/v1/info` of the account's server again; keeps the last answer when it fails.
     func refreshFeatures(_ accountId: String, core: TermoakCore) async {
         guard let handle = try? core.account(accountId: accountId),
-              let on = try? await NetworksAPI(handle: handle).supported() else { return }
-        supported[accountId] = on
+              let list = try? await NetworksAPI(handle: handle).kinds() else { return }
+        setKinds(accountId, list)
     }
 
-    func forget(_ accountId: String) { supported[accountId] = nil }
+    /// What `/info` said: networks, and of which kinds (none: no networks).
+    func setKinds(_ accountId: String, _ list: [String]) {
+        supported[accountId] = !list.isEmpty
+        kinds[accountId] = list
+    }
+
+    func forget(_ accountId: String) {
+        supported[accountId] = nil
+        kinds[accountId] = nil
+    }
 
     func api(_ accountId: String?, core: TermoakCore) -> NetworksAPI? {
         guard let accountId, let handle = try? core.account(accountId: accountId) else { return nil }
@@ -235,16 +290,30 @@ final class NetworkBook: ObservableObject {
 // MARK: Texts
 
 extension NetState {
-    /// `short`: for lists ("Waiting").
-    func label(short: Bool = false) -> String {
+    /// `short`: for lists ("Waiting"); a tailnet ([kind]) says "Connecting to the tailnet…" while it starts.
+    func label(short: Bool = false, kind: String? = nil) -> String {
         switch self {
         case .down: return String(localized: "networks.state.down")
+        case .starting where kind == Networks.tailscale: return String(localized: "networks.ts.state.starting")
         case .starting: return String(localized: "networks.state.starting")
         case .waiting: return short ? String(localized: "networks.state.waiting_short") : String(localized: "networks.state.waiting")
         case .up: return String(localized: "networks.state.up")
         case .needsAuth: return short ? String(localized: "networks.state.needs_auth_short") : String(localized: "networks.state.needs_auth")
+        case .needsLogin: return short ? String(localized: "networks.ts.state.login_short") : String(localized: "networks.ts.state.login")
+        case .needsApproval: return short ? String(localized: "networks.ts.state.approval_short") : String(localized: "networks.ts.state.approval")
         case .error: return String(localized: "networks.state.error")
         case .unknown: return String(localized: "networks.state.unknown")
+        }
+    }
+
+    /// The explanation for a network of `kind` (a tailnet has no "other side" that answers).
+    func hint(kind: String) -> String {
+        guard kind == Networks.tailscale else { return hint }
+        switch self {
+        case .down: return String(localized: "networks.ts.state.down_hint")
+        case .starting: return String(localized: "networks.ts.state.starting_hint")
+        case .up: return String(localized: "networks.ts.state.up_hint")
+        default: return hint
         }
     }
 
@@ -255,6 +324,8 @@ extension NetState {
         case .waiting: return String(localized: "networks.state.waiting_hint")
         case .up: return String(localized: "networks.state.up_hint")
         case .needsAuth: return String(localized: "networks.state.needs_auth_hint")
+        case .needsLogin: return String(localized: "networks.ts.state.login_hint")
+        case .needsApproval: return String(localized: "networks.ts.state.approval_hint")
         case .error: return String(localized: "networks.state.error_hint")
         case .unknown: return String(localized: "networks.state.unknown_hint")
         }
@@ -283,8 +354,63 @@ extension NetworkMessage {
         case .keyExists: return String(localized: "error.key_exists")
         case .notWireguard: return String(localized: "error.not_wireguard")
         case .notInNetwork: return String(localized: "error.not_in_network")
+        case .tailnet(let t): return t.text
         }
     }
+}
+
+extension TailnetMessage {
+    var text: String {
+        switch self {
+        case .login(let name?): return String(localized: "networks.ts.error.login \(name)")
+        case .login(nil): return String(localized: "networks.ts.netd.needs_login")
+        case .approval(let name?): return String(localized: "networks.ts.error.approval \(name)")
+        case .approval(nil): return String(localized: "networks.ts.netd.needs_approval")
+        case .networkError(let name, let reason): return String(localized: "networks.ts.error.network_error \(name) \(reason)")
+        case .timeout: return String(localized: "networks.ts.error.timeout")
+        case .limit: return String(localized: "networks.ts.error.limit")
+        case .dial(let text, let acl): return acl ? text + " " + String(localized: "networks.ts.error.acl_hint") : text
+        case .unsupported: return String(localized: "networks.ts.unsupported")
+        }
+    }
+}
+
+extension TsProblem {
+    var text: String {
+        switch self {
+        case .controlUrlMissing: return String(localized: "networks.ts.error.control_url_missing")
+        case .controlUrl: return String(localized: "networks.ts.error.control_url")
+        case .hostname: return String(localized: "networks.ts.error.hostname")
+        case .tags: return String(localized: "networks.ts.error.tags")
+        case .tagsMax: return String(localized: "networks.ts.error.tags_max \(Networks.maxTags)")
+        case .authKey: return String(localized: "networks.ts.error.auth_key")
+        case .keyMissing: return String(localized: "networks.ts.error.key_missing")
+        }
+    }
+}
+
+/// "100.64.0.3 · 4 devices" (`connected`: "Connected · …").
+func tailnetSummaryText(_ s: NetStatus, connected: Bool = true) -> String {
+    let summary = Networks.tailnetSummary(s) { String(localized: "networks.ts.devices \($0)") }
+    return connected ? String(localized: "networks.ts.connected \(summary)") : summary
+}
+
+/// Text of an error on a network's screens (Test, devices): a tailnet's in words, otherwise as everywhere.
+func networkErrorText(_ error: Error, network: NetworkItem) -> String {
+    if network.isTailscale, let info = (error as? TermoakError)?.apiError,
+       let t = Networks.tailscaleError(code: info.code, detailsJson: info.detailsJson, message: info.message, name: network.name) {
+        return t.text
+    }
+    return userMessage(error)
+}
+
+/// Text of an error saving a network: the server's own reason for a `400` (bad settings).
+func networkSaveErrorText(_ error: Error) -> String {
+    if let info = (error as? TermoakError)?.apiError, info.status == 400 {
+        let reason = info.message.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !reason.isEmpty { return String(localized: "networks.form.error_server \(reason)") }
+    }
+    return userMessage(error)
 }
 
 extension ConfError {
@@ -307,6 +433,8 @@ extension ConfError {
 
 /// Text of a failed host test: its `error_code`, else the server's text.
 func hostTestErrorText(_ t: HostTest) -> String {
+    // A tailnet says more: netd's English reason (the test carries no netd_code), in words.
+    if let m = Networks.hostTestTailnet(t) { return m.text }
     switch t.errorCode ?? "" {
     case "host_key_unknown": return String(localized: "networks.test.host_key_unknown")
     case "host_key_changed": return String(localized: "networks.test.host_key_changed")
