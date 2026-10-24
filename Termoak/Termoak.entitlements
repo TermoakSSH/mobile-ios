@@ -11,5 +11,13 @@
 		<string>applinks:termoak.com</string>
 		<string>applinks:next.termoak.com</string>
 	</array>
+	<!-- FIDO2 security keys (YubiKit): NFC tags (ISO 7816, the FIDO applet
+	     listed in Info.plist) and keys in the USB-C port (CryptoTokenKit). -->
+	<key>com.apple.developer.nfc.readersession.formats</key>
+	<array>
+		<string>TAG</string>
+	</array>
+	<key>com.apple.security.smartcard</key>
+	<true/>
 </dict>
 </plist>

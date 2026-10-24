@@ -443,7 +443,10 @@ func hostTestErrorText(_ t: HostTest) -> String {
     case "connect_failed": return String(localized: "networks.test.connect_failed")
     case "telnet_not_supported": return String(localized: "networks.test.telnet")
     case let code:
+        // Security keys: the server forwards the signature to your devices.
+        if code.hasPrefix("security_key_"), let c = SKCode.parse(code) { return securityKeyText(c) }
         if let m = Networks.message(code: code, detailsJson: nil) { return m.text }
+        if let e = t.error, let c = SKCode.ofMessage(e) { return securityKeyText(c) }
         if let e = t.error, !e.isEmpty { return e.prefix(1).uppercased() + e.dropFirst() }
         return String(localized: "networks.test.failed")
     }

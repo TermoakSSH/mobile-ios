@@ -209,7 +209,18 @@ struct QuickConnectView: View {
             case .snippet(let snippet):
                 if let terminal = sessions.current {
                     sessions.show(terminal.id)
-                    terminal.run(snippet.script)
+                    // With the terminal's host built-ins and the defaults (or the
+                    // values remembered); a snippet that still asks is only pasted.
+                    let core = terminal.core
+                    let vars = SnippetEngine.prompts(snippet.script, everyTargetHasHost: terminal.hostId != nil)
+                    let fields = SnippetVars.fields(vars, remembered: SnippetEngine.remembered(core, snippet: snippet, hostId: terminal.hostId))
+                    if case .success(let values) = SnippetVars.values(fields),
+                       let text = SnippetEngine.render(snippet.script, values: values, vars: vars,
+                                                       context: SnippetEngine.context(core, hostId: terminal.hostId, accountId: terminal.accountId)) {
+                        terminal.run(text)
+                    } else {
+                        terminal.paste(snippet.script)
+                    }
                 }
             case .command(let c): Self.run(c, sessions, settings)
             case .action(let i): if i < actions.count { actions[i].run() }

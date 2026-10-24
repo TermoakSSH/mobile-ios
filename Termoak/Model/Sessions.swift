@@ -1105,7 +1105,7 @@ final class LocalTerminal: TerminalSession {
             return
         }
         if let reason, !reason.isEmpty {
-            state = .closed(reason)
+            state = .closed(serverErrorText(reason))
         } else if let code {
             state = .closed(String(localized: "terminal.state.ended_code \(Int(code))"))
         } else {
@@ -1490,11 +1490,13 @@ final class ServerTerminal: TerminalSession {
 
     private func apply(_ st: ServerSessionState) {
         switch st {
-        case .connecting(let message): state = .connecting(message)
+        // "Touch your security key (X) on one of your devices…" in the app's language.
+        case .connecting(let message): state = .connecting(sessionMessageText(message))
         case .running: state = .connected
         case .hostOffline: state = .connecting(String(localized: "terminal.state.host_offline"))
         case .closed(let code, let reason):
-            state = .closed(reason ?? code.map { String(localized: "terminal.state.ended_code \(Int($0))") }
+            // The server's reasons are English text; a security key one is translated.
+            state = .closed(reason.map(serverErrorText) ?? code.map { String(localized: "terminal.state.ended_code \(Int($0))") }
                 ?? String(localized: "terminal.state.session_closed"))
         }
     }
@@ -1712,6 +1714,17 @@ final class Sessions: ObservableObject {
     /// A snippet (or anything) in every open terminal that can take it.
     /// Returns in how many it went.
     @discardableResult
+    /// The same, with each terminal's own text (a snippet rendered with its host's built-ins).
+    func sendToAll(_ text: (TerminalSession) -> String, run: Bool) -> Int {
+        var sent = 0
+        for s in open where !s.asleep {
+            let t = text(s)
+            let ok = run ? s.runHere(t) : s.pasteHere(t)
+            if ok { sent += 1 }
+        }
+        return sent
+    }
+
     func sendToAll(_ text: String, run: Bool) -> Int {
         var sent = 0
         for s in open where !s.asleep {

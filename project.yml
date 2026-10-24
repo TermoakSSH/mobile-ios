@@ -9,8 +9,9 @@ options:
   developmentLanguage: en
   # 2.39 reads the languages of the String Catalogs into knownRegions.
   minimumXcodeGenVersion: 2.39.0
+  # 16.0: YubiKit (yubikit-swift, security keys) needs iOS 16.
   deploymentTarget:
-    iOS: "15.0"
+    iOS: "16.0"
   createIntermediateGroups: true
 
 packages:
@@ -22,6 +23,13 @@ packages:
     # 1.20: `pressesBegan` is `open` (hardware keys, TerminalInput.swift),
     # the search API (⌘F) and `showStandardContextMenu` (secondary click).
     from: 1.20.0
+  YubiKit:
+    # FIDO2 security keys (0.7): Yubico's yubikit-swift (Apache-2.0), CTAP2
+    # over NFC, Lightning (YubiKey 5Ci) and USB-C (CryptoTokenKit), with
+    # credential management for resident keys. Needs Xcode 16.3+ (Swift
+    # tools 6.1) and iOS 16.
+    url: https://github.com/Yubico/yubikit-swift
+    exactVersion: 1.4.0
 
 settings:
   base:
@@ -55,9 +63,16 @@ targets:
           - CFBundleURLName: com.termoak.links
             CFBundleTypeRole: Viewer
             CFBundleURLSchemes: [termoak]
+        # Security keys by NFC: the FIDO applet (the entitlement
+        # com.apple.developer.nfc.readersession.formats = TAG is in
+        # Termoak/Termoak.entitlements; the prompt in InfoPlist.xcstrings).
+        com.apple.developer.nfc.readersession.iso7816.select-identifiers: [A0000006472F0001]
+        # A YubiKey 5Ci in the Lightning port (External Accessory).
+        UISupportedExternalAccessoryProtocols: [com.yubico.ylp]
     dependencies:
       - package: TermoakKit
       - package: SwiftTerm
+      - package: YubiKit
     # The Team ID and the entitlements (Associated Domains for Universal Links).
     configFiles:
       Debug: Signing.xcconfig
@@ -78,6 +93,8 @@ targets:
         INFOPLIST_KEY_NSLocalNetworkUsageDescription: "To connect over SSH to computers on your local network."
         # Exporting a private key asks for Face ID (Termoak/InfoPlist.xcstrings).
         INFOPLIST_KEY_NSFaceIDUsageDescription: "To unlock Termoak and to export a private key."
+        # Reading a security key by NFC (Termoak/InfoPlist.xcstrings).
+        INFOPLIST_KEY_NFCReaderUsageDescription: "To use your security key (YubiKey) by NFC to sign in to your servers."
         # The Rust library is static and carries no bitcode or Swift debug symbols.
         DEBUG_INFORMATION_FORMAT: dwarf
 
@@ -115,6 +132,8 @@ targets:
       - path: Termoak/Model/PaletteCommands.swift
       - path: Termoak/Model/AccountDeletion.swift
       - path: Termoak/Model/Networks.swift
+      - path: Termoak/Model/SecurityKeys.swift
+      - path: Termoak/Model/SnippetVars.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

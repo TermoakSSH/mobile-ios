@@ -34,6 +34,8 @@ final class ExecBatch: ObservableObject {
     @Published private(set) var prompts: [AuthPrompt] = []
 
     let command: String
+    /// Each host's own command (`SshHost.key` → a snippet rendered with its built-ins).
+    private let commands: [String: String]
     private let core: TermoakCore
     /// How many servers at once.
     private let limit = 4
@@ -45,9 +47,10 @@ final class ExecBatch: ObservableObject {
         items.filter { if case .done(let o) = $0.status { return o.succeeded } else { return false } }.count
     }
 
-    init(core: TermoakCore, command: String, hosts: [SshHost]) {
+    init(core: TermoakCore, command: String, hosts: [SshHost], commands: [String: String] = [:]) {
         self.core = core
         self.command = command
+        self.commands = commands
         items = hosts.map { Item(id: $0.key, name: $0.displayName, status: .waiting) }
         Task { await runAll(hosts) }
     }
@@ -80,7 +83,7 @@ final class ExecBatch: ObservableObject {
             let session = try await core.connect(hostId: host.id, auth: auth, accountId: host.accountId, keyChanged: auth)
             set(host.key, .running)
             defer { Task.detached { try? await session.disconnect() } }
-            let r = try await session.exec(command: command, timeoutSecs: timeout)
+            let r = try await session.exec(command: commands[host.key] ?? command, timeoutSecs: timeout)
             set(host.key, .done(ExecOutput(stdout: r.stdout, stderr: r.stderr, exitCode: r.exitCode, signal: r.exitSignal,
                                            timedOut: r.timedOut, truncated: r.truncated, durationMs: r.durationMs)))
         } catch {

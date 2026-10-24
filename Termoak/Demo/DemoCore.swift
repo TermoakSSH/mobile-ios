@@ -264,6 +264,23 @@ final class DemoCore: TermoakCore, @unchecked Sendable {
     override func getSnippet(id: String, accountId: String?) throws -> Snippet { try backend.snippet(id, accountId) }
     override func saveSnippet(snippet: Snippet) throws -> Snippet { backend.save(snippet) }
     override func deleteSnippet(id: String, accountId: String?) throws { backend.deleteSnippet(id, accountId) }
+    // Snippet variables (0.7): the demo hosts' built-ins, nothing remembered.
+    override func snippetContext(hostId: String, accountId: String?) throws -> SnippetContext {
+        let h = try backend.host(hostId, accountId)
+        return SnippetContext(host: h.address, label: h.label, user: h.settings.username ?? "root",
+                              port: UInt16(h.settings.port ?? 22), group: nil)
+    }
+    override func snippetValues(snippetId: String, hostId: String?) throws -> [String: String] { [:] }
+    override func rememberSnippetValues(snippetId: String, hostId: String?, script: String, values: [String: String]) throws {}
+    // Security keys need a real key: not in the demo.
+    override func createSecurityKey(label: String, options: SecurityKeyOptions, comment: String, syncMode: SyncMode?,
+                                    accountId: String?, vaultId: String?, handler: SecurityKeyHandler) async throws -> SshKey {
+        throw DemoMode.unavailable
+    }
+    override func importResidentSecurityKeys(applicationPrefix: String?, verifyRequired: Bool, device: String?, syncMode: SyncMode?,
+                                             accountId: String?, vaultId: String?, handler: SecurityKeyHandler) async throws -> [SshKey] {
+        throw DemoMode.unavailable
+    }
 
     override func listKeys(filter: ItemFilter?) throws -> [SshKey] { backend.keys(filter) }
     override func getKey(id: String, accountId: String?) throws -> SshKey { try backend.key(id, accountId) }

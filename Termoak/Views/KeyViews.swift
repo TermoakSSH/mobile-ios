@@ -13,6 +13,8 @@ struct KeyDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var label = ""
     @State private var comment = ""
+    /// The device a security key lives on (a label).
+    @State private var device = ""
     @State private var showingQR = false
     @State private var sharing = false
     @State private var installing = false
@@ -21,13 +23,18 @@ struct KeyDetailView: View {
     @State private var error: String?
 
     private var editable: Bool { !original.isUseOnly }
-    private var changed: Bool { label != original.label || comment != original.comment }
+    private var changed: Bool {
+        label != original.label || comment != original.comment || device != (original.securityKey?.device ?? "")
+    }
 
     var body: some View {
         NavigationView {
             Form {
                 nameSection
                 publicSection
+                if let info = original.securityKey {
+                    SecurityKeyDetailSection(key: original, info: info, device: $device, editable: editable) { notice = $0 }
+                }
                 actionsSection
                 if let error {
                     Section { Text(error).foregroundColor(Brand.red) }
@@ -46,6 +53,7 @@ struct KeyDetailView: View {
         .onAppear {
             label = original.label
             comment = original.comment
+            device = original.securityKey?.device ?? ""
         }
         .modifier(KeyDetailSheets(key: original, showingQR: $showingQR, sharing: $sharing, installing: $installing,
                                   exported: $exported, notice: $notice))
@@ -93,10 +101,16 @@ struct KeyDetailView: View {
             Button { showingQR = true } label: { Label("keychain.detail.qr", systemImage: "qrcode") }
             Button { installing = true } label: { Label("keychain.install.title", systemImage: "server.rack") }
             if editable && original.hasPrivateKey {
-                Button(action: exportPrivate) { Label("keychain.export.action", systemImage: "key.viewfinder") }
+                // A security key's file holds its key handle, not a private key.
+                Button(action: exportPrivate) {
+                    Label(LocalizedStringKey(original.securityKey != nil ? "keychain.sk.export_handle" : "keychain.export.action"),
+                          systemImage: "key.viewfinder")
+                }
             }
         } footer: {
-            if editable && original.hasPrivateKey { Text("keychain.export.footer") }
+            if editable && original.hasPrivateKey {
+                Text(LocalizedStringKey(original.securityKey != nil ? "keychain.sk.export_handle_footer" : "keychain.export.footer"))
+            }
         }
     }
 
@@ -112,6 +126,11 @@ struct KeyDetailView: View {
         var k = original
         k.label = label.trimmingCharacters(in: .whitespaces)
         k.comment = comment.trimmingCharacters(in: .whitespaces)
+        if var info = k.securityKey {
+            let d = device.trimmingCharacters(in: .whitespaces)
+            info.device = d.isEmpty ? nil : String(d.prefix(64))
+            k.securityKey = info
+        }
         do {
             _ = try model.core.saveKey(key: k, passphrase: .keep)
             account.sync()

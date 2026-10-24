@@ -33,7 +33,10 @@ struct SnippetSendView: View {
 
     @State private var target: SnippetTarget = .servers
     @State private var run = true
-    @State private var values: [String: String] = [:]
+    /// The variables to ask (for the targets chosen) and their fields.
+    @State private var vars: [SnipVar] = []
+    @State private var fields: [SnipField] = []
+    @State private var missing: String?
     @State private var hosts: [SshHost] = []
     @State private var groups: [HostGroup] = []
     @State private var chosenHosts: Set<String> = []
@@ -44,8 +47,6 @@ struct SnippetSendView: View {
     @State private var collect = false
     @State private var execBatch: ExecBatch?
     @State private var loaded = false
-
-    private var variables: [String] { snippetVariables(script: snippet.script) }
 
     var body: some View {
         NavigationView {
@@ -87,14 +88,11 @@ struct SnippetSendView: View {
             } header: {
                 Text("snippets.send.command")
             }
-            if !variables.isEmpty {
-                Section("snippets.send.variables") {
-                    ForEach(variables, id: \.self) { name in
-                        TextField(name, text: Binding(get: { values[name] ?? "" }, set: { values[name] = $0 }))
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                    }
-                }
+            if !fields.isEmpty {
+                SnippetFieldsSection(fields: $fields)
+            }
+            if let missing {
+                Text("snippets.run.missing_value \(missing)").foregroundColor(Brand.red)
             }
             Section {
                 Picker("snippets.send.mode", selection: $run) {
@@ -127,6 +125,29 @@ struct SnippetSendView: View {
             }
         }
         .searchable(text: $query, prompt: Text("hosts.search.prompt"))
+        .onChange(of: target) { _ in refreshFields() }
+        .onChange(of: chosenOpen) { _ in refreshFields() }
+    }
+
+    /// Every target has a host: its built-ins are filled (else they are asked).
+    private var everyTargetHasHost: Bool {
+        switch target {
+        case .servers: return true
+        case .openTerminals, .splitPanes:
+            return candidates.filter { chosenOpen.contains($0.id) }.allSatisfy { $0.hostId != nil }
+        }
+    }
+
+    /// The fields for the targets of now, keeping what was typed.
+    private func refreshFields() {
+        let typed = Dictionary(fields.map { ($0.variable.key, $0.value) }, uniquingKeysWith: { a, _ in a })
+        vars = SnippetEngine.prompts(snippet.script, everyTargetHasHost: everyTargetHasHost)
+        let remembered = SnippetEngine.remembered(model.core, snippet: snippet, hostId: nil)
+        fields = SnippetVars.fields(vars, remembered: remembered).map { f in
+            var f = f
+            if let t = typed[f.variable.key], !t.isEmpty { f.value = t }
+            return f
+        }
     }
 
     @ViewBuilder private var serverSections: some View {
@@ -298,27 +319,50 @@ struct SnippetSendView: View {
             chosenHosts = Set(initialHosts.map(\.key))
         }
         loaded = true
+        refreshFields()
     }
 
     private func send() {
-        let text = variables.isEmpty ? snippet.script
-            : ((try? renderSnippet(script: snippet.script, values: values)) ?? snippet.script)
+        let values: [String: String]
+        switch SnippetVars.values(fields) {
+        case .failure(let m):
+            missing = m.label
+            return
+        case .success(let v): values = v
+        }
+        missing = nil
+        // Values remembered on this device for the next time (never secrets).
+        SnippetEngine.remember(model.core, snippet: snippet, hostId: nil, values: values, vars: vars)
+        let core = model.core, script = snippet.script, vars = self.vars
+        // Each target with its own host's built-ins ({{host}}, {{user}}...).
+        func text(hostId: String?, accountId: String?) -> String {
+            SnippetEngine.render(script, values: values, vars: vars,
+                                 context: SnippetEngine.context(core, hostId: hostId, accountId: accountId)) ?? script
+        }
+        let fallback = text(hostId: nil, accountId: nil)
         switch target {
         case .servers:
             let chosen = hosts.filter { chosenHosts.contains($0.key) }
             guard !chosen.isEmpty else { return }
             if collect && run {
-                execBatch = ExecBatch(core: model.core, command: text, hosts: chosen)
+                let commands = Dictionary(chosen.map { ($0.key, text(hostId: $0.id, accountId: $0.accountId)) },
+                                          uniquingKeysWith: { a, _ in a })
+                execBatch = ExecBatch(core: model.core, command: fallback, hosts: chosen, commands: commands)
                 return
             }
-            batch = SnippetBatch(text: text, run: run, terminals: sessions.openInBackground(chosen))
+            let terminals = sessions.openInBackground(chosen)
+            batch = SnippetBatch(text: fallback, run: run, terminals: terminals, texts: texts(terminals, text))
         case .openTerminals, .splitPanes:
             let chosen = candidates.filter { chosenOpen.contains($0.id) && canTake($0) }
             guard !chosen.isEmpty else { return }
             // Sleeping tabs connect again and get it once connected.
             chosen.forEach { sessions.wake($0) }
-            batch = SnippetBatch(text: text, run: run, terminals: chosen)
+            batch = SnippetBatch(text: fallback, run: run, terminals: chosen, texts: texts(chosen, text))
         }
+    }
+
+    private func texts(_ terminals: [TerminalSession], _ text: (String?, String?) -> String) -> [UUID: String] {
+        Dictionary(terminals.map { ($0.id, text($0.hostId, $0.accountId)) }, uniquingKeysWith: { a, _ in a })
     }
 
     /// Closes and shows one terminal of the summary.

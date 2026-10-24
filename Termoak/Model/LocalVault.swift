@@ -22,6 +22,9 @@ final class LocalVault: ObservableObject {
                 .appendingPathComponent("Termoak", isDirectory: true)
             let key = try Keychain.vaultKey()
             let core = try TermoakCore(dataDir: dir.path, vaultKeyB64: key)
+            // Security keys (YubiKey...): before any events socket opens, so
+            // the sockets say this device can answer the server's requests.
+            core.setSecurityKeyHandler(handler: AppSecurityKeys.shared)
             #if DEBUG
             Self.seedTestHost(core)
             #endif

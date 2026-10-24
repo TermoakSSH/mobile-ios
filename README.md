@@ -1,7 +1,7 @@
 # Termoak for iOS
 
 The iOS app of [Termoak](https://termoak.com), the open-source SSH client
-with an optional self-hosted server. It is SwiftUI (iOS 15+) on top of the
+with an optional self-hosted server. It is SwiftUI (iOS 16+) on top of the
 same Rust engine as the desktop app and the CLI, through UniFFI, with
 [SwiftTerm](https://github.com/migueldeicaza/SwiftTerm) as the terminal
 emulator.
@@ -22,6 +22,14 @@ The same as the Android app:
 - **Live session sharing**: invite by email, team or link; one person types
   at a time, with a waiting room; join with `termoak://join` links.
 - **AI** with approvals, keychain, SFTP files, port forwarding and settings.
+- **FIDO2 security keys** (YubiKey and other FIDO2 keys) for SSH
+  (`sk-ssh-ed25519`, `sk-ecdsa-sha2-nistp256`) by NFC, in the Lightning
+  port (YubiKey 5Ci) or in the USB-C port, with Yubico's
+  [yubikit-swift](https://github.com/Yubico/yubikit-swift): new keys made on
+  the security key, resident keys loaded from it, `id_*_sk` files imported,
+  and the server's sessions confirmed on the phone. **Snippets with
+  variables**: `{{host}}`, `{{user}}`, `{{date}}`… filled per host,
+  `{{prompt:Branch|main}}`, `{{select:Env|dev|prod}}` and `{{secret:Token}}`.
 - **Hardware keyboard and trackpad** (iPad and iPhone): Ctrl, Option as Meta
   (or for your layout's characters), ⌘. as Esc, xterm arrows and function
   keys; app shortcuts listed when ⌘ is held (⌘T/⌘K, ⌘W, ⌘⇧]/⌘⇧[, Ctrl+Tab,

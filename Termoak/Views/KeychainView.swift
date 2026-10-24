@@ -8,6 +8,8 @@ struct KeychainView: View {
     @State private var keys: [SshKey] = []
     @State private var generating = false
     @State private var importing = false
+    @State private var creatingSk = false
+    @State private var loadingSk = false
     @State private var deleting: SshKey?
     @State private var showing: SshKey?
     @State private var installing: SshKey?
@@ -23,6 +25,11 @@ struct KeychainView: View {
                     Menu {
                         Button { generating = true } label: { Label("keychain.menu.generate", systemImage: "key") }
                         Button { importing = true } label: { Label("keychain.menu.import", systemImage: "square.and.arrow.down") }
+                        // FIDO2 security keys (YubiKey...): NFC, Lightning or USB-C.
+                        Section("keychain.sk.menu") {
+                            Button { creatingSk = true } label: { Label("keychain.sk.new", systemImage: "key.radiowaves.forward") }
+                            Button { loadingSk = true } label: { Label("keychain.sk.load", systemImage: "square.and.arrow.down.on.square") }
+                        }
                     } label: { Image(systemName: "plus") }
                 }
             }
@@ -73,11 +80,17 @@ struct KeychainView: View {
         VStack(alignment: .leading, spacing: 6) {
             Button { showing = k } label: {
                 HStack {
-                    Image(systemName: "key.fill").foregroundColor(.accentColor)
+                    Image(systemName: k.securityKey != nil ? "key.radiowaves.forward.fill" : "key.fill").foregroundColor(.accentColor)
                     VStack(alignment: .leading) {
                         Text(k.label).font(.headline).foregroundColor(.primary)
                         Text(k.hasPassphrase ? String(localized: "keychain.key.with_passphrase \(k.algorithm)") : k.algorithm)
                             .font(.caption).foregroundColor(.secondary)
+                        if let sk = k.securityKey {
+                            HStack(spacing: 4) {
+                                SecurityKeyBadge()
+                                if let d = sk.device, !d.isEmpty { Text(verbatim: d).font(.caption2).foregroundColor(.secondary).lineLimit(1) }
+                            }
+                        }
                     }
                     Spacer()
                     ItemPlaceBadge(accountId: k.accountId, vaultId: k.vaultId, useOnly: k.isUseOnly,
@@ -108,6 +121,8 @@ struct KeychainView: View {
         view
             .sheet(isPresented: $generating, onDismiss: load) { GenerateKeyView().environmentObject(model).environmentObject(account) }
             .sheet(isPresented: $importing, onDismiss: load) { ImportKeyView().environmentObject(model).environmentObject(account) }
+            .sheet(isPresented: $creatingSk, onDismiss: load) { NewSecurityKeyView().environmentObject(model).environmentObject(account) }
+            .sheet(isPresented: $loadingSk, onDismiss: load) { LoadResidentKeysView().environmentObject(model).environmentObject(account) }
             .sheet(item: Binding(get: { showing.map(KeyItem.init) }, set: { showing = $0?.key }), onDismiss: load) { e in
                 KeyDetailView(original: e.key).environmentObject(model).environmentObject(account)
             }
@@ -320,6 +335,14 @@ struct ImportKeyView: View {
             if d.encrypted {
                 Label("keychain.import.encrypted", systemImage: "lock.fill").font(.footnote).foregroundColor(Brand.amber)
             }
+            // An id_*_sk file: its key handle (the key itself stays in the security key).
+            if let sk = d.securityKey {
+                HStack {
+                    SecurityKeyBadge()
+                    Text(verbatim: sk.application).font(.footnote).foregroundColor(.secondary)
+                }
+                Text("keychain.sk.import_note").font(.footnote).foregroundColor(.secondary)
+            }
         }
     }
 
@@ -510,7 +533,9 @@ private struct SnippetEditor: View {
                         .frame(minHeight: 120)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                } header: { Text("snippets.editor.command") } footer: { Text("snippets.editor.variables") }
+                } header: { Text("snippets.editor.command") } footer: { Text("snippets.editor.variables_hint") }
+                // Its variables and the malformed ones, as it is typed (the core's parser).
+                SnippetTemplateSection(script: script)
                 TextField("snippets.editor.description", text: $summary)
                 Section {
                     TextField("snippets.editor.tags", text: $tags)
@@ -527,6 +552,11 @@ private struct SnippetEditor: View {
                 ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.save") {
+                        // Broken variables are refused (the server refuses them too: invalid_snippet).
+                        guard parseSnippet(script: script).issues.isEmpty else {
+                            error = String(localized: "snippets.issue.fix_first")
+                            return
+                        }
                         var sn = original
                         sn.name = name.trimmingCharacters(in: .whitespaces)
                         sn.script = script
@@ -546,7 +576,8 @@ private struct SnippetEditor: View {
                             self.error = userMessage(error)
                         }
                     }
-                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || script.isEmpty)
+                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || script.isEmpty
+                              || !parseSnippet(script: script).issues.isEmpty)
                 }
             }
         }

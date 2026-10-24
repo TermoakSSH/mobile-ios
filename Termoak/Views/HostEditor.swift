@@ -708,7 +708,14 @@ struct HostEditor: View {
                 }
             }
         } footer: {
-            Text("host_editor.startup_snippet.footer")
+            VStack(alignment: .leading, spacing: 4) {
+                Text("host_editor.startup_snippet.footer")
+                // At login only built-ins and defaults are filled in (startup snippets can't ask).
+                if let sn = snippets.first(where: { $0.id == startupSnippetId }),
+                   SnippetVars.startupAsks(SnippetEngine.prompts(sn.script, everyTargetHasHost: true)) {
+                    Text("host_editor.startup_snippet_asks").foregroundColor(Brand.amber)
+                }
+            }
         }
 
         Section {

@@ -109,6 +109,8 @@ struct ItemPlace: Hashable, Identifiable {
 func userMessage(_ error: Error) -> String {
     // Private networks (0.7): by the error's code and details (`apiError`).
     if let text = networkErrorText(error) { return text }
+    // FIDO2 security keys (0.7): by the code (`apiError`) or the engine's text.
+    if let text = securityKeyErrorText(error) { return text }
     guard let e = error as? TermoakError else { return errorMessage(error) }
     switch e {
     case .VaultReadOnly: return String(localized: "error.vault_read_only")

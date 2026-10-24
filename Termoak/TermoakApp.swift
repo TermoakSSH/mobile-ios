@@ -288,6 +288,9 @@ private struct Root: View {
             }
             .onChange(of: phase) { newPhase in
                 BackgroundNotices.shared.inBackground = newPhase == .background
+                // A server's security key request is only taken in front (NFC
+                // and the sheet need it; the NFC sheet itself makes the app inactive).
+                AppSecurityKeys.shared.setActive(newPhase != .background)
                 switch newPhase {
                 case .background:
                     model.sessions.enterBackground()

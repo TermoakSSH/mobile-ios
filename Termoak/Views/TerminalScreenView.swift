@@ -164,9 +164,12 @@ private struct TerminalContent: View {
             TunnelsView(host: e.host).environmentObject(model)
         }
         .sheet(item: $filling) { e in
-            SnippetVariablesForm(snippet: e.snippet, run: e.action.run) { text in
-                use(text, e.action)
+            SnippetRunForm(snippet: e.snippet, run: e.action.run,
+                           hostId: e.action.everywhere ? nil : session.hostId, accountId: session.accountId,
+                           everyTargetHasHost: e.action.everywhere ? sessions.open.allSatisfy { $0.hostId != nil } : session.hostId != nil) { values, vars in
+                useSnippet(e.snippet, e.action, values: values, vars: vars)
             }
+            .environmentObject(model)
         }
         .sheet(isPresented: $quickConnect) {
             QuickConnectView { host, strict in
@@ -245,16 +248,22 @@ private struct TerminalContent: View {
         return !covered.contains(true)
     }
 
-    /// A snippet from the quick panel: here (and in the panes while
-    /// broadcasting) or in every open terminal.
-    private func use(_ text: String, _ action: SnippetAction) {
+    /// A snippet from the quick panel with its values: here (and in the
+    /// panes while broadcasting) or in every open terminal, each one with its
+    /// own host's built-ins (`{{host}}`, `{{user}}`...).
+    private func useSnippet(_ sn: Snippet, _ action: SnippetAction, values: [String: String], vars: [SnipVar]) {
+        let core = model.core
+        func text(_ s: TerminalSession) -> String {
+            SnippetEngine.render(sn.script, values: values, vars: vars,
+                                 context: SnippetEngine.context(core, hostId: s.hostId, accountId: s.accountId)) ?? sn.script
+        }
         if action.everywhere {
             let n = sessions.sendToAll(text, run: action.run)
             session.showFlash(String(localized: "snippets.sent_to_open \(n)"))
         } else if action.run {
-            session.run(text)
+            session.run(text(session))
         } else {
-            session.paste(text)
+            session.paste(text(session))
         }
     }
 
@@ -356,7 +365,7 @@ private struct TerminalContent: View {
             },
             onCustomize: { customizing = true },
             onFill: { sn, action in filling = SnippetChoice(snippet: sn, action: action) },
-            onSendAll: { text, run in use(text, SnippetAction(run: run, everywhere: true)) }
+            onUse: { sn, action in useSnippet(sn, action, values: [:], vars: []) }
         )
         .id(session.id)
     }
@@ -820,38 +829,6 @@ struct SwiftTermView: UIViewRepresentable {
 
     func updateUIView(_ uiView: TerminalViewport, context: Context) {
         uiView.onTap = onTap
-    }
-}
-
-/// Values for a snippet's variables (`{{name}}`) before using it.
-private struct SnippetVariablesForm: View {
-    let snippet: Snippet
-    let run: Bool
-    let use: (String) -> Void
-    @Environment(\.dismiss) private var dismiss
-    @State private var values: [String: String] = [:]
-
-    var body: some View {
-        NavigationView {
-            Form {
-                ForEach(snippetVariables(script: snippet.script), id: \.self) { name in
-                    TextField(name, text: Binding(get: { values[name] ?? "" }, set: { values[name] = $0 }))
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                }
-            }
-            .navigationTitle(snippet.name)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(run ? String(localized: "common.run") : String(localized: "common.paste")) {
-                        use((try? renderSnippet(script: snippet.script, values: values)) ?? snippet.script)
-                        dismiss()
-                    }
-                }
-            }
-        }
     }
 }
 

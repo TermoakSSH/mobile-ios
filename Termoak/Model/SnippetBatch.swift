@@ -31,6 +31,8 @@ final class SnippetBatch: ObservableObject {
     @Published private(set) var items: [Item] = []
     let run: Bool
     private let text: String
+    /// Each terminal's own text (a snippet rendered with its host's built-ins).
+    private let texts: [UUID: String]
     private var watching: [UUID: AnyCancellable] = [:]
 
     var sentCount: Int { items.filter { $0.status == .sent }.count }
@@ -38,8 +40,9 @@ final class SnippetBatch: ObservableObject {
     /// Some terminal waits for a password or a fingerprint.
     var needsYou: Bool { items.contains { $0.status == .waitingForYou } }
 
-    init(text: String, run: Bool, terminals: [TerminalSession]) {
+    init(text: String, run: Bool, terminals: [TerminalSession], texts: [UUID: String] = [:]) {
         self.text = text
+        self.texts = texts
         self.run = run
         items = terminals.map { Item(id: $0.id, name: $0.displayTitle, status: .connecting) }
         for t in terminals { start(t) }
@@ -83,7 +86,8 @@ final class SnippetBatch: ObservableObject {
     }
 
     private func deliver(to t: TerminalSession) {
-        let ok = run ? t.runHere(text) : t.pasteHere(text)
+        let body = texts[t.id] ?? text
+        let ok = run ? t.runHere(body) : t.pasteHere(body)
         if ok {
             set(t.id, .sent)
         } else if !t.canWrite {

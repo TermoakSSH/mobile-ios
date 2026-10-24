@@ -9053,6 +9053,22 @@
         }
       }
     },
+    "host_editor.startup_snippet_asks": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This snippet asks for values. At login only {{host}}, {{user}}, {{date}}… and default values are filled in; other variables are typed as written."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este snippet pide valores. Al entrar solo se rellenan {{host}}, {{user}}, {{date}}… y los valores por defecto; las demás variables se escriben tal cual."
+          }
+        }
+      }
+    },
     "host_editor.tags": {
       "localizations": {
         "en": {
@@ -13785,6 +13801,830 @@
           "stringUnit": {
             "state": "translated",
             "value": "Clave pública copiada. Pégala en ~/.ssh/authorized_keys del servidor."
+          }
+        }
+      }
+    },
+    "keychain.sk.advanced": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Advanced"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avanzado"
+          }
+        }
+      }
+    },
+    "keychain.sk.application": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Application"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicación"
+          }
+        }
+      }
+    },
+    "keychain.sk.application_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts with ssh: (default ssh:). Use another one, such as ssh:work, to keep several resident keys apart."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empieza por ssh: (por defecto ssh:). Usa otra, como ssh:trabajo, para separar varias claves residentes."
+          }
+        }
+      }
+    },
+    "keychain.sk.application_invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The application must start with ssh: (at most 128 characters)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La aplicación tiene que empezar por ssh: (como mucho 128 caracteres)"
+          }
+        }
+      }
+    },
+    "keychain.sk.authorized_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add it to ~/.ssh/authorized_keys on the server (OpenSSH 8.2 or later). The options at the start are the ones this key's flags need."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añádela a ~/.ssh/authorized_keys en el servidor (OpenSSH 8.2 o posterior). Las opciones del principio son las que necesitan los indicadores de esta clave."
+          }
+        }
+      }
+    },
+    "keychain.sk.authorized_keys": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "authorized_keys line"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Línea de authorized_keys"
+          }
+        }
+      }
+    },
+    "keychain.sk.badge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Security key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Llave de seguridad"
+          }
+        }
+      }
+    },
+    "keychain.sk.copy_line": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy the line"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar la línea"
+          }
+        }
+      }
+    },
+    "keychain.sk.create": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear"
+          }
+        }
+      }
+    },
+    "keychain.sk.device_label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device name"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre del dispositivo"
+          }
+        }
+      }
+    },
+    "keychain.sk.device_placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The name of the security key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El nombre de la llave de seguridad"
+          }
+        }
+      }
+    },
+    "keychain.sk.export_handle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export the key handle (id_*_sk)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportar el identificador (id_*_sk)"
+          }
+        }
+      }
+    },
+    "keychain.sk.export_handle_footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key handle file only works together with the security key (and its PIN, if it asks for one)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El archivo del identificador solo funciona junto con la llave de seguridad (y su PIN, si lo pide)."
+          }
+        }
+      }
+    },
+    "keychain.sk.failed %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not create the key: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo crear la clave: %@"
+          }
+        }
+      }
+    },
+    "keychain.sk.handle_note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The private key never leaves the security key. Termoak keeps its key handle (the id_*_sk file), which only works together with the device (and its PIN, if it asks for one). Server sessions with it are confirmed on your phone or computer."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave privada nunca sale de la llave de seguridad. Termoak guarda su identificador (el archivo id_*_sk), que solo funciona junto con el dispositivo (y su PIN, si lo pide). Las sesiones del servidor con ella se confirman en tu móvil o tu equipo."
+          }
+        }
+      }
+    },
+    "keychain.sk.import_note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A security key file: it holds the key handle, which only works with the security key itself."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un archivo de llave de seguridad: guarda el identificador, que solo funciona con la propia llave."
+          }
+        }
+      }
+    },
+    "keychain.sk.line_copied": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "authorized_keys line copied"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Línea de authorized_keys copiada"
+          }
+        }
+      }
+    },
+    "keychain.sk.load": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Load from security key…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cargar desde la llave de seguridad…"
+          }
+        }
+      }
+    },
+    "keychain.sk.load_action": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Load"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cargar"
+          }
+        }
+      }
+    },
+    "keychain.sk.load_failed %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not load the keys: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudieron cargar las claves: %@"
+          }
+        }
+      }
+    },
+    "keychain.sk.load_intro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termoak reads the keys stored on the security key (resident keys: made with “Store it on the security key” or ssh-keygen -O resident) and adds the ones that are not here yet. The key asks for its PIN."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termoak lee las claves guardadas en la llave de seguridad (claves residentes: creadas con «Guardarla en la llave de seguridad» o ssh-keygen -O resident) y añade las que aún no están aquí. La llave pide su PIN."
+          }
+        }
+      }
+    },
+    "keychain.sk.load_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Load keys from a security key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cargar claves desde una llave de seguridad"
+          }
+        }
+      }
+    },
+    "keychain.sk.load_verify": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "They ask for the PIN every time (verify-required)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Piden el PIN cada vez (verify-required)"
+          }
+        }
+      }
+    },
+    "keychain.sk.load_verify_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The security key does not say it: mark it if they were created that way."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La llave no lo dice: márcalo si se crearon así."
+          }
+        }
+      }
+    },
+    "keychain.sk.loaded %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld key loaded from the security key"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld keys loaded from the security key"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld clave cargada desde la llave de seguridad"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld claves cargadas desde la llave de seguridad"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "keychain.sk.loaded_none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No new keys: the security key has none stored, or they are already here"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay claves nuevas: la llave no tiene ninguna guardada o ya están aquí"
+          }
+        }
+      }
+    },
+    "keychain.sk.menu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Security key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Llave de seguridad"
+          }
+        }
+      }
+    },
+    "keychain.sk.name_placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "YubiKey (work)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "YubiKey (trabajo)"
+          }
+        }
+      }
+    },
+    "keychain.sk.new": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New security key…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nueva llave de seguridad…"
+          }
+        }
+      }
+    },
+    "keychain.sk.new_intro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key is generated inside your security key (YubiKey, SoloKey, Nitrokey…) and never leaves it. You will touch the key to create it, and every time you connect."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave se genera dentro de tu llave de seguridad (YubiKey, SoloKey, Nitrokey…) y nunca sale de ella. Tocarás la llave para crearla y cada vez que te conectes."
+          }
+        }
+      }
+    },
+    "keychain.sk.new_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New key on a security key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nueva clave en una llave de seguridad"
+          }
+        }
+      }
+    },
+    "keychain.sk.no_touch_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server must allow it: no-touch-required in the key's authorized_keys line."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servidor tiene que permitirlo: no-touch-required en la línea de authorized_keys de la clave."
+          }
+        }
+      }
+    },
+    "keychain.sk.no_touch_label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign without touching the key (no-touch-required)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmar sin tocar la llave (no-touch-required)"
+          }
+        }
+      }
+    },
+    "keychain.sk.no_touch_warning": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This key signs without a touch: while it is connected, anyone using this device can log in with it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta clave firma sin tocarla: mientras esté conectada, cualquiera que use este dispositivo puede entrar con ella."
+          }
+        }
+      }
+    },
+    "keychain.sk.pin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN"
+          }
+        }
+      }
+    },
+    "keychain.sk.pin_not_required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not required to sign"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No necesario para firmar"
+          }
+        }
+      }
+    },
+    "keychain.sk.pin_required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Required to sign (verify-required)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Necesario para firmar (verify-required)"
+          }
+        }
+      }
+    },
+    "keychain.sk.resident": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stored on the key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardada en la llave"
+          }
+        }
+      }
+    },
+    "keychain.sk.resident_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can load it on another device with “Load from security key”. The key needs a PIN."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Podrás cargarla en otro dispositivo con «Cargar desde la llave de seguridad». La llave necesita un PIN."
+          }
+        }
+      }
+    },
+    "keychain.sk.resident_label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Store it on the security key (resident)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardarla en la llave de seguridad (residente)"
+          }
+        }
+      }
+    },
+    "keychain.sk.resident_yes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sí"
+          }
+        }
+      }
+    },
+    "keychain.sk.touch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touch"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toque"
+          }
+        }
+      }
+    },
+    "keychain.sk.touch_not_required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not required (no-touch-required)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No necesario (no-touch-required)"
+          }
+        }
+      }
+    },
+    "keychain.sk.touch_required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Required to sign"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Necesario para firmar"
+          }
+        }
+      }
+    },
+    "keychain.sk.type_ecdsa": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ECDSA P-256 (older keys and servers)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ECDSA P-256 (llaves y servidores antiguos)"
+          }
+        }
+      }
+    },
+    "keychain.sk.type_ed25519": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ed25519 (recommended)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ed25519 (recomendado)"
+          }
+        }
+      }
+    },
+    "keychain.sk.user_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resident keys with the same application and user replace each other (default openssh)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las claves residentes con la misma aplicación y usuario se sustituyen entre sí (por defecto openssh)."
+          }
+        }
+      }
+    },
+    "keychain.sk.user_label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "User on the key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usuario en la llave"
+          }
+        }
+      }
+    },
+    "keychain.sk.user_too_long": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The user has at most 32 bytes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El usuario tiene como mucho 32 bytes"
+          }
+        }
+      }
+    },
+    "keychain.sk.verify_label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask for the PIN every time (verify-required)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pedir el PIN cada vez (verify-required)"
           }
         }
       }
@@ -21160,6 +22000,702 @@
         }
       }
     },
+    "security_keys.error.cancelled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The security key request was cancelled."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se canceló la petición de la llave de seguridad."
+          }
+        }
+      }
+    },
+    "security_keys.error.failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The security key failed."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Falló la llave de seguridad."
+          }
+        }
+      }
+    },
+    "security_keys.error.invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The security key's data is not valid."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los datos de la llave de seguridad no son válidos."
+          }
+        }
+      }
+    },
+    "security_keys.error.no_device": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No security key is available: connect it to this iPhone, or open Termoak (signed in) on the phone or computer that has it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay ninguna llave de seguridad disponible: conéctala a este iPhone o abre Termoak (con la sesión iniciada) en el móvil o el equipo que la tenga."
+          }
+        }
+      }
+    },
+    "security_keys.error.not_found": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This security key does not have that key (another key connected, or was it deleted from the key?)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta llave de seguridad no tiene esa clave (¿hay otra llave conectada o se borró de la llave?)."
+          }
+        }
+      }
+    },
+    "security_keys.error.pin_invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wrong PIN for the security key."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN incorrecto para la llave de seguridad."
+          }
+        }
+      }
+    },
+    "security_keys.error.pin_required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The security key needs its PIN."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La llave de seguridad necesita su PIN."
+          }
+        }
+      }
+    },
+    "security_keys.error.required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This key is a security key and nothing here can ask for it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta clave es una llave de seguridad y aquí nada puede pedirla."
+          }
+        }
+      }
+    },
+    "security_keys.error.timeout": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The security key was not touched in time."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se tocó la llave de seguridad a tiempo."
+          }
+        }
+      }
+    },
+    "security_keys.error.unsupported": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The security key or this device cannot do that."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La llave de seguridad o este dispositivo no pueden hacer eso."
+          }
+        }
+      }
+    },
+    "security_keys.error.wrong_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The security key's signature does not match this key (another device answered)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La firma de la llave de seguridad no corresponde a esta clave (respondió otro dispositivo)."
+          }
+        }
+      }
+    },
+    "security_keys.nfc.done": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo"
+          }
+        }
+      }
+    },
+    "security_keys.nfc.hold": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold your security key near the top of the iPhone."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acerca tu llave de seguridad a la parte superior del iPhone."
+          }
+        }
+      }
+    },
+    "security_keys.purpose.connect": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connecting from this iPhone"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conexión desde este iPhone"
+          }
+        }
+      }
+    },
+    "security_keys.purpose.create": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creating a new key on it"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear una clave nueva en ella"
+          }
+        }
+      }
+    },
+    "security_keys.purpose.load": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading the keys stored on it"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leer las claves guardadas en ella"
+          }
+        }
+      }
+    },
+    "security_keys.purpose.server": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server connects (commands, files or AI)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servidor se conecta (comandos, archivos o IA)"
+          }
+        }
+      }
+    },
+    "security_keys.purpose.server_session": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A server session (the server connects for you)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una sesión del servidor (el servidor se conecta por ti)"
+          }
+        }
+      }
+    },
+    "security_keys.purpose.test": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A connection test from the server"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una prueba de conexión desde el servidor"
+          }
+        }
+      }
+    },
+    "security_keys.session.touch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touch your security key on one of your devices…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca tu llave de seguridad en uno de tus dispositivos…"
+          }
+        }
+      }
+    },
+    "security_keys.session.touch_key %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touch your security key (%@) on one of your devices…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca tu llave de seguridad (%@) en uno de tus dispositivos…"
+          }
+        }
+      }
+    },
+    "security_keys.sheet.application": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Application"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicación"
+          }
+        }
+      }
+    },
+    "security_keys.sheet.host": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host"
+          }
+        }
+      }
+    },
+    "security_keys.sheet.insert_forwarded": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use it here, or confirm on another device where Termoak is open."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Úsala aquí o confirma en otro dispositivo donde Termoak esté abierto."
+          }
+        }
+      }
+    },
+    "security_keys.sheet.insert_text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plug it into the Lightning or USB-C port, or read it by NFC."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conéctala al puerto Lightning o USB-C, o léela por NFC."
+          }
+        }
+      }
+    },
+    "security_keys.sheet.insert_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect your security key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecta tu llave de seguridad"
+          }
+        }
+      }
+    },
+    "security_keys.sheet.key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave"
+          }
+        }
+      }
+    },
+    "security_keys.sheet.nfc_text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Near the top of the iPhone, or plug it into the Lightning or USB-C port."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A la parte superior del iPhone, o conéctala al puerto Lightning o USB-C."
+          }
+        }
+      }
+    },
+    "security_keys.sheet.nfc_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold your security key near the iPhone"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acerca tu llave de seguridad al iPhone"
+          }
+        }
+      }
+    },
+    "security_keys.sheet.not_here": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not on this iPhone"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No está en este iPhone"
+          }
+        }
+      }
+    },
+    "security_keys.sheet.pin_ok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuar"
+          }
+        }
+      }
+    },
+    "security_keys.sheet.pin_placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN"
+          }
+        }
+      }
+    },
+    "security_keys.sheet.pin_text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter the PIN of your security key."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribe el PIN de tu llave de seguridad."
+          }
+        }
+      }
+    },
+    "security_keys.sheet.pin_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Security key PIN"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN de la llave de seguridad"
+          }
+        }
+      }
+    },
+    "security_keys.sheet.pin_wrong": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wrong PIN. Try again: the key blocks the PIN after several wrong ones."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN incorrecto. Vuelve a intentarlo: la llave bloquea el PIN tras varios fallos."
+          }
+        }
+      }
+    },
+    "security_keys.sheet.pin_wrong_left %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Wrong PIN. %lld try left before the key blocks the PIN."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Wrong PIN. %lld tries left before the key blocks the PIN."
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "PIN incorrecto. Queda %lld intento antes de que la llave bloquee el PIN."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "PIN incorrecto. Quedan %lld intentos antes de que la llave bloquee el PIN."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "security_keys.sheet.purpose": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para"
+          }
+        }
+      }
+    },
+    "security_keys.sheet.touch_text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touch it when it blinks."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tócala cuando parpadee."
+          }
+        }
+      }
+    },
+    "security_keys.sheet.touch_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touch your security key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca tu llave de seguridad"
+          }
+        }
+      }
+    },
+    "security_keys.sheet.use_nfc": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use NFC"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar NFC"
+          }
+        }
+      }
+    },
+    "security_keys.sheet.working_text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This key signs without a touch."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta clave firma sin tocarla."
+          }
+        }
+      }
+    },
+    "security_keys.sheet.working_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Using your security key…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usando tu llave de seguridad…"
+          }
+        }
+      }
+    },
     "sessions.empty.text_account": {
       "localizations": {
         "en": {
@@ -25792,6 +27328,22 @@
         }
       }
     },
+    "snippets.editor.variables_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variables: {{host}}, {{user}}, {{date}}… are filled in; {{prompt:Branch|main}} asks (with a default), {{select:Env|dev|prod}} gives a list, {{secret:Token}} is masked and never saved. \\{{ writes {{."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variables: {{host}}, {{user}}, {{date}}… se rellenan solas; {{prompt:Rama|main}} pregunta (con valor por defecto), {{select:Entorno|dev|prod}} da una lista, {{secret:Token}} se oculta y nunca se guarda. \\{{ escribe {{."
+          }
+        }
+      }
+    },
     "snippets.empty.text": {
       "localizations": {
         "en": {
@@ -26032,6 +27584,238 @@
         }
       }
     },
+    "snippets.issue.fix_first": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fix the variables marked in red before saving"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Corrige las variables marcadas en rojo antes de guardar"
+          }
+        }
+      }
+    },
+    "snippets.issue.kind_conflict %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” is already a %2$@ variable"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%1$@» ya es una variable de tipo %2$@"
+          }
+        }
+      }
+    },
+    "snippets.issue.label_too_long %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the name is longer than %lld characters"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "el nombre tiene más de %lld caracteres"
+          }
+        }
+      }
+    },
+    "snippets.issue.line %lld %lld %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Line %1$lld, column %2$lld: %3$@ — %4$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Línea %1$lld, columna %2$lld: %3$@ — %4$@"
+          }
+        }
+      }
+    },
+    "snippets.issue.no_label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the variable has no name"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "la variable no tiene nombre"
+          }
+        }
+      }
+    },
+    "snippets.issue.secret_default": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a secret cannot have a default value"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "un secreto no puede tener valor por defecto"
+          }
+        }
+      }
+    },
+    "snippets.issue.select_options": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a list needs at least one option ({{select:Name|a|b}})"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "una lista necesita al menos una opción ({{select:Nombre|a|b}})"
+          }
+        }
+      }
+    },
+    "snippets.issue.title %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld variable to fix"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld variables to fix"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld variable por corregir"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld variables por corregir"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "snippets.issue.too_many %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a snippet can have at most %lld variables"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "un snippet puede tener como mucho %lld variables"
+          }
+        }
+      }
+    },
+    "snippets.kind.builtin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "built-in"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "automática"
+          }
+        }
+      }
+    },
+    "snippets.kind.prompt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "text"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "texto"
+          }
+        }
+      }
+    },
+    "snippets.kind.secret": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "secret"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "secreto"
+          }
+        }
+      }
+    },
+    "snippets.kind.select": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "list"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "lista"
+          }
+        }
+      }
+    },
     "snippets.paste_all_open": {
       "localizations": {
         "en": {
@@ -26044,6 +27828,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pegar en todos los terminales abiertos"
+          }
+        }
+      }
+    },
+    "snippets.run.missing_value %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The value of “%@” is missing"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Falta el valor de «%@»"
           }
         }
       }
@@ -26548,6 +28348,182 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "snippets.vars.builtin_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filled from the host when there is one; this terminal has none."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se rellena con el host cuando lo hay; este terminal no tiene."
+          }
+        }
+      }
+    },
+    "snippets.vars.builtin_label %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{%@}}"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{%@}}"
+          }
+        }
+      }
+    },
+    "snippets.vars.kind_builtin %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · from the host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · del host"
+          }
+        }
+      }
+    },
+    "snippets.vars.kind_prompt %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · asked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · se pregunta"
+          }
+        }
+      }
+    },
+    "snippets.vars.kind_prompt_default %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · asked (%2$@)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · se pregunta (%2$@)"
+          }
+        }
+      }
+    },
+    "snippets.vars.kind_secret %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · secret, never saved"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · secreto, nunca se guarda"
+          }
+        }
+      }
+    },
+    "snippets.vars.kind_select %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · one of: %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · una de: %2$@"
+          }
+        }
+      }
+    },
+    "snippets.vars.secret_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A secret only goes into the command: it is never remembered, saved or sent anywhere else."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un secreto solo va al comando: nunca se recuerda, se guarda ni se envía a otro sitio."
+          }
+        }
+      }
+    },
+    "snippets.vars.secret_label %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ (secret)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ (secreto)"
+          }
+        }
+      }
+    },
+    "snippets.vars.show_secret": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show the secret"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar el secreto"
+          }
+        }
+      }
+    },
+    "snippets.vars.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variables"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variables"
           }
         }
       }

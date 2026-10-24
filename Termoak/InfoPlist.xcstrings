@@ -1,6 +1,24 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "NFCReaderUsageDescription": {
+      "comment": "NFC prompt when reading a security key (project.yml: INFOPLIST_KEY_NFCReaderUsageDescription).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To use your security key (YubiKey) by NFC to sign in to your servers."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para usar tu llave de seguridad (YubiKey) por NFC al entrar en tus servidores."
+          }
+        }
+      }
+    },
     "NSFaceIDUsageDescription": {
       "comment": "Face ID prompt when exporting a private key (project.yml: INFOPLIST_KEY_NSFaceIDUsageDescription).",
       "extractionState": "manual",

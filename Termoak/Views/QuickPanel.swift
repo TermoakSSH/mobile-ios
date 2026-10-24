@@ -47,8 +47,9 @@ struct QuickPanel: View {
     let onCustomize: () -> Void
     /// Snippet with variables: they have to be asked for before using it.
     let onFill: (Snippet, SnippetAction) -> Void
-    /// A snippet for every open terminal (pasted or run).
-    let onSendAll: (String, Bool) -> Void
+    /// A snippet with nothing to ask: rendered for its target(s) (each
+    /// terminal with its host's built-ins) and pasted or run.
+    let onUse: (Snippet, SnippetAction) -> Void
 
     @EnvironmentObject private var settings: AppSettings
 
@@ -61,7 +62,7 @@ struct QuickPanel: View {
             Group {
                 switch tab {
                 case .keys: KeysTab(session: session, onCustomize: onCustomize)
-                case .snippets: SnippetsTab(session: session, onFill: onFill, onSendAll: onSendAll)
+                case .snippets: SnippetsTab(session: session, onFill: onFill, onUse: onUse)
                 case .history: HistoryTab(session: session)
                 case .appearance: AppearanceTab()
                 }
@@ -219,7 +220,7 @@ struct KeyButton: View {
 private struct SnippetsTab: View {
     @ObservedObject var session: TerminalSession
     let onFill: (Snippet, SnippetAction) -> Void
-    let onSendAll: (String, Bool) -> Void
+    let onUse: (Snippet, SnippetAction) -> Void
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var sessions: Sessions
     @EnvironmentObject private var settings: AppSettings
@@ -330,17 +331,14 @@ private struct SnippetsTab: View {
     }
 
     private func use(_ sn: Snippet, _ action: SnippetAction) {
-        guard snippetVariables(script: sn.script).isEmpty else {
+        // Asked first when something has to be typed (prompts, selects,
+        // secrets; the host's built-ins when a terminal has no host).
+        let hasHost = action.everywhere ? sessions.open.allSatisfy { $0.hostId != nil } : session.hostId != nil
+        guard SnippetEngine.prompts(sn.script, everyTargetHasHost: hasHost).isEmpty else {
             onFill(sn, action)
             return
         }
-        if action.everywhere {
-            onSendAll(sn.script, action.run)
-        } else if action.run {
-            session.run(sn.script)
-        } else {
-            session.paste(sn.script)
-        }
+        onUse(sn, action)
     }
 }
 

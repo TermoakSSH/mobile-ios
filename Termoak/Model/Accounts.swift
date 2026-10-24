@@ -634,6 +634,10 @@ final class Accounts: ObservableObject {
                 sessionNotices.send(n)
             }
             changes.send(type)
+        case "security_key_request", "security_key_done":
+            // The engine answers the request itself (it calls the security
+            // key handler); this says which one another device decided.
+            if !DemoMode.isOn { AppSecurityKeys.shared.event(event) }
         case "vault":
             // A vault changed, was shared with you or taken away: sync to
             // see it (and to get the notice).
