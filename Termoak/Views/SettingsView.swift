@@ -10,6 +10,7 @@ struct SettingsView: View {
     @EnvironmentObject private var account: Accounts
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var sessions: Sessions
+    @ObservedObject private var accessBook = AccessBook.shared
     @Environment(\.openURL) private var openURL
     @Environment(\.dismiss) private var dismiss
     /// Terms and privacy of the current account's server (its /info).
@@ -54,6 +55,21 @@ struct SettingsView: View {
                         if account.loggedIn == true {
                             NavigationLink { TeamsView() } label: {
                                 Label("desktop.section.teams", systemImage: "person.3")
+                            }
+                        }
+                        // Teams security (0.7 phase 4d): temporary access and SSH certificates.
+                        if account.loggedIn == true && accessBook.anySupported {
+                            NavigationLink { AccessView() } label: {
+                                HStack {
+                                    Label("access.title", systemImage: "lock.badge.clock")
+                                    Spacer()
+                                    if accessBook.waitingCount > 0 {
+                                        Text(verbatim: "\(accessBook.waitingCount)").foregroundColor(Brand.amber)
+                                    }
+                                }
+                            }
+                            NavigationLink { CertificatesView() } label: {
+                                Label("settings.certificates", systemImage: "checkmark.shield")
                             }
                         }
                         if account.loggedIn == true, let url = URL(string: "\(current.serverUrl)/app/account") {

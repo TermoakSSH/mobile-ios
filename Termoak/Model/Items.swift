@@ -12,35 +12,35 @@ func itemKey(_ accountId: String?, _ id: String) -> String {
 
 extension SshHost {
     var key: String { itemKey(accountId, id) }
-    /// Use-only vault: connect, never see its secrets or change it.
-    var isUseOnly: Bool { access == .useOnly }
+    /// Use-only (or Connect only) vault: connect, never see its secrets or change it.
+    var isUseOnly: Bool { access == .useOnly || access == .connectOnly }
     var canEdit: Bool { !isUseOnly }
     var displayName: String { label.isEmpty ? address : label }
 }
 
 extension HostGroup {
     var key: String { itemKey(accountId, id) }
-    var canEdit: Bool { access != .useOnly }
+    var canEdit: Bool { access != .useOnly && access != .connectOnly }
 }
 
 extension SshKey {
     var key: String { itemKey(accountId, id) }
-    var isUseOnly: Bool { access == .useOnly }
+    var isUseOnly: Bool { access == .useOnly || access == .connectOnly }
 }
 
 extension SshIdentity {
     var key: String { itemKey(accountId, id) }
-    var isUseOnly: Bool { access == .useOnly }
+    var isUseOnly: Bool { access == .useOnly || access == .connectOnly }
 }
 
 extension Snippet {
     var key: String { itemKey(accountId, id) }
-    var canEdit: Bool { access != .useOnly }
+    var canEdit: Bool { access != .useOnly && access != .connectOnly }
 }
 
 extension PortForward {
     var key: String { itemKey(accountId, id) }
-    var canEdit: Bool { access != .useOnly }
+    var canEdit: Bool { access != .useOnly && access != .connectOnly }
 }
 
 extension KnownHost {
@@ -49,7 +49,7 @@ extension KnownHost {
     var display: String { port == 22 ? host : "\(host):\(port)" }
     /// It can be forgotten: a This-device one, or one of a vault you can
     /// change (not Use only).
-    var canForget: Bool { access != .useOnly && access != .unknown }
+    var canForget: Bool { access != .useOnly && access != .connectOnly && access != .unknown }
 }
 
 extension AccountInfo {
@@ -70,12 +70,7 @@ extension VaultInfo {
 
 extension VaultRole {
     var title: String {
-        switch self {
-        case .useOnly: return String(localized: "vaults.role.use_only")
-        case .editor: return String(localized: "vaults.role.editor")
-        case .manager: return String(localized: "vaults.role.manager")
-        case .unknown: return "?"
-        }
+        AccessTexts.roleTitle(level)
     }
 }
 
@@ -107,6 +102,8 @@ struct ItemPlace: Hashable, Identifiable {
 /// Text of an error for the user: the rules of vaults and accounts are
 /// translated here; anything else keeps the engine's message.
 func userMessage(_ error: Error) -> String {
+    // Teams security (0.7 phase 4d): always the app's text for its codes.
+    if let text = AccessTexts.of(error) { return text }
     // Private networks (0.7): by the error's code and details (`apiError`).
     if let text = networkErrorText(error) { return text }
     // FIDO2 security keys (0.7): by the code (`apiError`) or the engine's text.

@@ -136,6 +136,7 @@ struct NotificationSettingsView: View {
         case "team_added": return String(localized: "push.kind.team_added")
         case "security_key_request": return String(localized: "push.kind.security_key_request")
         case "access_request": return String(localized: "push.kind.access_request")
+        case "access_decided": return String(localized: "push.kind.access_decided")
         default: return kind
         }
     }

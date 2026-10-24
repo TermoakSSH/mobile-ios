@@ -144,6 +144,8 @@ struct HostEditor: View {
     @State private var jumps: [String] = []
     /// Private network (0.7): its own (`nil`: its group's, or direct).
     @State private var networkId: String?
+    /// Teams security: "Team certificate" (`nil`: the group's, or password and key; a later value kept).
+    @State private var hostAuth: String?
     @State private var proxyKind: ProxyKind?
     @State private var proxyHost = ""
     @State private var proxyPort = ""
@@ -180,6 +182,7 @@ struct HostEditor: View {
                 general
                 organize
                 ssh
+                authSection
                 if onConnect != nil { connectButton }
                 options
                 advancedToggle
@@ -243,6 +246,19 @@ struct HostEditor: View {
     }
 
     // MARK: Sections
+
+    /// Authentication: team certificates (teams security; SSH hosts of account vaults).
+    @ViewBuilder private var authSection: some View {
+        if let a = place.accountId, !telnet, AccessBook.shared.isSupported(a) || hostAuth != nil {
+            Section {
+                AuthPicker(auth: $hostAuth,
+                           inherited: AccessRules.effectiveAuth(own: nil, groupId: groupId, groups: groups
+                               .filter { $0.accountId == a && $0.vaultId == place.vaultId }
+                               .map { GroupAuthLink(id: $0.id, name: $0.name, parentId: $0.parentId, auth: $0.settings.auth) }),
+                           certificates: account.gates(a, place.vaultId).certificates)
+            }
+        }
+    }
 
     /// How the host will look in the list.
     private var header: some View {
@@ -606,9 +622,11 @@ struct HostEditor: View {
         // A Telnet host cannot go through jump hosts.
         if !telnet { jumpSection }
 
-        // The private network its first connection goes through (account vaults only).
-        NetworkPickerSection(accountId: place.accountId, vaultId: place.vaultId, groupId: groupId, groups: groups,
-                             networkId: $networkId, proxySet: proxyKind != nil)
+        // The private network its first connection goes through (account vaults only; not where the team forbids it).
+        if account.gates(place.accountId, place.vaultId).networks || networkId != nil {
+            NetworkPickerSection(accountId: place.accountId, vaultId: place.vaultId, groupId: groupId, groups: groups,
+                                 networkId: $networkId, proxySet: proxyKind != nil)
+        }
 
         Section {
             Picker("common.type", selection: $proxyKind) {
@@ -887,6 +905,7 @@ struct HostEditor: View {
         let s = h.settings
         jumps = s.jumpHostIds ?? []
         networkId = s.networkId
+        hostAuth = s.auth
         if let p = s.proxy {
             proxyKind = p.kind
             proxyHost = p.host
@@ -964,6 +983,7 @@ struct HostEditor: View {
         }
         // This device can't use networks; elsewhere it is kept even when this screen didn't show it.
         s.networkId = place.accountId == nil ? nil : networkId
+        s.auth = place.accountId == nil ? nil : hostAuth
         host.settings = s
 
         let secret: SecretChange

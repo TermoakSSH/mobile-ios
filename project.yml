@@ -134,6 +134,7 @@ targets:
       - path: Termoak/Model/InviteLink.swift
       - path: Termoak/Model/AiTasks.swift
       - path: Termoak/Model/TeamRules.swift
+      - path: Termoak/Model/AccessRules.swift
       - path: Termoak/Model/PushRouting.swift
       - path: Termoak/Model/GroupChain.swift
       - path: Termoak/Model/ExecReport.swift

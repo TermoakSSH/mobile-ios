@@ -260,7 +260,8 @@ struct NewTaskView: View {
         let filter = ItemFilter(accountIds: owner.map { [$0] } ?? [], vaultIds: nil, includeDevice: false)
         // Its tools work over SSH: Telnet hosts are left out.
         hosts = ((try? model.core.listHosts(filter: filter)) ?? [])
-            .filter { !$0.isTelnet }
+            // Teams security: hosts whose team forbids the AI are left out (the server leaves them out too).
+            .filter { !$0.isTelnet && model.account.gates($0.accountId, $0.vaultId).ai }
             .sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
         groups = ((try? model.core.listGroups(filter: filter)) ?? [])
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }

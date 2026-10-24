@@ -44,10 +44,16 @@ final class PushRoutingTests: XCTestCase {
         XCTAssertEqual(PushRoute.of(team, action: nil), .teams)
         let done = try XCTUnwrap(PushInfo(userInfo: apns(["type": "ai_finished", "task_id": "t9", "status": "failed"])))
         XCTAssertEqual(PushRoute.of(done, action: nil), .ai(taskId: "t9"))
-        // Phase 4b: an access request opens the app (no screen yet), as do tests.
+        // Phase 4d: an access request opens the Access screen on it; Approve/Deny only open its confirmation there.
         let access = try XCTUnwrap(PushInfo(userInfo: apns(["type": "access_request", "request_id": "r"])))
         XCTAssertEqual(access.category, .approval)
-        XCTAssertEqual(PushRoute.of(access, action: PushActionId.deny), .app)
+        XCTAssertEqual(PushRoute.of(access, action: PushActionId.deny), .access(requestId: "r", mine: false, decide: .deny))
+        XCTAssertEqual(PushRoute.of(access, action: PushActionId.approve), .access(requestId: "r", mine: false, decide: .approve))
+        XCTAssertEqual(PushRoute.of(access, action: nil), .access(requestId: "r", mine: false, decide: nil))
+        // Decided: info, opens My requests.
+        let decided = try XCTUnwrap(PushInfo(userInfo: apns(["type": "access_decided", "request_id": "r", "status": "approved"])))
+        XCTAssertEqual(decided.category, .info)
+        XCTAssertEqual(PushRoute.of(decided, action: nil), .access(requestId: "r", mine: true, decide: nil))
         let test = try XCTUnwrap(PushInfo(userInfo: apns(["type": "test"])))
         XCTAssertEqual(PushRoute.of(test, action: nil), .app)
         // A session request without its id still opens the app.

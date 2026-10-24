@@ -49,7 +49,7 @@ struct AiMemoriesView: View {
     }
 
     private func row(_ m: AiMemory) -> some View {
-        let editable = m.access != .useOnly
+        let editable = m.access != .useOnly && m.access != .connectOnly
         return Button { if editable { editing = MemoryEdit(memory: m) } } label: {
             VStack(alignment: .leading, spacing: 4) {
                 Text(m.content).foregroundColor(.primary).lineLimit(4)

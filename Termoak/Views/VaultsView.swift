@@ -109,7 +109,7 @@ struct VaultRow: View {
             Spacer(minLength: 0)
             Text(verbatim: vault.role.title)
                 .font(.caption2.weight(.semibold))
-                .foregroundColor(vault.role == .useOnly ? Brand.amber : .secondary)
+                .foregroundColor(vault.role.level.noSecrets ? Brand.amber : .secondary)
         }
         .padding(.vertical, 2)
     }
@@ -153,6 +153,12 @@ struct VaultDetailView: View {
 
     private var handle: AccountHandle? { try? model.core.account(accountId: vault.accountId) }
     private var personal: Bool { vault.kind == .personal }
+    private var teamsSecurity: Bool { AccessBook.shared.isSupported(vault.accountId) }
+    private var canDelete: Bool {
+        let me = account.list.first { $0.id == vault.accountId }?.userId
+        let implicit = members.contains { $0.implicit && $0.userId != nil && $0.userId == me }
+        return AccessRules.canDeleteVault(vault.role.level, implicitManager: implicit)
+    }
 
     var body: some View {
         Form {
@@ -172,11 +178,14 @@ struct VaultDetailView: View {
                 HStack {
                     Text("vaults.your_role")
                     Spacer()
-                    Text(verbatim: vault.role.title).foregroundColor(vault.role == .useOnly ? Brand.amber : .secondary)
+                    Text(verbatim: vault.role.title).foregroundColor(vault.role.level.noSecrets ? Brand.amber : .secondary)
                 }
                 if vault.role == .useOnly {
                     Text(vault.strict ? String(localized: "vaults.use_only.strict_hint") : String(localized: "vaults.use_only.hint"))
                         .font(.footnote).foregroundColor(.secondary)
+                }
+                if vault.role == .connectOnly {
+                    Text("vaults.you_connect_only").font(.footnote).foregroundColor(.secondary)
                 }
                 if vault.canManage {
                     Button { editing = true } label: { Label("vaults.edit", systemImage: "pencil") }
@@ -194,6 +203,7 @@ struct VaultDetailView: View {
                             Picker("vaults.team_member_role", selection: Binding(get: { teamRoleChoice }, set: { setTeamRole($0) })) {
                                 Text("vaults.role.editor").tag(TeamAccess.editor)
                                 Text("vaults.role.use_only").tag(TeamAccess.useOnly)
+                                if teamsSecurity { Text("vaults.role.connect_only").tag(TeamAccess.connectOnly) }
                                 Text("vaults.team_access.none").tag(TeamAccess.none)
                             }
                             .disabled(busy)
@@ -214,7 +224,8 @@ struct VaultDetailView: View {
                         ProgressView()
                     }
                     ForEach(members, id: \.id) { m in
-                        MemberRow(member: m, onRole: vault.canManage && !m.implicit ? { setRole(m, $0) } : nil,
+                        MemberRow(member: m, roles: AccessRules.grantableRoles(teamsSecurity: teamsSecurity),
+                                  onRole: vault.canManage && !m.implicit ? { setRole(m, $0) } : nil,
                                   onRemove: { removing = m })
                             .contextMenu { memberMenu(m) }
                             .swipeActions {
@@ -238,6 +249,15 @@ struct VaultDetailView: View {
                     NavigationLink { VaultAuditView(vault: vault, members: members) } label: {
                         Label("vaults.activity", systemImage: "clock.arrow.circlepath")
                     }
+                    // Teams security (0.7 phase 4d): access policies and recorded sessions.
+                    if teamsSecurity && !personal {
+                        NavigationLink { VaultAccessView(vault: vault) } label: {
+                            Label("access.policy_needed_title", systemImage: "lock.badge.clock")
+                        }
+                        NavigationLink { VaultRecordingsView(vault: vault) } label: {
+                            Label("vaults.tab.recordings", systemImage: "play.rectangle")
+                        }
+                    }
                 }
             }
 
@@ -248,7 +268,12 @@ struct VaultDetailView: View {
             if !personal {
                 Section {
                     if vault.canManage {
-                        Button("vaults.delete", role: .destructive) { deleting = true }
+                        // Only implicit managers delete it (the owner, the team's owners and admins), never an Admin by grant.
+                        if canDelete {
+                            Button("vaults.delete", role: .destructive) { deleting = true }
+                        } else if !members.isEmpty {
+                            Text("vaults.explicit_admin_no_delete").font(.footnote).foregroundColor(.secondary)
+                        }
                     } else {
                         Button("vaults.leave", role: .destructive) { confirmLeave = true }
                     }
@@ -283,21 +308,21 @@ struct VaultDetailView: View {
 
     @ViewBuilder private func memberMenu(_ m: VaultMember) -> some View {
         if vault.canManage && !m.implicit {
-            if m.role != .editor {
-                Button { setRole(m, .editor) } label: { Label("vaults.role.make_editor", systemImage: "pencil") }
-            }
-            if m.role != .useOnly {
-                Button { setRole(m, .useOnly) } label: { Label("vaults.role.make_use_only", systemImage: "lock") }
+            ForEach(AccessRules.grantableRoles(teamsSecurity: teamsSecurity), id: \.self) { l in
+                if m.role.level != l {
+                    Button { setRole(m, VaultRole.of(l)) } label: { Text(verbatim: AccessTexts.roleTitle(l)) }
+                }
             }
             Button(role: .destructive) { removing = m } label: { Label("vaults.member.remove", systemImage: "person.badge.minus") }
         }
     }
 
-    private enum TeamAccess: Hashable { case editor, useOnly, none }
+    private enum TeamAccess: Hashable { case editor, useOnly, connectOnly, none }
 
     private var teamRoleChoice: TeamAccess {
         switch vault.teamMemberRole {
         case .some(.useOnly): return .useOnly
+        case .some(.connectOnly): return .connectOnly
         case .some(.editor), .some(.manager): return .editor
         default: return .none
         }
@@ -342,6 +367,7 @@ struct VaultDetailView: View {
         switch a {
         case .editor: update(VaultChanges(teamMemberRole: .editor))
         case .useOnly: update(VaultChanges(teamMemberRole: .useOnly))
+        case .connectOnly: update(VaultChanges(teamMemberRole: .connectOnly))
         case .none: update(VaultChanges(noTeamAccess: true))
         }
     }
@@ -413,6 +439,7 @@ extension VaultRow {
 /// managers, so it is not only behind a long press).
 private struct MemberRow: View {
     let member: VaultMember
+    var roles: [AccessLevel] = [.useOnly, .editor]
     var onRole: ((VaultRole) -> Void)? = nil
     var onRemove: () -> Void = {}
 
@@ -439,8 +466,7 @@ private struct MemberRow: View {
                 if let onRole {
                     Menu {
                         Picker("vaults.member.role", selection: Binding(get: { member.role }, set: { onRole($0) })) {
-                            Text("vaults.role.editor").tag(VaultRole.editor)
-                            Text("vaults.role.use_only").tag(VaultRole.useOnly)
+                            ForEach(roles, id: \.self) { l in Text(verbatim: AccessTexts.roleTitle(l)).tag(VaultRole.of(l)) }
                         }
                         Divider()
                         Button(role: .destructive, action: onRemove) {
@@ -452,13 +478,13 @@ private struct MemberRow: View {
                             Image(systemName: "chevron.up.chevron.down").font(.caption2)
                         }
                         .font(.caption.weight(.semibold))
-                        .foregroundColor(member.role == .useOnly ? Brand.amber : .accentColor)
+                        .foregroundColor(member.role.level.noSecrets ? Brand.amber : .accentColor)
                     }
                     .accessibilityLabel(Text("vaults.member.role"))
                 } else {
                     Text(verbatim: member.role.title)
                         .font(.caption.weight(.semibold))
-                        .foregroundColor(member.role == .useOnly ? Brand.amber : .secondary)
+                        .foregroundColor(member.role.level.noSecrets ? Brand.amber : .secondary)
                 }
                 if member.implicit {
                     Text("vaults.member.implicit").font(.caption2).foregroundColor(.secondary)
@@ -513,6 +539,7 @@ struct VaultEditor: View {
                             Picker("vaults.team_member_role", selection: $teamRole) {
                                 Text("vaults.role.editor").tag(VaultRole.editor)
                                 Text("vaults.role.use_only").tag(VaultRole.useOnly)
+                                if AccessBook.shared.isSupported(accountId) { Text("vaults.role.connect_only").tag(VaultRole.connectOnly) }
                             }
                         }
                     } footer: {
@@ -683,15 +710,16 @@ struct AddVaultMemberView: View {
                 }
                 Section {
                     Picker("vaults.member.role", selection: $role) {
-                        Text("vaults.role.editor").tag(VaultRole.editor)
-                        Text("vaults.role.use_only").tag(VaultRole.useOnly)
+                        ForEach(AccessRules.grantableRoles(teamsSecurity: AccessBook.shared.isSupported(vault.accountId)), id: \.self) { l in
+                            Text(verbatim: AccessTexts.roleTitle(l)).tag(VaultRole.of(l))
+                        }
                     }
                     .pickerStyle(.inline)
                     .labelsHidden()
                 } header: {
                     Text("vaults.member.role")
                 } footer: {
-                    Text(role == .editor ? String(localized: "vaults.role.editor.footer") : String(localized: "vaults.role.use_only.footer"))
+                    Text(verbatim: AccessTexts.roleHint(role.level))
                 }
                 if let error {
                     Section { Text(error).foregroundColor(Brand.red) }

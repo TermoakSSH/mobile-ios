@@ -78,6 +78,8 @@ final class Accounts: ObservableObject {
     let aiEvents = PassthroughSubject<AiEvent, Never>()
     /// Notices about sessions (toasts over any screen).
     let sessionNotices = PassthroughSubject<ShareNotice, Never>()
+    /// Teams security: `access_request` events (account, event, request), after AccessBook read its lists again.
+    let accessEvents = PassthroughSubject<(String, String, AccessEventRequest), Never>()
 
     private var queued: [AppNotice] = []
     private var subscriptions: Set<AnyCancellable> = []
@@ -267,6 +269,11 @@ final class Accounts: ObservableObject {
     func rememberPlace(_ p: ItemPlace) {
         guard let a = p.accountId, let v = p.vaultId else { return }
         UserDefaults.standard.set(v, forKey: "last_vault.\(a)")
+    }
+
+    /// What the team policy of an item's vault lets you do (everything for This device's).
+    func gates(_ accountId: String?, _ vaultId: String?) -> AccessGates {
+        vault(accountId, vaultId)?.gates ?? .all
     }
 
     /// The vault of an item is Strict (Use-only members connect through
@@ -567,6 +574,8 @@ final class Accounts: ObservableObject {
             // the account last started (NETWORKS.md §8.1).
             let core = core
             Task { @MainActor in await NetworkBook.shared.refreshFeatures(id, core: core) }
+            // Teams security (0.7 phase 4d): the server's feature, the requests and 2FA requirements.
+            Task { @MainActor in await AccessBook.shared.start(id, core: core) }
         }
     }
 
@@ -606,7 +615,10 @@ final class Accounts: ObservableObject {
     }
 
     private func stopEvents(_ accountId: String) {
-        Task { @MainActor in NetworkBook.shared.forget(accountId) }
+        Task { @MainActor in
+            NetworkBook.shared.forget(accountId)
+            AccessBook.shared.forget(accountId)
+        }
         guard let e = events.removeValue(forKey: accountId) else { return }
         e.task.cancel()
         e.subscription?.unsubscribe()
@@ -623,6 +635,8 @@ final class Accounts: ObservableObject {
                 approvals[accountId] = n
                 pendingApprovals = approvals.values.reduce(0, +)
             }
+            // Events may have been missed while the socket was closed.
+            if AccessBook.shared.isSupported(accountId) { Task { await AccessBook.shared.onEvent(accountId) } }
         case "ai", "lagged":
             if type == "ai", let task = event["task_id"] as? String, let ev = event["event"] as? [String: Any] {
                 aiEvents.send(AiEvent(taskId: task, event: ev))
@@ -643,6 +657,20 @@ final class Accounts: ObservableObject {
             // A vault changed, was shared with you or taken away: sync to
             // see it (and to get the notice).
             sync(accountId)
+            Task { await AccessBook.shared.refresh2fa(accountId) }
+        case "access_request":
+            // Teams security: the lists and the hosts asked about are read again (events carry no can_decide).
+            let parsed = AccessRules.event(event)
+            Task {
+                await AccessBook.shared.onEvent(accountId)
+                if let parsed { self.accessEvents.send((accountId, parsed.event, parsed.request)) }
+            }
+        case "team":
+            // A team's policy changed: its vaults' effective policy comes with a sync.
+            if event["event"] as? String == "policy" {
+                sync(accountId)
+                Task { await AccessBook.shared.refresh2fa(accountId) }
+            }
         default:
             break
         }

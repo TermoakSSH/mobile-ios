@@ -216,6 +216,14 @@ private struct TeamDetailView: View {
 
     var body: some View {
         List {
+            // Teams security (0.7 phase 4d): the team's CA, policy and 2FA compliance.
+            if AccessBook.shared.isSupported(accountId) {
+                Section {
+                    NavigationLink {
+                        TeamSecurityView(accountId: accountId, teamId: team.id, teamName: name.isEmpty ? team.name : name, canManage: rules.canAddMembers)
+                    } label: { Label("teams.security", systemImage: "checkmark.shield") }
+                }
+            }
             membersSection
             if rules.canAddMembers { addSection }
             if rules.canSeeInvites && !invites.isEmpty { invitesSection }

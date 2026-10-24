@@ -89,6 +89,8 @@ final class AppModel: ObservableObject {
     @Published var showingAi = false
     /// The teams over everything (a tapped push: added to a team).
     @Published var showingTeams = false
+    /// Teams security: the Access screen over everything (a tapped push about a request).
+    @Published var showingAccess: AccessFocus?
     private var subscriptions: Set<AnyCancellable> = []
 
     init(core: TermoakCore, settings: AppSettings) {
@@ -100,6 +102,28 @@ final class AppModel: ObservableObject {
         // A host's system detected after connecting: its logo in the lists.
         let accounts = account
         sessions.onHostChanged = { [weak accounts] in accounts?.vaultChanged.send() }
+        // Teams security (0.7 phase 4d): terminals waiting for an access window connect when it opens.
+        sessions.accounts = account
+        AccessBook.shared.core = core
+        account.accessEvents
+            .sink { [weak sessions] event in Task { @MainActor in await sessions?.checkWaiting(event.0) } }
+            .store(in: &subscriptions)
+        // What an access_request event means for you (a request to decide, yours decided…).
+        account.accessEvents
+            .sink { [weak accounts] event in
+                guard let accounts else { return }
+                let me = accounts.account(event.0)?.userId
+                guard let n = AccessRules.notice(me: me, event: event.1, request: event.2) else { return }
+                accounts.post(n == .created ? String(localized: "access.notice.title_request") : String(localized: "access.notice.title_decision"),
+                              AccessTexts.notice(n, event.2))
+            }
+            .store(in: &subscriptions)
+        Timer.publish(every: 20, on: .main, in: .common).autoconnect()
+            .sink { [weak sessions] _ in
+                guard let sessions, sessions.open.contains(where: { $0.accessNeed != nil }) else { return }
+                Task { @MainActor in await sessions.checkWaiting() }
+            }
+            .store(in: &subscriptions)
         try? core.setDeviceName(name: DeviceName.current)
         // Aliases and "Hide email addresses" for every view that names an account.
         AccountNamesStore.shared.names = settings.accountNames
@@ -251,6 +275,13 @@ final class AppModel: ObservableObject {
             joining = nil
             sessions.showing = false
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.showingTeams = true }
+        case .access(let requestId, let mine, let decide):
+            // The Access screen on that request; Approve/Deny only open its confirmation there.
+            joining = nil
+            sessions.showing = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.showingAccess = AccessFocus(requestId: requestId, mine: mine, decide: decide)
+            }
         }
     }
 
@@ -378,6 +409,17 @@ private struct RootContent: View {
             NavigationView {
                 TeamsView().toolbar {
                     ToolbarItem(placement: .cancellationAction) { Button("common.done") { model.showingTeams = false } }
+                }
+            }
+            .navigationViewStyle(.stack)
+            .environmentObject(model)
+            .environmentObject(account)
+        }
+        // A tapped push about an access request: the Access screen.
+        .sheet(item: $model.showingAccess) { focus in
+            NavigationView {
+                AccessView(focus: focus).toolbar {
+                    ToolbarItem(placement: .cancellationAction) { Button("common.done") { model.showingAccess = nil } }
                 }
             }
             .navigationViewStyle(.stack)

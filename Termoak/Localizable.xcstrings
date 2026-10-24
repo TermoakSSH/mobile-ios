@@ -97,6 +97,1950 @@
         }
       }
     },
+    "access.active": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open windows you can end"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ventanas abiertas que puedes terminar"
+          }
+        }
+      }
+    },
+    "access.active_empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No open access windows."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay ventanas de acceso abiertas."
+          }
+        }
+      }
+    },
+    "access.approve.button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aprobar"
+          }
+        }
+      }
+    },
+    "access.approve.note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note (optional)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nota (opcional)"
+          }
+        }
+      }
+    },
+    "access.approve.note_placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seen in the request and the audit"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se ve en la solicitud y en la auditoría"
+          }
+        }
+      }
+    },
+    "access.approve.ok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aprobar"
+          }
+        }
+      }
+    },
+    "access.approve.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve access"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aprobar acceso"
+          }
+        }
+      }
+    },
+    "access.approve.window": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Window"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ventana"
+          }
+        }
+      }
+    },
+    "access.approve.window_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can give a shorter window than asked, never a longer one. It starts now."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Puedes dar una ventana más corta de la pedida, nunca más larga. Empieza ahora."
+          }
+        }
+      }
+    },
+    "access.asked_for %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asked for %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pedido para %1$@"
+          }
+        }
+      }
+    },
+    "access.bar.ended": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access window ended"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ventana de acceso terminada"
+          }
+        }
+      }
+    },
+    "access.card.auto": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When the window opens, this terminal connects by itself."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuando se abra la ventana, este terminal se conecta solo."
+          }
+        }
+      }
+    },
+    "access.card.pending_text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your request is waiting for an approver."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu solicitud está esperando a un aprobador."
+          }
+        }
+      }
+    },
+    "access.card.pending_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for approval"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando aprobación"
+          }
+        }
+      }
+    },
+    "access.card.text %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This host needs an approved access window: ask an approver for up to %1$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este host necesita una ventana de acceso aprobada: pídela a un aprobador, hasta %1$@."
+          }
+        }
+      }
+    },
+    "access.card.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approval needed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hace falta aprobación"
+          }
+        }
+      }
+    },
+    "access.chip.needed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approval needed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requiere aprobación"
+          }
+        }
+      }
+    },
+    "access.chip.open %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Until %1$@ · %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hasta las %1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "access.chip.pending": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for approval"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando aprobación"
+          }
+        }
+      }
+    },
+    "access.closed.access_expired": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your access window to this host ended: request access again to keep working"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu ventana de acceso a este host ha terminado: vuelve a pedir acceso para seguir"
+          }
+        }
+      }
+    },
+    "access.closed.access_revoked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An approver ended your access window to this host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un aprobador ha terminado tu ventana de acceso a este host"
+          }
+        }
+      }
+    },
+    "access.closed.vault_access_revoked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You no longer have access to this host's vault"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya no tienes acceso a la bóveda de este host"
+          }
+        }
+      }
+    },
+    "access.decided_by %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decided by %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decidida por %1$@"
+          }
+        }
+      }
+    },
+    "access.decision_note %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: “%2$@”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: «%2$@»"
+          }
+        }
+      }
+    },
+    "access.deny.button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deny"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Denegar"
+          }
+        }
+      }
+    },
+    "access.deny.ok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deny"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Denegar"
+          }
+        }
+      }
+    },
+    "access.deny.reason": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reason (optional)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Motivo (opcional)"
+          }
+        }
+      }
+    },
+    "access.deny.reason_placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The requester sees it"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo ve quien lo pidió"
+          }
+        }
+      }
+    },
+    "access.deny.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deny access"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Denegar acceso"
+          }
+        }
+      }
+    },
+    "access.duration.days %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld day"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld days"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld día"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld días"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "access.duration.hours %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ h"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ h"
+          }
+        }
+      }
+    },
+    "access.duration.hours_minutes %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ h %2$@ min"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ h %2$@ min"
+          }
+        }
+      }
+    },
+    "access.duration.minutes %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ min"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ min"
+          }
+        }
+      }
+    },
+    "access.end.button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End my access"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminar mi acceso"
+          }
+        }
+      }
+    },
+    "access.menu.policy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access policy…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política de acceso…"
+          }
+        }
+      }
+    },
+    "access.menu.request": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Request access…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pedir acceso…"
+          }
+        }
+      }
+    },
+    "access.mine": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My requests"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mis solicitudes"
+          }
+        }
+      }
+    },
+    "access.mine_empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You have not asked for access yet. Hosts that need it show “Request access” when you connect."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no has pedido acceso. Los hosts que lo necesitan muestran «Pedir acceso» al conectar."
+          }
+        }
+      }
+    },
+    "access.none_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in to a Termoak server 0.7 or later to request and approve access to hosts."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicia sesión en un servidor de Termoak 0.7 o posterior para pedir y aprobar acceso a hosts."
+          }
+        }
+      }
+    },
+    "access.none_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No server with temporary access"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ningún servidor con acceso temporal"
+          }
+        }
+      }
+    },
+    "access.notice.approved %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access to %1$@ approved until %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceso a %1$@ aprobado hasta las %2$@"
+          }
+        }
+      }
+    },
+    "access.notice.created %@ %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ asks for access to %2$@ for %3$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ pide acceso a %2$@ durante %3$@"
+          }
+        }
+      }
+    },
+    "access.notice.denied %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your request for %1$@ was denied"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Han denegado tu solicitud para %1$@"
+          }
+        }
+      }
+    },
+    "access.notice.denied_reason %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your request for %1$@ was denied: %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Han denegado tu solicitud para %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "access.notice.ended %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your access window to %1$@ ended"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu ventana de acceso a %1$@ ha terminado"
+          }
+        }
+      }
+    },
+    "access.notice.expired %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nobody decided your request for %1$@ in time"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nadie ha decidido a tiempo tu solicitud para %1$@"
+          }
+        }
+      }
+    },
+    "access.notice.revoked %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ ended your access to %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ ha terminado tu acceso a %2$@"
+          }
+        }
+      }
+    },
+    "access.notice.title_decision": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access request decided"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solicitud de acceso decidida"
+          }
+        }
+      }
+    },
+    "access.notice.title_request": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access request"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solicitud de acceso"
+          }
+        }
+      }
+    },
+    "access.policy_needed_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access policies"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Políticas de acceso"
+          }
+        }
+      }
+    },
+    "access.recent": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recently decided"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decididas hace poco"
+          }
+        }
+      }
+    },
+    "access.recorded": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recorded"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grabada"
+          }
+        }
+      }
+    },
+    "access.request.after": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You will be told when it is decided; the terminal connects by itself when the window opens."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se te avisará cuando se decida; el terminal se conecta solo cuando se abra la ventana."
+          }
+        }
+      }
+    },
+    "access.request.button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Request access"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pedir acceso"
+          }
+        }
+      }
+    },
+    "access.request.cancel_request": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel request"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelar solicitud"
+          }
+        }
+      }
+    },
+    "access.request.cannot": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You cannot request access to this host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No puedes pedir acceso a este host"
+          }
+        }
+      }
+    },
+    "access.request.duration": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For how long"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Durante cuánto tiempo"
+          }
+        }
+      }
+    },
+    "access.request.error.reason_long": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The reason can have up to 500 characters"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El motivo puede tener hasta 500 caracteres"
+          }
+        }
+      }
+    },
+    "access.request.message %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This host needs an approved access window. An approver decides; you can ask for up to %1$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este host necesita una ventana de acceso aprobada. Decide un aprobador; puedes pedir hasta %1$@."
+          }
+        }
+      }
+    },
+    "access.request.reason": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reason"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Motivo"
+          }
+        }
+      }
+    },
+    "access.request.reason_placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What you need to do (the approvers see it)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qué necesitas hacer (lo ven los aprobadores)"
+          }
+        }
+      }
+    },
+    "access.request.scope": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para"
+          }
+        }
+      }
+    },
+    "access.request.scope_group": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every host of its group"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todos los hosts de su grupo"
+          }
+        }
+      }
+    },
+    "access.request.scope_host %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo %1$@"
+          }
+        }
+      }
+    },
+    "access.request.scope_vault": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every host of the vault"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todos los hosts de la bóveda"
+          }
+        }
+      }
+    },
+    "access.request.send": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send request"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviar solicitud"
+          }
+        }
+      }
+    },
+    "access.request.title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Request access to %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pedir acceso a %1$@"
+          }
+        }
+      }
+    },
+    "access.revoke.button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End now"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminar ya"
+          }
+        }
+      }
+    },
+    "access.revoke.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Their server sessions on these hosts close and the certificates issued under this window are revoked."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sus sesiones del servidor en estos hosts se cierran y se revocan los certificados emitidos con esta ventana."
+          }
+        }
+      }
+    },
+    "access.revoke.ok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End access"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminar acceso"
+          }
+        }
+      }
+    },
+    "access.revoke.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End this access window"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminar esta ventana de acceso"
+          }
+        }
+      }
+    },
+    "access.status.active": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activa"
+          }
+        }
+      }
+    },
+    "access.status.cancelled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelled"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelada"
+          }
+        }
+      }
+    },
+    "access.status.denied": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Denied"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Denegada"
+          }
+        }
+      }
+    },
+    "access.status.ended": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ended"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminada"
+          }
+        }
+      }
+    },
+    "access.status.expired": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expired"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caducada"
+          }
+        }
+      }
+    },
+    "access.status.pending": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando"
+          }
+        }
+      }
+    },
+    "access.status.revoked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revoked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revocada"
+          }
+        }
+      }
+    },
+    "access.status.unknown": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desconocido"
+          }
+        }
+      }
+    },
+    "access.summary %@ %@ %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ asks for %2$@ for %3$@: “%4$@”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ pide %2$@ durante %3$@: «%4$@»"
+          }
+        }
+      }
+    },
+    "access.target_group %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Group %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grupo %1$@"
+          }
+        }
+      }
+    },
+    "access.target_vault %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bóveda %1$@"
+          }
+        }
+      }
+    },
+    "access.time.hours %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ h %2$@ min"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ h %2$@ min"
+          }
+        }
+      }
+    },
+    "access.time.minutes %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ min"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ min"
+          }
+        }
+      }
+    },
+    "access.time.seconds %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ s"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ s"
+          }
+        }
+      }
+    },
+    "access.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceso"
+          }
+        }
+      }
+    },
+    "access.waiting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for your decision"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando tu decisión"
+          }
+        }
+      }
+    },
+    "access.waiting_empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No requests are waiting for you."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay solicitudes esperándote."
+          }
+        }
+      }
+    },
+    "access.waits_until %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waits until %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espera hasta las %1$@"
+          }
+        }
+      }
+    },
+    "access.window.until %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access until %1$@ · %2$@ left"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceso hasta las %1$@ · quedan %2$@"
+          }
+        }
+      }
+    },
+    "access_policy.approvers": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approvers"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aprobadores"
+          }
+        }
+      }
+    },
+    "access_policy.approvers_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nobody chosen: the vault's Admins approve."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin nadie elegido: aprueban los Admin de la bóveda."
+          }
+        }
+      }
+    },
+    "access_policy.cert_overrides": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificate options for these hosts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opciones de certificado para estos hosts"
+          }
+        }
+      }
+    },
+    "access_policy.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No access policies: members connect directly."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin políticas de acceso: los miembros se conectan directamente."
+          }
+        }
+      }
+    },
+    "access_policy.inherits_approval %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without its own policy: %1$@ requires approval."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin política propia: %1$@ exige aprobación."
+          }
+        }
+      }
+    },
+    "access_policy.inherits_direct %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without its own policy: %1$@ allows direct access."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin política propia: %1$@ permite el acceso directo."
+          }
+        }
+      }
+    },
+    "access_policy.managers": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Admins need a request too"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los Admin también necesitan solicitud"
+          }
+        }
+      }
+    },
+    "access_policy.max": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Longest window (minutes)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ventana máxima (minutos)"
+          }
+        }
+      }
+    },
+    "access_policy.missing_target": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(not synced)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(sin sincronizar)"
+          }
+        }
+      }
+    },
+    "access_policy.mode.approval": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With approval (temporary windows)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con aprobación (ventanas temporales)"
+          }
+        }
+      }
+    },
+    "access_policy.mode.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With approval, members ask for a time window with a reason and an approver decides. The window gates server sessions, certificates, just-in-time credentials and the AI."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con aprobación, los miembros piden una ventana de tiempo con un motivo y decide un aprobador. La ventana controla las sesiones del servidor, los certificados, las credenciales justo a tiempo y la IA."
+          }
+        }
+      }
+    },
+    "access_policy.mode.label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceso"
+          }
+        }
+      }
+    },
+    "access_policy.none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No policy applies now: members connect directly."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ahora no aplica ninguna política: los miembros se conectan directamente."
+          }
+        }
+      }
+    },
+    "access_policy.own": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It has its own policy."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiene su propia política."
+          }
+        }
+      }
+    },
+    "access_policy.record": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record every session on these hosts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grabar todas las sesiones en estos hosts"
+          }
+        }
+      }
+    },
+    "access_policy.remove": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove policy"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar política"
+          }
+        }
+      }
+    },
+    "access_policy.save": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save policy"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardar política"
+          }
+        }
+      }
+    },
+    "access_policy.self_approval": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requesters who are approvers may approve their own requests"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quien pide y es aprobador puede aprobar su propia solicitud"
+          }
+        }
+      }
+    },
+    "access_policy.summary_approval %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approval · up to %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aprobación · hasta %1$@"
+          }
+        }
+      }
+    },
+    "access_policy.summary_direct": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direct"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Directo"
+          }
+        }
+      }
+    },
+    "access_policy.target_group %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Group %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grupo %1$@"
+          }
+        }
+      }
+    },
+    "access_policy.target_host %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host %1$@"
+          }
+        }
+      }
+    },
+    "access_policy.target_vault": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The whole vault"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toda la bóveda"
+          }
+        }
+      }
+    },
+    "access_policy.the_vault": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the whole vault"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "toda la bóveda"
+          }
+        }
+      }
+    },
+    "access_policy.title_group %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access policy of the group %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política de acceso del grupo %1$@"
+          }
+        }
+      }
+    },
+    "access_policy.title_host %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access policy of %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política de acceso de %1$@"
+          }
+        }
+      }
+    },
+    "access_policy.title_vault %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access policy of %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política de acceso de %1$@"
+          }
+        }
+      }
+    },
+    "access_policy.ttl": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A request waits (minutes)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una solicitud espera (minutos)"
+          }
+        }
+      }
+    },
+    "access_policy.vault_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A host follows its own policy, else its nearest group's, else the vault's."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un host sigue su propia política, si no la de su grupo más cercano y si no la de la bóveda."
+          }
+        }
+      }
+    },
+    "access_policy.where_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Groups and hosts get theirs from “Access policy…” in their menu in Hosts."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los grupos y hosts la tienen en «Política de acceso…» de su menú en Hosts."
+          }
+        }
+      }
+    },
     "account.session_expired": {
       "localizations": {
         "en": {
@@ -3609,6 +5553,1318 @@
         }
       }
     },
+    "auth_field.group_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Its hosts use it unless they choose otherwise."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sus hosts lo usan salvo que elijan otra cosa."
+          }
+        }
+      }
+    },
+    "auth_field.inherit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Group's, or password and key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La del grupo, o contraseña y clave"
+          }
+        }
+      }
+    },
+    "auth_field.inherited %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Team certificate, from the group %1$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificado del equipo, del grupo %1$@."
+          }
+        }
+      }
+    },
+    "auth_field.keys_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The host's password, key or identity, as always."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La contraseña, clave o identidad del host, como siempre."
+          }
+        }
+      }
+    },
+    "auth_field.label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authentication"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autenticación"
+          }
+        }
+      }
+    },
+    "auth_field.no_ca": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vault's team has no certificate authority yet: create it in Teams → Security (or Settings → SSH certificates for personal vaults)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El equipo de la bóveda aún no tiene autoridad de certificación: créala en Equipos → Seguridad (o en Ajustes → Certificados SSH para bóvedas personales)."
+          }
+        }
+      }
+    },
+    "auth_field.other %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ (newer version)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ (versión más nueva)"
+          }
+        }
+      }
+    },
+    "auth_field.other_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A method of a newer version: kept as it is; this app uses the host's credentials."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un método de una versión más nueva: se mantiene tal cual; esta app usa las credenciales del host."
+          }
+        }
+      }
+    },
+    "auth_field.team_certificate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Team certificate"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificado del equipo"
+          }
+        }
+      }
+    },
+    "auth_field.team_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A short-lived certificate from the CA of the vault's team (or owner), for your key or a key made just for it. The host must trust the CA."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un certificado de corta duración de la CA del equipo (o propietario) de la bóveda, para tu clave o una creada solo para ello. El host debe confiar en la CA."
+          }
+        }
+      }
+    },
+    "ca.algorithm.ecdsa": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ECDSA P-256 (older OpenSSH)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ECDSA P-256 (OpenSSH antiguos)"
+          }
+        }
+      }
+    },
+    "ca.algorithm.ed25519": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ed25519 (recommended)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ed25519 (recomendado)"
+          }
+        }
+      }
+    },
+    "ca.algorithm.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The private key is made and kept by the server, sealed with its master key; it is never shown."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave privada la crea y guarda el servidor, sellada con su clave maestra; nunca se muestra."
+          }
+        }
+      }
+    },
+    "ca.algorithm.label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algorithm"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algoritmo"
+          }
+        }
+      }
+    },
+    "ca.cert.detail %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "ca.cert.expired": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expired"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caducado"
+          }
+        }
+      }
+    },
+    "ca.cert.revoked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revoked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revocado"
+          }
+        }
+      }
+    },
+    "ca.cert.until %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Until %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hasta %1$@"
+          }
+        }
+      }
+    },
+    "ca.certs.active_only": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only valid ones"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo los vigentes"
+          }
+        }
+      }
+    },
+    "ca.certs.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No certificates."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay certificados."
+          }
+        }
+      }
+    },
+    "ca.certs.open": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Issued certificates"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificados emitidos"
+          }
+        }
+      }
+    },
+    "ca.certs.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Issued certificates"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificados emitidos"
+          }
+        }
+      }
+    },
+    "ca.copied.fingerprint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fingerprint copied"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Huella copiada"
+          }
+        }
+      }
+    },
+    "ca.copied.install": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install command copied: paste it on the host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comando de instalación copiado: pégalo en el host"
+          }
+        }
+      }
+    },
+    "ca.copied.public_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Public key copied"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave pública copiada"
+          }
+        }
+      }
+    },
+    "ca.copied.sshd": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "sshd_config lines copied"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Líneas de sshd_config copiadas"
+          }
+        }
+      }
+    },
+    "ca.create": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create certificate authority"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear autoridad de certificados"
+          }
+        }
+      }
+    },
+    "ca.created_at %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Created %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creada el %1$@"
+          }
+        }
+      }
+    },
+    "ca.disable.button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disable…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desactivar…"
+          }
+        }
+      }
+    },
+    "ca.disable.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No more certificates are issued and its keys stop being published. Hosts set to “Team certificate” fall back to their own credentials."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se emiten más certificados y sus claves dejan de publicarse. Los hosts con «Certificado del equipo» vuelven a sus propias credenciales."
+          }
+        }
+      }
+    },
+    "ca.disable.mismatch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The text does not match"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El texto no coincide"
+          }
+        }
+      }
+    },
+    "ca.disable.ok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disable"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desactivar"
+          }
+        }
+      }
+    },
+    "ca.disable.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disable the certificate authority"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desactivar la autoridad de certificados"
+          }
+        }
+      }
+    },
+    "ca.disable.type %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type %1$@ to confirm"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribe %1$@ para confirmar"
+          }
+        }
+      }
+    },
+    "ca.fingerprint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fingerprint"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Huella"
+          }
+        }
+      }
+    },
+    "ca.hint_personal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A CA of your own for the hosts of your personal vault: they trust it and you get short-lived certificates."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una CA propia para los hosts de tu bóveda personal: confían en ella y recibes certificados de corta duración."
+          }
+        }
+      }
+    },
+    "ca.hint_team": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hosts that trust the team's CA accept short-lived certificates of its members: no public keys to copy to hosts, and access ends by itself."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los hosts que confían en la CA del equipo aceptan certificados de corta duración de sus miembros: no hay que copiar claves públicas a los hosts y el acceso termina solo."
+          }
+        }
+      }
+    },
+    "ca.install.copy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy install command"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar comando de instalación"
+          }
+        }
+      }
+    },
+    "ca.install.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paste the command on each host as a user with sudo: it writes the CA keys, adds TrustedUserCAKeys, checks sshd -t (restoring the old config if it fails) and reloads sshd."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pega el comando en cada host con un usuario con sudo: escribe las claves de la CA, añade TrustedUserCAKeys, comprueba sshd -t (restaura la configuración anterior si falla) y recarga sshd."
+          }
+        }
+      }
+    },
+    "ca.install.krl": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revoked keys list (KRL)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lista de claves revocadas (KRL)"
+          }
+        }
+      }
+    },
+    "ca.install.principals": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Principals file per user"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archivo de principals por usuario"
+          }
+        }
+      }
+    },
+    "ca.install.refresh": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refresh every 15 minutes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualizar cada 15 minutos"
+          }
+        }
+      }
+    },
+    "ca.install.share": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compartir"
+          }
+        }
+      }
+    },
+    "ca.install.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install on a host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar en un host"
+          }
+        }
+      }
+    },
+    "ca.none_personal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You have no certificate authority yet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no tienes autoridad de certificados."
+          }
+        }
+      }
+    },
+    "ca.none_team": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The team has no certificate authority yet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El equipo aún no tiene autoridad de certificados."
+          }
+        }
+      }
+    },
+    "ca.public_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Public key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave pública"
+          }
+        }
+      }
+    },
+    "ca.retiring %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous CA %1$@ is still published until %2$@ (rotation overlap)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La CA anterior %1$@ sigue publicada hasta el %2$@ (solape de la rotación)"
+          }
+        }
+      }
+    },
+    "ca.revoke.serial": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revoke this certificate"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revocar este certificado"
+          }
+        }
+      }
+    },
+    "ca.revoke.user": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revoke all of this member's"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revocar todos los de este miembro"
+          }
+        }
+      }
+    },
+    "ca.revoke_key.button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revoke a key…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revocar una clave…"
+          }
+        }
+      }
+    },
+    "ca.revoke_key.invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paste an OpenSSH public key (ssh-ed25519 AAAA…)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pega una clave pública de OpenSSH (ssh-ed25519 AAAA…)"
+          }
+        }
+      }
+    },
+    "ca.revoke_key.key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Public key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave pública"
+          }
+        }
+      }
+    },
+    "ca.revoke_key.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key gets no new certificates and is listed in the KRL, so hosts with RevokedKeys refuse its current ones too."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave no recibe certificados nuevos y aparece en la KRL, así que los hosts con RevokedKeys también rechazan los que tenga."
+          }
+        }
+      }
+    },
+    "ca.revoke_key.ok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revoke"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revocar"
+          }
+        }
+      }
+    },
+    "ca.revoke_key.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revoke a key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revocar una clave"
+          }
+        }
+      }
+    },
+    "ca.rotate.button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rotate…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rotar…"
+          }
+        }
+      }
+    },
+    "ca.rotate.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A new CA signs from now on. The current one stays published during the overlap, so hosts that refresh their keys keep accepting certificates already issued."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una CA nueva firma desde ahora. La actual sigue publicada durante el solape, para que los hosts que actualizan sus claves sigan aceptando los certificados ya emitidos."
+          }
+        }
+      }
+    },
+    "ca.rotate.ok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rotate"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rotar"
+          }
+        }
+      }
+    },
+    "ca.rotate.overlap": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overlap (hours)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solape (horas)"
+          }
+        }
+      }
+    },
+    "ca.rotate.overlap_error": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The overlap must be 1–720 hours"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El solape debe ser de 1 a 720 horas"
+          }
+        }
+      }
+    },
+    "ca.rotate.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rotate the certificate authority"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rotar la autoridad de certificados"
+          }
+        }
+      }
+    },
+    "ca.sshd_config": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "sshd_config"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "sshd_config"
+          }
+        }
+      }
+    },
+    "ca.sshd_config_hint %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The keys file is public: %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El archivo de claves es público: %1$@"
+          }
+        }
+      }
+    },
+    "ca.status.active": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activa"
+          }
+        }
+      }
+    },
+    "ca.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH certificate authority"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autoridad de certificados SSH"
+          }
+        }
+      }
+    },
+    "cert_fields.default_ttl": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default validity (minutes)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Validez por defecto (minutos)"
+          }
+        }
+      }
+    },
+    "cert_fields.extensions_custom": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose them for these hosts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegirlas para estos hosts"
+          }
+        }
+      }
+    },
+    "cert_fields.force_command_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Optional: the only command these certificates can run"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opcional: el único comando que pueden ejecutar estos certificados"
+          }
+        }
+      }
+    },
+    "cert_fields.force_command_placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For example /usr/local/bin/deploy"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por ejemplo /usr/local/bin/deploy"
+          }
+        }
+      }
+    },
+    "cert_fields.max_ttl": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Longest validity (minutes)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Validez máxima (minutos)"
+          }
+        }
+      }
+    },
+    "cert_fields.principals": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Principals"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Principals"
+          }
+        }
+      }
+    },
+    "cert_fields.principals_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Names in the certificate, separated by commas: {login} (the host's user), {member} (the member's principal), {email}, {user_id} or fixed names such as deploy."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombres del certificado separados por comas: {login} (el usuario del host), {member} (el principal del miembro), {email}, {user_id} o nombres fijos como deploy."
+          }
+        }
+      }
+    },
+    "cert_fields.source_address": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Source addresses"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direcciones de origen"
+          }
+        }
+      }
+    },
+    "cert_fields.ttl": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Longest validity (minutes)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Validez máxima (minutos)"
+          }
+        }
+      }
+    },
+    "certs.for_host": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificates for this host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificados para este host"
+          }
+        }
+      }
+    },
+    "certs.mine": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificates issued to you"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificados emitidos para ti"
+          }
+        }
+      }
+    },
+    "certs.mine_empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None yet: they are made when you connect to a host that uses a team certificate."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía ninguno: se crean al conectar a un host que usa un certificado del equipo."
+          }
+        }
+      }
+    },
+    "certs.none_for_host": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No certificate was issued to you for this host yet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no se te ha emitido ningún certificado para este host."
+          }
+        }
+      }
+    },
+    "certs.purpose.credentials": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Just-in-time credentials"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Credenciales al momento"
+          }
+        }
+      }
+    },
+    "certs.purpose.device": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From an app"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desde una app"
+          }
+        }
+      }
+    },
+    "certs.purpose.server": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server session"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesión del servidor"
+          }
+        }
+      }
+    },
     "common.approve": {
       "localizations": {
         "en": {
@@ -4469,6 +7725,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "Trabajando…"
+          }
+        }
+      }
+    },
+    "conn_details.auth": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authentication"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autenticación"
+          }
+        }
+      }
+    },
+    "conn_details.auth_cert": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Team certificate"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificado del equipo"
+          }
+        }
+      }
+    },
+    "conn_details.title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connection to %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conexión con %1$@"
           }
         }
       }
@@ -5505,6 +8809,150 @@
         }
       }
     },
+    "error.access_approval_required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This host needs an approved access window: request access"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este host necesita una ventana de acceso aprobada: pide acceso"
+          }
+        }
+      }
+    },
+    "error.access_duration_too_long": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That is longer than the policy allows"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es más tiempo del que permite la política"
+          }
+        }
+      }
+    },
+    "error.access_needs_server": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This host has access rules: connect to its server first"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este host tiene reglas de acceso: conéctate antes a su servidor"
+          }
+        }
+      }
+    },
+    "error.access_request_closed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That request is already decided or closed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esa solicitud ya está decidida o cerrada"
+          }
+        }
+      }
+    },
+    "error.access_request_exists": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You already have a request waiting for this"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya tienes una solicitud esperando para esto"
+          }
+        }
+      }
+    },
+    "error.access_request_not_needed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This does not need an approval: connect directly"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esto no necesita aprobación: conéctate directamente"
+          }
+        }
+      }
+    },
+    "error.ai_forbidden_by_policy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The team does not allow the AI on this host"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El equipo no permite la IA en este host"
+          }
+        }
+      }
+    },
+    "error.ca_exists": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There is already an active certificate authority: rotate it instead"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya hay una autoridad de certificados activa: rótala en su lugar"
+          }
+        }
+      }
+    },
+    "error.ca_not_configured": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The team has no SSH certificate authority: an admin creates it in Teams → Security"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El equipo no tiene autoridad de certificados SSH: la crea un administrador en Equipos → Seguridad"
+          }
+        }
+      }
+    },
     "error.cancelled": {
       "localizations": {
         "en": {
@@ -5517,6 +8965,86 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cancelado"
+          }
+        }
+      }
+    },
+    "error.certificate_key_not_owned": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That key cannot be certified for you"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esa clave no se puede certificar para ti"
+          }
+        }
+      }
+    },
+    "error.certificate_key_revoked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That key is revoked: it cannot get certificates"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esa clave está revocada: no puede recibir certificados"
+          }
+        }
+      }
+    },
+    "error.certificate_no_principals": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No principal names for the certificate: check the login user or the principal templates"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay nombres (principals) para el certificado: revisa el usuario o las plantillas de principals"
+          }
+        }
+      }
+    },
+    "error.certificate_proof_invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The proof of possession of the key was not accepted (check this device's clock)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ha aceptado la prueba de posesión de la clave (revisa la hora de este dispositivo)"
+          }
+        }
+      }
+    },
+    "error.connect_only": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect only members connect through the server or with team certificates"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los miembros que solo conectan lo hacen a través del servidor o con certificados del equipo"
           }
         }
       }
@@ -5581,6 +9109,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$@ no es un host conocido (huella %2$@): confirma su huella antes de conectar."
+          }
+        }
+      }
+    },
+    "error.invalid_reason": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Give a reason (1–500 characters)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indica un motivo (de 1 a 500 caracteres)"
           }
         }
       }
@@ -5693,6 +9237,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "A este host se llega por una red privada: solo llega el servidor de su cuenta. Inicia sesión en esa cuenta (su servidor necesita redes privadas) o abre una sesión en el servidor."
+          }
+        }
+      }
+    },
+    "error.networks_forbidden_by_policy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The team does not allow private networks in this vault"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El equipo no permite redes privadas en esta bóveda"
+          }
+        }
+      }
+    },
+    "error.not_an_approver": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are not an approver of this request"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No eres aprobador de esta solicitud"
           }
         }
       }
@@ -5837,6 +9413,38 @@
         }
       }
     },
+    "error.policy_requires_2fa": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on two-step verification on your account before requiring it from the team"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activa la verificación en dos pasos en tu cuenta antes de exigirla al equipo"
+          }
+        }
+      }
+    },
+    "error.recording_required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sessions on this host must be recorded: update the app or open a server session"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las sesiones en este host se deben grabar: actualiza la app o abre una sesión del servidor"
+          }
+        }
+      }
+    },
     "error.relay_limit %lld": {
       "localizations": {
         "en": {
@@ -5881,6 +9489,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "Este vault es de Solo uso para ti: sus contraseñas y claves no se muestran."
+          }
+        }
+      }
+    },
+    "error.secret_reveal_forbidden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The team does not allow revealing or exporting the secrets of this vault"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El equipo no permite revelar ni exportar los secretos de esta bóveda"
+          }
+        }
+      }
+    },
+    "error.self_approval_forbidden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You cannot approve your own request"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No puedes aprobar tu propia solicitud"
+          }
+        }
+      }
+    },
+    "error.team_2fa_required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A team requires two-step verification: set it up in Settings"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un equipo exige la verificación en dos pasos: actívala en Ajustes"
           }
         }
       }
@@ -21744,6 +25400,22 @@
         }
       }
     },
+    "push.kind.access_decided": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your access requests decided"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus solicitudes de acceso decididas"
+          }
+        }
+      }
+    },
     "push.kind.access_request": {
       "localizations": {
         "en": {
@@ -22412,6 +26084,182 @@
           "stringUnit": {
             "state": "translated",
             "value": "Snippets"
+          }
+        }
+      }
+    },
+    "recordings.by %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "recordings.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No recordings."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay grabaciones."
+          }
+        }
+      }
+    },
+    "recordings.error.format": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is not an asciicast v2 recording"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No es una grabación asciicast v2"
+          }
+        }
+      }
+    },
+    "recordings.from_device": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "from an app"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "desde una app"
+          }
+        }
+      }
+    },
+    "recordings.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recorded sessions of this vault's hosts (server sessions and local terminals uploaded by the apps)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesiones grabadas de los hosts de esta bóveda (sesiones del servidor y terminales locales que suben las apps)."
+          }
+        }
+      }
+    },
+    "recordings.pause": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausa"
+          }
+        }
+      }
+    },
+    "recordings.play": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Play"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reproducir"
+          }
+        }
+      }
+    },
+    "recordings.player_title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recording: %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grabación: %1$@"
+          }
+        }
+      }
+    },
+    "recordings.restart": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From the start"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desde el principio"
+          }
+        }
+      }
+    },
+    "recordings.share": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share (.cast)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compartir (.cast)"
+          }
+        }
+      }
+    },
+    "recordings.speed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Velocidad"
           }
         }
       }
@@ -24012,6 +27860,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vibrar con la campana"
+          }
+        }
+      }
+    },
+    "settings.certificates": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH certificates"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificados SSH"
           }
         }
       }
@@ -29368,6 +33232,542 @@
         }
       }
     },
+    "team_2fa.blocked_detail": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The team requires two-step verification and the grace period is over. Turn it on and they come back at once."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El equipo exige verificación en dos pasos y el periodo de gracia ha terminado. Actívala y vuelven al momento."
+          }
+        }
+      }
+    },
+    "team_2fa.blocked_title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: its vaults are hidden"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: sus bóvedas están ocultas"
+          }
+        }
+      }
+    },
+    "team_2fa.detail %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn it on before %1$@ to keep access to the team's vaults."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actívala antes del %1$@ para no perder el acceso a las bóvedas del equipo."
+          }
+        }
+      }
+    },
+    "team_2fa.setup": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up two-step verification"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activar verificación en dos pasos"
+          }
+        }
+      }
+    },
+    "team_2fa.title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ requires two-step verification"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ exige verificación en dos pasos"
+          }
+        }
+      }
+    },
+    "team_security.ai.allowed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow the AI on the team's hosts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir la IA en los hosts del equipo"
+          }
+        }
+      }
+    },
+    "team_security.ai.approval": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI approvals"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aprobaciones de la IA"
+          }
+        }
+      }
+    },
+    "team_security.ai.approval_always": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always ask before running anything"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preguntar siempre antes de ejecutar nada"
+          }
+        }
+      }
+    },
+    "team_security.ai.approval_default": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As each task says"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo que diga cada tarea"
+          }
+        }
+      }
+    },
+    "team_security.allow_reveal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editors can reveal and export secrets"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los editores pueden revelar y exportar secretos"
+          }
+        }
+      }
+    },
+    "team_security.cert_defaults": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificates"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificados"
+          }
+        }
+      }
+    },
+    "team_security.compliance.all": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every member has two-step verification."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todos los miembros tienen verificación en dos pasos."
+          }
+        }
+      }
+    },
+    "team_security.compliance.blocked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No 2FA · blocked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin 2FA · bloqueado"
+          }
+        }
+      }
+    },
+    "team_security.compliance.missing %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld member has no two-step verification."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld members have no two-step verification."
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld miembro no tiene verificación en dos pasos."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld miembros no tienen verificación en dos pasos."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "team_security.compliance.off": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No 2FA"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin 2FA"
+          }
+        }
+      }
+    },
+    "team_security.compliance.on": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2FA on"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2FA activada"
+          }
+        }
+      }
+    },
+    "team_security.compliance.principal %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · principal %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · principal %2$@"
+          }
+        }
+      }
+    },
+    "team_security.compliance.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two-step verification and principals"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificación en dos pasos y principals"
+          }
+        }
+      }
+    },
+    "team_security.compliance.until %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No 2FA · until %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin 2FA · hasta el %1$@"
+          }
+        }
+      }
+    },
+    "team_security.grace_days": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grace period (days)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Periodo de gracia (días)"
+          }
+        }
+      }
+    },
+    "team_security.networks": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow private networks"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir redes privadas"
+          }
+        }
+      }
+    },
+    "team_security.policy_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Team policy"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política del equipo"
+          }
+        }
+      }
+    },
+    "team_security.principal.invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1–64 letters, digits or . _ @ + -"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De 1 a 64 letras, dígitos o . _ @ + -"
+          }
+        }
+      }
+    },
+    "team_security.principal.message %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The name {member} becomes in certificates. Empty: %1$@ (from the email)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El nombre que toma {member} en los certificados. Vacío: %1$@ (del email)."
+          }
+        }
+      }
+    },
+    "team_security.principal.title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Principal of %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Principal de %1$@"
+          }
+        }
+      }
+    },
+    "team_security.read_only": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only the team's owners and admins change these settings."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo los propietarios y administradores del equipo cambian estos ajustes."
+          }
+        }
+      }
+    },
+    "team_security.record": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record every session"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grabar todas las sesiones"
+          }
+        }
+      }
+    },
+    "team_security.require_2fa": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Require two-step verification"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exigir verificación en dos pasos"
+          }
+        }
+      }
+    },
+    "team_security.require_2fa_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Members without it lose access to the team's vaults after the grace period (owners and admins too). You need it on your account first."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los miembros sin ella pierden el acceso a las bóvedas del equipo tras el periodo de gracia (también propietarios y administradores). Antes la necesitas en tu cuenta."
+          }
+        }
+      }
+    },
+    "team_security.save": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save policy"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardar política"
+          }
+        }
+      }
+    },
+    "team_security.saved": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Team policy saved"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política del equipo guardada"
+          }
+        }
+      }
+    },
+    "team_security.title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Security · %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguridad · %1$@"
+          }
+        }
+      }
+    },
     "teams.add_member": {
       "localizations": {
         "en": {
@@ -29912,6 +34312,22 @@
         }
       }
     },
+    "teams.security": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Security"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguridad"
+          }
+        }
+      }
+    },
     "teams.you": {
       "localizations": {
         "en": {
@@ -29956,6 +34372,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Este vault solo permite conectar a través del servidor, y el servidor no abre sesiones Telnet"
+          }
+        }
+      }
+    },
+    "term.access_window %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceso %1$@"
+          }
+        }
+      }
+    },
+    "term.connection_details": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connection details"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detalles de la conexión"
           }
         }
       }
@@ -32984,6 +37432,22 @@
         }
       }
     },
+    "vaults.connect_only_badge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect only"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo conectar"
+          }
+        }
+      }
+    },
     "vaults.create": {
       "localizations": {
         "en": {
@@ -33076,6 +37540,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Editar vault"
+          }
+        }
+      }
+    },
+    "vaults.explicit_admin_no_delete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are an Admin of this vault by a grant: only its owner (or the team's owners and admins) can delete it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eres Admin de esta bóveda por una concesión: solo su propietario (o los propietarios y administradores del equipo) pueden borrarla."
           }
         }
       }
@@ -33624,18 +38104,34 @@
         }
       }
     },
-    "vaults.role.editor": {
+    "vaults.role.connect_only": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Editor"
+            "value": "Connect only"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Editor"
+            "value": "Solo conectar"
+          }
+        }
+      }
+    },
+    "vaults.role.editor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editar"
           }
         }
       }
@@ -33693,13 +38189,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Manager"
+            "value": "Admin"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gestor"
+            "value": "Admin"
           }
         }
       }
@@ -33709,13 +38205,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Use only"
+            "value": "Use"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Solo uso"
+            "value": "Usar"
           }
         }
       }
@@ -33732,6 +38228,86 @@
           "stringUnit": {
             "state": "translated",
             "value": "Los miembros de Solo uso se conectan a los hosts pero nunca ven sus contraseñas ni claves, y no pueden cambiar nada."
+          }
+        }
+      }
+    },
+    "vaults.role_hint.connect_only": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connects through the server or with team certificates. Never gets passwords or keys, not even for a moment."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se conecta a través del servidor o con certificados del equipo. Nunca recibe contraseñas ni claves, ni siquiera por un momento."
+          }
+        }
+      }
+    },
+    "vaults.role_hint.editor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sees and changes the items and their secrets (unless the team forbids revealing them)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ve y cambia los elementos y sus secretos (salvo que el equipo prohíba revelarlos)."
+          }
+        }
+      }
+    },
+    "vaults.role_hint.manager": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Also manages members, settings and access policies. Cannot delete the vault."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Además gestiona miembros, ajustes y políticas de acceso. No puede borrar la bóveda."
+          }
+        }
+      }
+    },
+    "vaults.role_hint.unknown": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A role of a newer version: no access here."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un rol de una versión más nueva: aquí no da acceso."
+          }
+        }
+      }
+    },
+    "vaults.role_hint.use_only": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connects and runs commands without seeing passwords or keys (gets them just in time unless the vault is Strict)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se conecta y ejecuta comandos sin ver contraseñas ni claves (las recibe justo a tiempo salvo que la bóveda sea Estricta)."
           }
         }
       }
@@ -33796,6 +38372,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Estricto: los miembros de Solo uso solo se conectan a través del servidor, así las contraseñas y claves nunca llegan a sus dispositivos (sin túneles locales)."
+          }
+        }
+      }
+    },
+    "vaults.tab.recordings": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recordings"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grabaciones"
           }
         }
       }
@@ -33908,6 +38500,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Solo uso"
+          }
+        }
+      }
+    },
+    "vaults.you_connect_only": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can connect to its hosts through the server or with team certificates, but never see or receive their passwords or keys."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Puedes conectarte a sus hosts a través del servidor o con certificados del equipo, pero nunca ves ni recibes sus contraseñas ni claves."
           }
         }
       }

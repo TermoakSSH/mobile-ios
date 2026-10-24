@@ -41,15 +41,15 @@ enum DemoData {
         [
             VaultInfo(id: workVault, accountId: work, name: "Personal", description: "", kind: .personal, role: .manager,
                       teamId: nil, teamName: nil, ownerName: "Alex Rivera", color: nil, icon: nil,
-                      memberCount: 1, hostCount: 1, strict: false, teamMemberRole: nil),
+                      memberCount: 1, hostCount: 1, strict: false, teamMemberRole: nil, policy: nil),
             VaultInfo(id: opsVault, accountId: work, name: "Ops",
                       description: demoText("Production and staging servers of the web shop.",
                                             "Servidores de producción y staging de la tienda web."),
                       kind: .shared, role: .manager, teamId: nil, teamName: nil, ownerName: "Alex Rivera",
-                      color: "#f59e0b", icon: "server", memberCount: 5, hostCount: 11, strict: false, teamMemberRole: nil),
+                      color: "#f59e0b", icon: "server", memberCount: 5, hostCount: 11, strict: false, teamMemberRole: nil, policy: nil),
             VaultInfo(id: homeVault, accountId: personal, name: "Personal", description: "", kind: .personal, role: .manager,
                       teamId: nil, teamName: nil, ownerName: "Alex Rivera", color: nil, icon: nil,
-                      memberCount: 1, hostCount: 1, strict: false, teamMemberRole: nil),
+                      memberCount: 1, hostCount: 1, strict: false, teamMemberRole: nil, policy: nil),
         ]
     }
 

@@ -109,6 +109,10 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     @Published var waiting: WaitingRoom?
     /// The server sent you away for good: there is no reconnecting.
     @Published var ended: ShareEnd?
+    /// Connecting needs an approved access window (teams security, 0.7
+    /// phase 4d): the terminal shows "Approval needed" / "Waiting for
+    /// approval" and connects by itself when the window opens.
+    @Published var accessNeed: AccessNeed?
     /// Short message over the terminal ("You have control"...).
     @Published private(set) var flash: String?
     private var flashCount = 0
@@ -245,6 +249,18 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
 
     func start() {}
     func reconnect() {}
+
+    /// A connection error: remembers the approval it asks for (or forgets it).
+    func noteAccessError(_ error: Error) {
+        accessNeed = AccessTexts.need(error, hostId: hostId)
+    }
+
+    /// The window opened: connect again.
+    func accessGranted() {
+        guard accessNeed != nil else { return }
+        accessNeed = nil
+        reconnect()
+    }
     /// Releases the connection (a server session stays alive there).
     func disconnect() {}
     fileprivate func send(_ data: Data) {}
@@ -876,6 +892,7 @@ final class LocalTerminal: TerminalSession {
                 }
                 _ = view.becomeFirstResponder()
             } catch {
+                noteAccessError(error)
                 state = .closed(userMessage(error))
             }
         }
@@ -932,6 +949,7 @@ final class LocalTerminal: TerminalSession {
         disconnect()
         view.feed(text: "\u{1b}c")
         forgetLine()
+        accessNeed = nil
         start()
     }
 
@@ -1168,6 +1186,8 @@ final class ServerTerminal: TerminalSession {
     private(set) var joinMode: JoinMode = .account
     /// A new session is recorded on the server (`nil`: as the host says).
     var record: Bool?
+    /// The teams security reason the server closed it with, kept over a later `session_ended`.
+    private(set) var closeReason: String?
     /// The first `hello` arrived (who you are is known).
     private var greeted = false
     /// Last size of the view: sent only while you can write.
@@ -1266,6 +1286,7 @@ final class ServerTerminal: TerminalSession {
                 sendSize()
                 if canWrite { _ = view.becomeFirstResponder() }
             } catch {
+                noteAccessError(error)
                 state = .closed(userMessage(error))
             }
         }
@@ -1278,6 +1299,8 @@ final class ServerTerminal: TerminalSession {
         view.feed(text: "\u{1b}c")
         forgetLine()
         waiting = nil
+        closeReason = nil
+        accessNeed = nil
         start()
     }
 
@@ -1475,6 +1498,13 @@ final class ServerTerminal: TerminalSession {
             // Not fatal (an action that was not allowed): the connection stays.
             showFlash(message)
         case .ended(let code, let message):
+            // The server closed it for an access window and then ends the shared session (session_ended): the first reason stays.
+            if AccessRules.isCloseReason(closeReason) && !AccessRules.isCloseReason(code) {
+                waiting = nil
+                canWrite = false
+                requests = []
+                break
+            }
             let end = ShareEnd(code: code, message: message)
             ended = end
             waiting = nil
@@ -1495,8 +1525,16 @@ final class ServerTerminal: TerminalSession {
         case .running: state = .connected
         case .hostOffline: state = .connecting(String(localized: "terminal.state.host_offline"))
         case .closed(let code, let reason):
-            // The server's reasons are English text; a security key one is translated.
-            state = .closed(reason.map(serverErrorText) ?? code.map { String(localized: "terminal.state.ended_code \(Int($0))") }
+            if let reason { closeReason = AccessRules.keptReason(previous: closeReason, next: reason) }
+            // Refused for lack of a window (only the text): ask the server about the host.
+            if let reason, AccessRules.code(ofMessage: reason) == "access_approval_required", let accountId, let hostId {
+                Task { @MainActor in
+                    if let a = await AccessBook.shared.ask(accountId, hostId, force: true), !a.allowed { self.accessNeed = a.need }
+                }
+            }
+            // The server's reasons are English text; access and security key ones are translated.
+            state = .closed((closeReason ?? reason).map { AccessTexts.serverText($0) ?? serverErrorText($0) }
+                ?? code.map { String(localized: "terminal.state.ended_code \(Int($0))") }
                 ?? String(localized: "terminal.state.session_closed"))
         }
     }
@@ -1883,10 +1921,43 @@ final class Sessions: ObservableObject {
     }
 
     /// Connects to a host from this device, or through its server when it
-    /// is a Use-only host of a Strict vault (its secrets never leave the
-    /// server).
+    /// is a Use-only host of a Strict vault or a Connect only one (their
+    /// secrets never leave the server), unless the host uses a team
+    /// certificate (the engine certifies a key made just for it).
     func connect(_ host: SshHost, strict: Bool) {
-        if strict && host.isUseOnly && host.accountId != nil { openOnServer(host) } else { openLocal(host) }
+        if host.accountId != nil && Self.onServer(host, strict: strict, teamCertificate: teamCertificateUsable(host)) {
+            openOnServer(host)
+        } else {
+            openLocal(host)
+        }
+    }
+
+    static func onServer(_ host: SshHost, strict: Bool, teamCertificate: Bool) -> Bool {
+        AccessRules.route(host.access.level, strict: strict, telnet: host.isTelnet, teamCertificateUsable: teamCertificate) == .server
+    }
+
+    /// "Team certificate" applies to the host (its own or its nearest
+    /// group's), its vault's owner has a CA and its server has teams security.
+    func teamCertificateUsable(_ host: SshHost) -> Bool {
+        guard let a = host.accountId, AccessBook.shared.isSupported(a),
+              let v = accounts?.vault(a, host.vaultId), v.gates.certificates else { return false }
+        let groups = ((try? core.listGroups(filter: ItemFilter(accountIds: [a], vaultIds: nil, includeDevice: false))) ?? [])
+            .filter { $0.vaultId == host.vaultId }
+            .map { GroupAuthLink(id: $0.id, name: $0.name, parentId: $0.parentId, auth: $0.settings.auth) }
+        return AccessRules.effectiveAuth(own: host.settings.auth, groupId: host.groupId, groups: groups).teamCertificate
+    }
+
+    /// The accounts (vault policies), set by the app.
+    weak var accounts: Accounts?
+
+    /// Terminals waiting for an access window ask about their host again
+    /// (after an `access_request` event, or every 20 s): when it is open,
+    /// they connect.
+    func checkWaiting(_ accountId: String? = nil) async {
+        for t in open where t.accessNeed != nil && (accountId == nil || t.accountId == accountId) {
+            guard let a = t.accountId, let h = t.hostId else { continue }
+            if let access = await AccessBook.shared.ask(a, h, force: true), access.allowed { t.accessGranted() }
+        }
     }
 
     /// `owner`: one of yours (`false` for the ones shared with you).

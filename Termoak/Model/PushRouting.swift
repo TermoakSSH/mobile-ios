@@ -20,7 +20,7 @@ struct PushInfo: Equatable {
 
     /// `ai_approval`, `ai_finished`, `session_shared`, `session_prompt`,
     /// `join_request`, `control_request`, `team_added`,
-    /// `security_key_request`, `access_request`, `test`, `resolved`.
+    /// `security_key_request`, `access_request`, `access_decided`, `test`, `resolved`.
     var kind: String
     var category: Category
     /// The collapse key (APNs `apns-collapse-id`: the notification's
@@ -85,6 +85,9 @@ enum PushActionId {
     static let dismiss = "com.apple.UNNotificationDismissActionIdentifier"
 }
 
+/// Which confirmation a notification's button opens on the Access screen.
+enum AccessDecision: Equatable { case approve, deny }
+
 /// Where a tapped notification (or one of its actions) takes the app.
 enum PushRoute: Equatable {
     case none
@@ -98,7 +101,11 @@ enum PushRoute: Equatable {
     /// Just the app in front: the vault opens (app lock first) and the
     /// events socket answers the waiting request.
     case securityKey(requestId: String?)
-    /// The app in front (test, access requests until phase 4b has a screen).
+    /// Temporary access (teams security, 0.7 phase 4d): the Access screen,
+    /// on that request (`mine`: My requests). Approve/Deny only open its
+    /// confirmation there (`decide`), never decide by themselves.
+    case access(requestId: String?, mine: Bool, decide: AccessDecision?)
+    /// The app in front (a test, an unknown kind).
     case app
 
     /// Approve and Deny never decide: they open the same confirmation a tap
@@ -119,6 +126,11 @@ enum PushRoute: Equatable {
             return .teams
         case "security_key_request":
             return .securityKey(requestId: info.data["request_id"])
+        case "access_request":
+            let decide: AccessDecision? = action == PushActionId.approve ? .approve : action == PushActionId.deny ? .deny : nil
+            return .access(requestId: info.data["request_id"], mine: false, decide: decide)
+        case "access_decided":
+            return .access(requestId: info.data["request_id"], mine: true, decide: nil)
         default:
             return .app
         }

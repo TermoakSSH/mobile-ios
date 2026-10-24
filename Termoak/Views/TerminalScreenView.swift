@@ -68,6 +68,25 @@ private struct TerminalContent: View {
     @State private var filling: SnippetChoice?
     @State private var showingFiles = false
     @State private var tunnelsHost: SshHost?
+    /// Teams security: the team certificates of this connection.
+    @State private var certificatesOf: SshHost?
+
+    /// The host of this terminal (from the stores).
+    private var hostRecord: SshHost? {
+        session.hostId.flatMap { try? model.core.getHost(id: $0, accountId: session.accountId) }
+    }
+
+    /// The host's team allows the AI (always without a team policy).
+    private var aiAllowed: Bool {
+        guard let h = hostRecord else { return true }
+        return account.gates(h.accountId, h.vaultId).ai
+    }
+
+    /// A host that uses team certificates (its connection details show them).
+    private var teamCertificateHost: SshHost? {
+        guard let h = hostRecord, AccessBook.shared.isSupported(h.accountId), sessions.teamCertificateUsable(h) else { return nil }
+        return h
+    }
     /// Height of the keyboard with the bar: the panel takes the same (no jumps).
     @AppStorage("alto_teclado") private var keyboardHeight: Double = 320
     /// Rightward drag of the copilot (to close it).
@@ -116,6 +135,14 @@ private struct TerminalContent: View {
             }
             // Laid out above the keyboard, so its box to write in is never under it.
             phoneCopilot
+            // Teams security: "Approval needed" / "Waiting for approval" instead of the error; it connects by itself.
+            if let need = session.accessNeed, case .closed = session.state {
+                Color.black.opacity(0.35).ignoresSafeArea()
+                TerminalAccessCard(accountId: session.accountId, hostId: session.hostId, hostLabel: session.label, need: need) {
+                    sessions.close(session.id)
+                }
+                .environmentObject(model)
+            }
         }
         .background(theme.backgroundColor.ignoresSafeArea())
         .background((sessions.quickPanelOpen && !side ? theme.barColor : theme.backgroundColor).ignoresSafeArea())
@@ -162,6 +189,9 @@ private struct TerminalContent: View {
         }
         .sheet(item: Binding(get: { tunnelsHost.map(SelectedHost.init) }, set: { tunnelsHost = $0?.host })) { e in
             TunnelsView(host: e.host).environmentObject(model)
+        }
+        .sheet(item: Binding(get: { certificatesOf.map(SelectedHost.init) }, set: { certificatesOf = $0?.host })) { e in
+            ConnectionCertificatesView(host: e.host).environmentObject(model)
         }
         .sheet(item: $filling) { e in
             SnippetRunForm(snippet: e.snippet, run: e.action.run,
@@ -399,6 +429,8 @@ private struct TerminalContent: View {
             TerminalNetworkVia(hostId: session.hostId, accountId: session.accountId).padding(.leading, 4)
             if showsLatency { latencyBadge.padding(.leading, 4) }
             if recordingPath != nil { recordingBadge }
+            // Teams security: the access window's time left and "Recorded".
+            TerminalAccessPills(accountId: session.accountId, hostId: session.hostId).padding(.leading, 4)
             Spacer()
             pasteButton
             if sessions.splitAvailable {
@@ -410,7 +442,7 @@ private struct TerminalContent: View {
             }
             gestureButton
             if showsPeopleButton { peopleButton }
-            copilotButton
+            if aiAllowed { copilotButton }
             panelButton
             moreMenu
         }
@@ -649,7 +681,12 @@ private struct TerminalContent: View {
             Label("terminal.menu.copy_screen", systemImage: "doc.on.doc")
         }
         Button { finding = true } label: { Label("shortcut.find", systemImage: "magnifyingglass") }
-        Button { askAiAboutSelection() } label: { Label("terminal.menu.ask_ai", systemImage: "sparkles") }
+        if aiAllowed {
+            Button { askAiAboutSelection() } label: { Label("terminal.menu.ask_ai", systemImage: "sparkles") }
+        }
+        if let h = teamCertificateHost {
+            Button { certificatesOf = h } label: { Label("term.connection_details", systemImage: "checkmark.shield") }
+        }
         Button { session.clearTerminal() } label: { Label("terminal.menu.clear", systemImage: "eraser") }
         Button { settings.changeFontSize(1) } label: { Label("common.font_larger", systemImage: "textformat.size.larger") }
         Button { settings.changeFontSize(-1) } label: { Label("common.font_smaller", systemImage: "textformat.size.smaller") }

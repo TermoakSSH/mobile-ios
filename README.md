@@ -137,6 +137,28 @@ What Apple needs (once the Apple Developer account and its Team ID exist):
    and its Key ID go to the servers' `[push.apns]` with the Team ID and the
    bundle id (server `docs/DEPLOYMENT.md`, APNs). Never in this repository.
 
+### Teams security (0.7)
+
+With servers that have `teams_security` (0.7+): roles Connect only / Use /
+Edit / Admin (an Admin by grant can't delete the vault); Connect only and
+Strict hosts open on the device with a team certificate (the engine
+certifies a key made just for it) or as server sessions; Teams → a team →
+Security (the SSH CA with its fingerprint, `sshd_config` lines and the
+install command as a heredoc to copy or share, rotate, disable, issued
+certificates and revocation; the team policy; 2FA compliance and
+principals); Settings → SSH certificates (your own CA and your
+certificates); "Team certificate" authentication on hosts and groups; access
+policies per vault, group and host; "Approval needed" → Request access,
+waiting, and the terminal connects by itself when the window opens
+(countdown, every second in the last two minutes); Settings → Access
+(requests to decide with a shorter window and a note, deny with a reason,
+end windows early, your requests); `access_request` / `access_decided`
+notifications only open that screen; reveal/export, the AI and the network
+picker hidden where the team forbids them; "Recorded"; vault recordings with
+a player; the 2FA banner. Code: `Model/AccessRules.swift` (pure, unit
+tested), `Model/AccessBook.swift`, `Views/AccessViews.swift`,
+`Views/TeamSecurityViews.swift`, `Views/AccessPolicyViews.swift`.
+
 ### Another server as the official one
 
 The "official server" button signs in to `https://termoak.com`. To test

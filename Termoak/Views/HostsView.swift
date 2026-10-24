@@ -33,6 +33,12 @@ struct HostsView: View {
     @State private var editing: HostEdit?
     @State private var filesHost: SshHost?
     @State private var tunnelsHost: SshHost?
+    /// Teams security: Request access for a host, or an access policy to edit.
+    @State private var requestingAccess: SshHost?
+    @State private var editingPolicy: PolicyTarget?
+    /// The 2FA banner's "Set up two-step verification".
+    @State private var twoFactorFor: String?
+    @ObservedObject private var accessBook = AccessBook.shared
     /// A host being tested from the server through its private network.
     @State private var networkTesting: SshHost?
     @State private var deleting: SshHost?
@@ -284,6 +290,34 @@ struct HostsView: View {
             .environmentObject(model)
             .environmentObject(account)
         }
+        .sheet(item: Binding(get: { requestingAccess.map(SelectedHost.init) }, set: { requestingAccess = $0?.host })) { e in
+            if let a = e.host.accountId, let info = accessBook.host(a, e.host.id) {
+                RequestAccessSheet(accountId: a, hostId: e.host.id, hostLabel: e.host.displayName, need: info.need)
+                    .environmentObject(model)
+            }
+        }
+        .sheet(item: Binding(get: { twoFactorFor.map { AccountRef(id: $0) } }, set: { twoFactorFor = $0?.id })) { r in
+            NavigationView {
+                TwoFactorView(accountId: r.id)
+                    .toolbar { ToolbarItem(placement: .cancellationAction) { Button("common.done") { twoFactorFor = nil } } }
+            }
+            .navigationViewStyle(.stack)
+            .environmentObject(model).environmentObject(account)
+        }
+        .sheet(item: $editingPolicy) { t in
+            NavigationView {
+                AccessPolicyEditor(vault: t.vault, kind: t.kind, targetId: t.id, name: t.name)
+                    .toolbar { ToolbarItem(placement: .cancellationAction) { Button("common.done") { editingPolicy = nil } } }
+            }
+            .navigationViewStyle(.stack)
+            .environmentObject(model).environmentObject(account)
+        }
+        .task(id: hosts.count) {
+            // The window of hosts in vaults with access policies (asked once in a while, and after each event).
+            for h in hosts.prefix(100) where h.accountId != nil && account.gates(h.accountId, h.vaultId).accessRules {
+                await accessBook.ask(h.accountId!, h.id)
+            }
+        }
         .sheet(isPresented: $importingConfig, onDismiss: load) {
             ImportView().environmentObject(model).environmentObject(account)
         }
@@ -407,6 +441,10 @@ struct HostsView: View {
                 }
                 if !sessions.onServer.isEmpty {
                     Section { serverNotice }
+                }
+                // Teams security: a team requires two-step verification from you.
+                if !accessBook.team2faAll.isEmpty {
+                    Section { Team2faBanner { twoFactorFor = accessBook.team2faAll.first?.account } }
                 }
             }
             if hosts.isEmpty && groups.isEmpty && !searching {
@@ -1020,11 +1058,21 @@ struct HostsView: View {
         } label: {
             Label("hosts.menu.copy_address", systemImage: "doc.on.doc")
         }
+        // Teams security: ask for a window when the host needs one; Admins set its access policy.
+        if let a = accessBook.host(host.accountId, host.id), !a.allowed, a.pending == nil {
+            Button { requestingAccess = host } label: { Label("access.menu.request", systemImage: "lock.badge.clock") }
+        }
+        if let v = account.vault(host.accountId, host.vaultId), v.canManage, v.kind != .personal, accessBook.isSupported(host.accountId) {
+            Button { editingPolicy = PolicyTarget(vault: v, kind: "host", id: host.id, name: host.displayName) } label: {
+                Label("access.menu.policy", systemImage: "checkmark.shield")
+            }
+        }
         HostStatusMenuItem(host: host)
         // Through its private network: the server tests it (only when asked).
         HostNetworkTestMenuItem(host: host) { networkTesting = host }
         if desktop && host.canEdit { moveToGroupMenu(host) }
-        if !account.list.isEmpty && !host.isUseOnly {
+        // A vault whose team forbids revealing secrets keeps them: no moving or copying them out.
+        if !account.list.isEmpty && !host.isUseOnly && account.gates(host.accountId, host.vaultId).reveal {
             let place = account.place(accountId: host.accountId, vaultId: host.vaultId)
             Menu {
                 if host.canEdit {
@@ -1062,6 +1110,11 @@ struct HostsView: View {
         if g.canEdit {
             Divider()
             Button { editedGroup = GroupEdit(group: g) } label: { Label("hosts.group.edit", systemImage: "pencil") }
+        }
+        if let v = account.vault(g.accountId, g.vaultId), v.canManage, v.kind != .personal, accessBook.isSupported(g.accountId) {
+            Button { editingPolicy = PolicyTarget(vault: v, kind: "group", id: g.id, name: g.name) } label: {
+                Label("access.menu.policy", systemImage: "checkmark.shield")
+            }
         }
         if !account.list.isEmpty && g.canEdit {
             groupTransferMenu(g)
@@ -1114,7 +1167,13 @@ struct HostsView: View {
         strict.forEach { sessions.openOnServer($0) }
     }
 
+    /// Connections and files of the host go through its server: Strict
+    /// Use only, or Connect only, without a usable team certificate.
     private func isStrict(_ host: SshHost) -> Bool {
+        host.accountId != nil && Sessions.onServer(host, strict: strictVault(host), teamCertificate: sessions.teamCertificateUsable(host))
+    }
+
+    private func strictVault(_ host: SshHost) -> Bool {
         host.isUseOnly && account.isStrict(accountId: host.accountId, vaultId: host.vaultId)
     }
 
@@ -1153,7 +1212,7 @@ struct HostsView: View {
         if onServer {
             sessions.openOnServer(host)
         } else {
-            sessions.connect(host, strict: isStrict(host))
+            sessions.connect(host, strict: strictVault(host))
         }
     }
 
@@ -1509,6 +1568,9 @@ private extension HostsView {
                 .padding(12)
                 .background(Color(.secondarySystemGroupedBackground), in: card)
         }
+        if !accessBook.team2faAll.isEmpty {
+            Team2faBanner { twoFactorFor = accessBook.team2faAll.first?.account }
+        }
     }
 
     /// The sections of the grid: the results of the search, the favorites,
@@ -1712,6 +1774,17 @@ private struct GroupRow: View {
 
 /// A host: avatar, name, "ssh, user", its vault and its tags. Tapping it
 /// connects (while selecting, it selects it).
+/// An account to open a screen for.
+struct AccountRef: Identifiable { let id: String }
+
+/// A host, group or vault whose access policy is being edited.
+struct PolicyTarget: Identifiable {
+    let vault: VaultInfo
+    let kind: String
+    let id: String
+    let name: String
+}
+
 private struct HostRow: View {
     let host: SshHost
     var selecting = false
@@ -1737,6 +1810,12 @@ private struct HostRow: View {
         }
     }
 
+    /// Teams security chips: the access window, Recorded, Connect only.
+    private var hasAccessChips: Bool {
+        AccessBook.shared.window(host.accountId, host.id) != nil || host.access == .connectOnly
+            || AccessBook.shared.host(host.accountId, host.id)?.recordRequired == true
+    }
+
     private var content: some View {
         HStack(spacing: 14) {
             HostIcon(host: host, size: 42)
@@ -1756,11 +1835,12 @@ private struct HostRow: View {
                     HostStatusDot(host: host, showsLatency: true)
                 }
                 Text(hostSubtitle(host)).font(.subheadline).foregroundColor(.secondary).lineLimit(1)
-                if !host.tags.isEmpty || showVault || host.isUseOnly || NetworkBook.shared.network(of: host) != nil {
+                if !host.tags.isEmpty || showVault || host.isUseOnly || NetworkBook.shared.network(of: host) != nil || hasAccessChips {
                     HStack(spacing: 4) {
+                        if hasAccessChips { HostAccessChips(host: host) }
                         NetworkViaChip(host: host)
                         if showVault && (vault != nil || host.accountId == nil) { VaultChip(vault: vault) }
-                        if host.isUseOnly { UseOnlyBadge() }
+                        if host.access == .useOnly { UseOnlyBadge() }
                         ForEach(Array(host.tags.prefix(3).enumerated()), id: \.offset) { _, tag in
                             TappableTag(text: tag, onTap: onTag)
                         }
@@ -1836,8 +1916,21 @@ private struct GroupEditor: View {
                 Section { GroupColorPicker(color: $color) }
                 GroupDefaultsSection(settings: $defaults, identities: identities, keys: keys)
                 // Private network (0.7) for the hosts inside: `nil` inherits the parent group's (or direct).
-                NetworkPickerSection(accountId: place.accountId, vaultId: place.vaultId, groupId: original.parentId,
-                                     groups: groups, networkId: $defaults.networkId, forGroup: true)
+                // Not where the team forbids private networks.
+                if account.gates(place.accountId, place.vaultId).networks || defaults.networkId != nil {
+                    NetworkPickerSection(accountId: place.accountId, vaultId: place.vaultId, groupId: original.parentId,
+                                         groups: groups, networkId: $defaults.networkId, forGroup: true)
+                }
+                // Teams security: "Team certificate" for the hosts inside.
+                if let a = place.accountId, AccessBook.shared.isSupported(a) || defaults.auth != nil {
+                    Section {
+                        AuthPicker(auth: $defaults.auth,
+                                   inherited: AccessRules.effectiveAuth(own: nil, groupId: original.parentId, groups: groups
+                                       .filter { $0.accountId == a && $0.vaultId == place.vaultId }
+                                       .map { GroupAuthLink(id: $0.id, name: $0.name, parentId: $0.parentId, auth: $0.settings.auth) }),
+                                   certificates: account.gates(a, place.vaultId).certificates)
+                    } footer: { Text("auth_field.group_hint") }
+                }
                 if let error { Text(error).foregroundColor(Brand.red) }
             }
             .navigationTitle(original.id.isEmpty ? String(localized: "hosts.group.new") : String(localized: "hosts.group.edit"))

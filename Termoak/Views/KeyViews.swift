@@ -23,6 +23,8 @@ struct KeyDetailView: View {
     @State private var error: String?
 
     private var editable: Bool { !original.isUseOnly }
+    /// Teams security: no export where the team forbids revealing secrets (Admins still can).
+    private var revealAllowed: Bool { account.gates(original.accountId, original.vaultId).reveal }
     private var changed: Bool {
         label != original.label || comment != original.comment || device != (original.securityKey?.device ?? "")
     }
@@ -100,7 +102,7 @@ struct KeyDetailView: View {
             Button { sharing = true } label: { Label("keychain.detail.share_public", systemImage: "square.and.arrow.up") }
             Button { showingQR = true } label: { Label("keychain.detail.qr", systemImage: "qrcode") }
             Button { installing = true } label: { Label("keychain.install.title", systemImage: "server.rack") }
-            if editable && original.hasPrivateKey {
+            if editable && original.hasPrivateKey && revealAllowed {
                 // A security key's file holds its key handle, not a private key.
                 Button(action: exportPrivate) {
                     Label(LocalizedStringKey(original.securityKey != nil ? "keychain.sk.export_handle" : "keychain.export.action"),
@@ -108,7 +110,7 @@ struct KeyDetailView: View {
                 }
             }
         } footer: {
-            if editable && original.hasPrivateKey {
+            if editable && original.hasPrivateKey && revealAllowed {
                 Text(LocalizedStringKey(original.securityKey != nil ? "keychain.sk.export_handle_footer" : "keychain.export.footer"))
             }
         }
