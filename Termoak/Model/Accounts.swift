@@ -552,9 +552,10 @@ final class Accounts: ObservableObject {
 
     // ----- Live events -----
 
-    // Push (PushNotifications.swift) is off until the build has APNs; until
-    // then join and control requests reach the owner through these
-    // WebSockets while the app is open.
+    // Push (PushNotifications.swift) only works where the account's server
+    // can send APNs; everywhere else (and while the app is open, when the
+    // server stays quiet) join and control requests reach the owner through
+    // these WebSockets.
 
     /// One events WebSocket per signed-in account.
     private func updateEvents() {

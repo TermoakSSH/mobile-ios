@@ -32,12 +32,19 @@ final class TermoakAppDelegate: NSObject, UIApplicationDelegate {
         return configuration
     }
 
-    // Push (only asked for when it is on in the build: Push.enabled).
+    // Push (only asked for when a server can send APNs: PushNotifications.swift).
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         Task { @MainActor in Push.shared.received(deviceToken: deviceToken) }
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {}
+
+    /// A background push (`content-available`): withdraws a notification
+    /// that was answered elsewhere. Nothing connects from here.
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+                     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        completionHandler(Push.receivedInBackground(userInfo) ? .newData : .noData)
+    }
 }
 
 /// The window scene's delegate. SwiftUI still makes the window; this only

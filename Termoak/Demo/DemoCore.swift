@@ -412,6 +412,12 @@ final class DemoAccountHandle: DemoAccountHandleBase, @unchecked Sendable {
     }
     override func registerPushToken(platform: PushPlatform, token: String, sandbox: Bool) async throws -> Bool { false }
     override func unregisterPushToken() async throws {}
+    // A demo server without APNs: push stays inert.
+    override func pushStatus() async throws -> PushStatus {
+        PushStatus(registered: false, platform: nil, endpoint: nil,
+                   preferences: PushPreferences(kinds: Dictionary(uniqueKeysWithValues: pushKinds().map { ($0, true) }), whenOnline: false),
+                   serverWebpush: false, serverApns: false, serverFcm: false, vapidPublicKey: nil, kinds: pushKinds())
+    }
 
     // Vaults and teams.
     override func listVaults() async throws -> [VaultInfo] { backend.vaults.filter { $0.accountId == accountId } }

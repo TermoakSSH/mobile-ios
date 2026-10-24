@@ -19,5 +19,11 @@
 	</array>
 	<key>com.apple.security.smartcard</key>
 	<true/>
+	<!-- Push notifications (APNs): development or production per build
+	     configuration (APS_ENVIRONMENT in project.yml). The App ID needs the
+	     Push Notifications capability and its provisioning profiles must be
+	     made again after enabling it. -->
+	<key>aps-environment</key>
+	<string>$(APS_ENVIRONMENT)</string>
 </dict>
 </plist>

@@ -19,8 +19,9 @@ final class BackgroundNotices: NSObject {
     var inBackground = false
     /// A notification was tapped: open that session (`owner`: one of yours).
     var onOpen: ((_ sessionId: String, _ title: String, _ owner: Bool) -> Void)?
-    /// A push notification was tapped (PushNotifications.swift).
-    var onPush: ((PushTarget) -> Void)?
+    /// A push notification (or one of its actions) was tapped
+    /// (PushNotifications.swift, PushRouting.swift).
+    var onPush: ((PushRoute) -> Void)?
 
     private var recent = NoticeDeduper(window: 15)
     private var asked = UserDefaults.standard.bool(forKey: "notifications_asked")
@@ -69,9 +70,11 @@ extension BackgroundNotices: UNUserNotificationCenterDelegate {
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
                                             withCompletionHandler completionHandler: @escaping () -> Void) {
         let info = response.notification.request.content.userInfo
-        if let push = PushTarget(info) {
+        if let push = Push.info(info) {
+            // Approve / Deny open the same confirmation as a tap: never decided here.
+            let route = PushRoute.of(push, action: response.actionIdentifier)
             Task { @MainActor in
-                BackgroundNotices.shared.onPush?(push)
+                BackgroundNotices.shared.onPush?(route)
                 completionHandler()
             }
             return
@@ -85,9 +88,16 @@ extension BackgroundNotices: UNUserNotificationCenterDelegate {
         }
     }
 
-    /// In the foreground the app shows its own toasts.
+    /// In the foreground the app shows its own toasts. A push only arrives
+    /// then when the device asked for notifications while online
+    /// (Settings → Notifications): shown, unless it already expired.
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
                                             withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        let info = notification.request.content.userInfo
+        if let push = Push.info(info), push.category != .resolved, !push.expired {
+            completionHandler([.banner, .list, .sound])
+            return
+        }
         completionHandler([])
     }
 }

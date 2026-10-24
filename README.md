@@ -110,17 +110,32 @@ the `apple-app-site-association` the servers publish at
 `/.well-known/apple-app-site-association` (public-web:
 `site/.well-known/apple-app-site-association`).
 
-### Push notifications (off for now)
+### Push notifications (APNs, 0.7)
 
-The app registers its APNs device token on every signed-in account (each
-server notifies its own events: AI approvals, sessions shared with you, join
-and keyboard requests) and unregisters it before signing out of one
-(`Termoak/Model/PushNotifications.swift`). It stays off until the APNs
-credentials exist: to turn it on, add the Push Notifications capability
-(`aps-environment` in `Termoak/Termoak.entitlements`), set `TermoakPush: true`
-in `project.yml` (the app's Info.plist properties) and configure APNs on the
-servers (server `docs/DEPLOYMENT.md`, push notifications). Debug builds
-register as APNs sandbox tokens.
+`Termoak/Model/PushNotifications.swift` (and the pure rules in
+`PushRouting.swift`): for every signed-in account the app asks its server
+whether it can send APNs (`pushStatus().serverApns`). Only then does it ask
+for permission and register the device token on that account (debug builds
+as APNs sandbox tokens); a server without APNs configured leaves it inert.
+The token is unregistered before signing out of an account. Notifications:
+categories `TERMOAK_APPROVAL` (Approve / Deny, which only open the app's
+confirmation behind the device unlock and the app lock) and
+`TERMOAK_SECURITY_KEY` (Open: the vault opens and the events socket answers
+the waiting request); background pushes (`resolved`) remove the delivered
+notification with that tag. Settings → Notifications: per account, which
+kinds, notify while the app is open, and a test.
+
+What Apple needs (once the Apple Developer account and its Team ID exist):
+
+1. `DEVELOPMENT_TEAM` in `Signing.xcconfig`.
+2. The App ID `com.termoak` with the **Push Notifications** capability
+   (the build carries `aps-environment`: `development` in Debug,
+   `production` in Release, from `APS_ENVIRONMENT` in `project.yml`); make
+   the provisioning profiles again after enabling it.
+3. An APNs key (Certificates, Identifiers & Profiles → Keys → +, "Apple
+   Push Notifications service (APNs)"): the `.p8` file (downloadable once)
+   and its Key ID go to the servers' `[push.apns]` with the Team ID and the
+   bundle id (server `docs/DEPLOYMENT.md`, APNs). Never in this repository.
 
 ### Another server as the official one
 

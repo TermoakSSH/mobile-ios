@@ -1,6 +1,7 @@
 import TermoakKit
 import Combine
 import SwiftUI
+import UserNotifications
 
 @main
 struct TermoakApp: App {
@@ -86,6 +87,8 @@ final class AppModel: ObservableObject {
     @Published var quickConnecting = false
     /// The AI section over everything (a tapped push about an approval).
     @Published var showingAi = false
+    /// The teams over everything (a tapped push: added to a team).
+    @Published var showingTeams = false
     private var subscriptions: Set<AnyCancellable> = []
 
     init(core: TermoakCore, settings: AppSettings) {
@@ -228,14 +231,26 @@ final class AppModel: ObservableObject {
         }
     }
 
-    /// A push notification was tapped: the AI (its approvals) or that session.
-    private func openFromPush(_ target: PushTarget) {
-        if target.isAi {
+    /// A push notification was tapped (or Approve / Deny / Open): the AI
+    /// (its approvals), that session, the teams, or just the app (a security
+    /// key request: the vault opens behind the app lock and the events socket
+    /// answers it). Nothing is decided here.
+    private func openFromPush(_ route: PushRoute) {
+        switch route {
+        case .none, .app, .securityKey:
+            break
+        case .remove(let tag):
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [tag])
+        case .ai:
             joining = nil
             sessions.showing = false
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.showingAi = true }
-        } else if let id = target.sessionId {
-            openFromNotice(sessionId: id, title: target.title, owner: target.isOwnSession)
+        case .session(let id, let title, let owner):
+            openFromNotice(sessionId: id, title: title, owner: owner)
+        case .teams:
+            joining = nil
+            sessions.showing = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.showingTeams = true }
         }
     }
 
@@ -355,6 +370,17 @@ private struct RootContent: View {
             QuickConnectView { host, strict in
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { sessions.connect(host, strict: strict) }
             }
+            .environmentObject(model)
+            .environmentObject(account)
+        }
+        // A tapped push about a team you were added to.
+        .sheet(isPresented: $model.showingTeams) {
+            NavigationView {
+                TeamsView().toolbar {
+                    ToolbarItem(placement: .cancellationAction) { Button("common.done") { model.showingTeams = false } }
+                }
+            }
+            .navigationViewStyle(.stack)
             .environmentObject(model)
             .environmentObject(account)
         }

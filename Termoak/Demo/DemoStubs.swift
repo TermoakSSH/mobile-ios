@@ -27,6 +27,9 @@ class DemoAccountHandleBase: AccountHandle, @unchecked Sendable {
     override func listTeamMembers(teamId: String) async throws -> [TeamMember] { throw DemoMode.unavailable }
     override func listTeams() async throws -> [Team] { throw DemoMode.unavailable }
     override func registerPushToken(platform: PushPlatform, token: String, sandbox: Bool) async throws -> Bool { throw DemoMode.unavailable }
+    override func registerWebPush(endpoint: String, p256dh: String, auth: String) async throws -> Bool { throw DemoMode.unavailable }
+    override func pushStatus() async throws -> PushStatus { throw DemoMode.unavailable }
+    override func setPushPreferences(preferences: PushPreferences) async throws -> PushPreferences { throw DemoMode.unavailable }
     override func removeTeamMember(teamId: String, userId: String) async throws { throw DemoMode.unavailable }
     override func renameTeam(teamId: String, name: String) async throws -> Team { throw DemoMode.unavailable }
     override func revokeServerSessionShare(sessionId: String, shareId: String) async throws { throw DemoMode.unavailable }

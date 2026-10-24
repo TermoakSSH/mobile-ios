@@ -60,6 +60,12 @@ struct SettingsView: View {
                             Button { openURL(url) } label: { Label("settings.web_account", systemImage: "arrow.up.right.square") }
                         }
                         if current.status == .active { TwoFactorRow(accountId: current.id) }
+                        if !account.active.isEmpty {
+                            NavigationLink { NotificationSettingsView() } label: {
+                                Label("push.settings.title", systemImage: "bell.badge")
+                            }
+                            .accessibilityIdentifier("settings-notifications")
+                        }
                     }
                     privacySection
 

@@ -56,9 +56,13 @@ targets:
         # Invitation links open the app: termoak://join?server=…&token=…
         # (https://termoak.com/join/<token> too: Universal Links, see
         # Termoak/Termoak.entitlements and Signing.xcconfig).
-        # Push notifications: off until the APNs credentials and the
-        # aps-environment entitlement exist (README, Push notifications).
-        TermoakPush: false
+        # Push notifications (APNs, 0.7): wired in this build (the
+        # aps-environment entitlement is in Termoak/Termoak.entitlements).
+        # Inert while no account's server can send APNs: nothing is asked
+        # nor registered (README, Push notifications).
+        TermoakPush: true
+        # Background pushes withdraw notifications answered elsewhere.
+        UIBackgroundModes: [remote-notification]
         CFBundleURLTypes:
           - CFBundleURLName: com.termoak.links
             CFBundleTypeRole: Viewer
@@ -97,6 +101,13 @@ targets:
         INFOPLIST_KEY_NFCReaderUsageDescription: "To use your security key (YubiKey) by NFC to sign in to your servers."
         # The Rust library is static and carries no bitcode or Swift debug symbols.
         DEBUG_INFORMATION_FORMAT: dwarf
+      # The APNs environment of the aps-environment entitlement: the sandbox
+      # for development builds, production for the App Store / TestFlight.
+      configs:
+        Debug:
+          APS_ENVIRONMENT: development
+        Release:
+          APS_ENVIRONMENT: production
 
   # Unit tests of the pure logic (no app host, no sshd): they compile the
   # files they test directly. `xcodebuild test -only-testing:TermoakTests`.
@@ -123,7 +134,7 @@ targets:
       - path: Termoak/Model/InviteLink.swift
       - path: Termoak/Model/AiTasks.swift
       - path: Termoak/Model/TeamRules.swift
-      - path: Termoak/Model/PushTarget.swift
+      - path: Termoak/Model/PushRouting.swift
       - path: Termoak/Model/GroupChain.swift
       - path: Termoak/Model/ExecReport.swift
       - path: Termoak/Model/TerminalAiRules.swift
