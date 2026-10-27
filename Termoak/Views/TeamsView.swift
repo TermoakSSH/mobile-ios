@@ -224,6 +224,21 @@ private struct TeamDetailView: View {
                     } label: { Label("teams.security", systemImage: "checkmark.shield") }
                 }
             }
+            // Single sign-on and its domains; the team's audit (0.7 phase 5c).
+            if E2eeBook.shared.ssoSupported(accountId) || (E2eeBook.shared.audit(accountId) != nil && rules.canAddMembers) {
+                Section {
+                    if E2eeBook.shared.ssoSupported(accountId) {
+                        NavigationLink {
+                            TeamSsoView(accountId: accountId, teamId: team.id, teamName: name.isEmpty ? team.name : name, canManage: rules.canAddMembers)
+                        } label: { Label("teams.sso", systemImage: "person.badge.key") }
+                    }
+                    if E2eeBook.shared.audit(accountId) != nil && rules.canAddMembers {
+                        NavigationLink {
+                            AuditView(accountId: accountId, scope: .team, scopeId: team.id, name: name.isEmpty ? team.name : name)
+                        } label: { Label("teams.audit", systemImage: "list.bullet.rectangle") }
+                    }
+                }
+            }
             membersSection
             if rules.canAddMembers { addSection }
             if rules.canSeeInvites && !invites.isEmpty { invitesSection }

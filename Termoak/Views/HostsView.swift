@@ -446,6 +446,10 @@ struct HostsView: View {
                 if !accessBook.team2faAll.isEmpty {
                     Section { Team2faBanner { twoFactorFor = accessBook.team2faAll.first?.account } }
                 }
+                // E2EE (0.7 phase 5c): locked here, a device asking for the key, members waiting for a vault key.
+                if E2eeBook.shared.anySupported {
+                    E2eeHomeBanners()
+                }
             }
             if hosts.isEmpty && groups.isEmpty && !searching {
                 Section { emptyState }
@@ -1570,6 +1574,9 @@ private extension HostsView {
         }
         if !accessBook.team2faAll.isEmpty {
             Team2faBanner { twoFactorFor = accessBook.team2faAll.first?.account }
+        }
+        if E2eeBook.shared.anySupported {
+            E2eeHomeBanners()
         }
     }
 

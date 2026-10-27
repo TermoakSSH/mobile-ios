@@ -163,18 +163,21 @@ enum HostNetworkTester {
     enum Outcome {
         case done(String)
         case trust(fingerprint: String?)
+        /// An end-to-end encrypted host: send its credentials for this test? (0.7 phase 5c)
+        case send
     }
 
-    static func run(_ host: SshHost, core: TermoakCore, trust: Bool) async -> Outcome {
+    static func run(_ host: SshHost, core: TermoakCore, trust: Bool, unlock: Bool = false) async -> Outcome {
         let book = NetworkBook.shared
         guard let api = book.api(host.accountId, core: core) else { return .done(String(localized: "error.not_logged_in")) }
         do {
-            let t = try await book.testHost(api, host, trust: trust)
+            let t = try await book.testHost(api, host, trust: trust, unlock: unlock)
             let name = t.networkName ?? book.network(of: host).flatMap { book.name(host.accountId, $0) } ?? ""
             if t.ok { return .done(String(localized: "networks.test.ok_via \(name) \(Int(t.latencyMs ?? 0))")) }
             if t.errorCode == "host_key_unknown" && !trust { return .trust(fingerprint: t.fingerprint) }
             return .done(String(localized: "networks.test.failed_via \(name) \(hostTestErrorText(t))"))
         } catch {
+            if !unlock && E2eeTexts.needsUnlock(error) { return .send }
             return .done(userMessage(error))
         }
     }
@@ -187,6 +190,9 @@ struct HostNetworkTests: ViewModifier {
     let flash: (String) -> Void
     @EnvironmentObject private var model: AppModel
     @State private var trustAsk: (host: SshHost, fingerprint: String?)?
+    /// An end-to-end encrypted host: its credentials go with this test (and its retry to trust the key).
+    @State private var sendAsk: (host: SshHost, trust: Bool)?
+    @State private var unlockFor: String?
 
     func body(content: Content) -> some View {
         content
@@ -204,16 +210,26 @@ struct HostNetworkTests: ViewModifier {
                 Text(verbatim: String(localized: "networks.test.trust_text \(trustAsk?.host.displayName ?? "")")
                      + (trustAsk?.fingerprint.map { "\n\n" + $0 } ?? ""))
             }
+            .alert(Text("vault_e2ee.test.title"), isPresented: Binding(get: { sendAsk != nil }, set: { if !$0 { sendAsk = nil } })) {
+                Button("vault_e2ee.test.send") {
+                    if let a = sendAsk { unlockFor = a.host.key; run(a.host, trust: a.trust) }
+                    sendAsk = nil
+                }
+                Button("common.cancel", role: .cancel) { sendAsk = nil }
+            } message: {
+                Text(verbatim: String(localized: "vault_e2ee.test.message \(sendAsk?.host.displayName ?? "")") + "\n\n" + String(localized: "vault_e2ee.session.hint"))
+            }
     }
 
     private func run(_ host: SshHost, trust: Bool) {
         let core = model.core
         Task { @MainActor in
-            let outcome = await HostNetworkTester.run(host, core: core, trust: trust)
+            let outcome = await HostNetworkTester.run(host, core: core, trust: trust, unlock: unlockFor == host.key)
             testing = nil
             switch outcome {
-            case .done(let text): flash(text)
+            case .done(let text): flash(text); unlockFor = nil
             case .trust(let fp): trustAsk = (host, fp)
+            case .send: sendAsk = (host, trust)
             }
         }
     }

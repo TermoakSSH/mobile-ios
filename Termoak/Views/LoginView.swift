@@ -12,6 +12,8 @@ struct ServerDetails: Equatable {
     let termsUrl: String?
     let privacyUrl: String?
     let vaults: Bool
+    /// Teams can sign in through their identity provider (`features.sso`, 0.7 phase 5c).
+    let sso: Bool
     let insecure: Bool
 
     init(url: String, json: String) throws {
@@ -27,6 +29,7 @@ struct ServerDetails: Equatable {
         termsUrl = v["terms_url"] as? String
         privacyUrl = v["privacy_url"] as? String
         vaults = ((v["features"] as? [String: Any])?["vaults"] as? Bool) ?? false
+        sso = ((v["features"] as? [String: Any])?["sso"] as? Bool) ?? false
         insecure = url.hasPrefix("http://")
     }
 }
@@ -69,6 +72,13 @@ struct LoginView: View {
     @State private var acceptTerms = false
     @State private var totp = ""
     @State private var needsTotp = false
+    // Single sign-on (0.7 phase 5c): what the server said about the typed email, the flow, its 2FA step.
+    @State private var ssoHint: SsoHint?
+    @State private var ssoFor = ""
+    @State private var ssoFlow: SsoFlow?
+    @State private var ssoCallback: String?
+    @State private var ssoTotp = ""
+    @State private var ownerPassword = false
     @State private var busy = false
     @State private var error: String?
 
@@ -255,7 +265,12 @@ struct LoginView: View {
                 .font(.callout).foregroundColor(.secondary).multilineTextAlignment(.center)
         }
         VStack(spacing: 12) {
-            if needsTotp {
+            if ssoCallback != nil {
+                // The 2FA step of a single sign-on.
+                Text("login.code_hint").font(.callout).foregroundColor(.secondary)
+                LoginField(icon: "number", title: String(localized: "login.code"), text: $ssoTotp, keyboard: .asciiCapable,
+                           contentType: .oneTimeCode)
+            } else if needsTotp {
                 // Six digits or a recovery code (xxxx-xxxx, letters too): a text keyboard.
                 LoginField(icon: "number", title: String(localized: "login.code"), text: $totp, keyboard: .asciiCapable,
                            contentType: .oneTimeCode)
@@ -263,11 +278,34 @@ struct LoginView: View {
             } else {
                 LoginField(icon: "envelope", title: String(localized: "login.email"), text: $email, keyboard: .emailAddress,
                            contentType: .username)
-                LoginField(icon: "lock", title: String(localized: "common.password"), text: $password, secure: true,
-                           contentType: .password, onSubmit: signIn)
+                if let hint = ssoHint {
+                    SsoCard(hint: hint, busy: busy, onContinue: startSso,
+                            onOwnerPassword: hint.enforced && !ownerPassword ? { ownerPassword = true } : nil)
+                }
+                if !ssoOnly {
+                    LoginField(icon: "lock", title: String(localized: "common.password"), text: $password, secure: true,
+                               contentType: .password, onSubmit: signIn)
+                }
             }
         }
+        .task(id: email + (details?.url ?? "")) { await discoverSso() }
         errorBanner
+        if ssoCallback != nil {
+            Button { if let cb = ssoCallback { completeSso(cb, code: ssoTotp) } } label: {
+                Group { if busy { ProgressView().tint(.white) } else { Text("login.verify") } }.frame(maxWidth: .infinity, minHeight: 30)
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(busy || ssoTotp.isEmpty)
+            Button("login.back") { ssoCallback = nil; ssoFlow = nil; ssoTotp = "" }
+        } else if !ssoOnly {
+            passwordButtons
+        }
+    }
+
+    /// Enforced single sign-on: only that (the owner's password behind its button).
+    private var ssoOnly: Bool { ssoHint?.enforced == true && !ownerPassword }
+
+    @ViewBuilder private var passwordButtons: some View {
         Button(action: signIn) {
             Group {
                 if busy {
@@ -572,7 +610,80 @@ struct LoginView: View {
             } catch TermoakError.TotpInvalid {
                 error = String(localized: "login.code_invalid")
             } catch {
+                // The team requires single sign-on: switch to it.
+                if let required = E2eeTexts.ssoRequired(error) {
+                    ssoHint = SsoHint(sso: true, enforced: true, teamId: required.0, teamName: required.1)
+                    ssoFor = mail.lowercased()
+                    ownerPassword = false
+                    password = ""
+                }
                 self.error = userMessage(error)
+            }
+        }
+    }
+
+    /// Does the typed email's team sign in through single sign-on? (once it looks like an email)
+    private func discoverSso() async {
+        let e = email.trimmingCharacters(in: .whitespaces).lowercased()
+        guard e != ssoFor else { return }
+        guard step == .signIn, SsoRules.looksLikeEmail(e), details?.sso == true else {
+            if ssoFlow == nil { ssoHint = nil }
+            return
+        }
+        try? await Task.sleep(nanoseconds: 500_000_000)
+        guard !Task.isCancelled else { return }
+        ssoFor = e
+        let hint = try? await account.core.ssoDiscover(server: choice, email: e)
+        ssoHint = hint?.sso == true ? hint : nil
+        ownerPassword = false
+    }
+
+    /// The team's identity provider in ASWebAuthenticationSession; it comes back to termoak://sso.
+    private func startSso() {
+        busy = true
+        error = nil
+        let mail = email.trimmingCharacters(in: .whitespaces)
+        Task {
+            do {
+                let flow = try await account.core.ssoStart(server: choice, email: mail.isEmpty ? nil : mail, teamId: ssoHint?.teamId, redirectUri: nil)
+                ssoFlow = flow
+                guard let url = URL(string: flow.authorizeUrl) else { busy = false; return }
+                let back = try await SsoBrowser.open(url)
+                busy = false
+                completeSso(back.absoluteString, code: nil)
+            } catch SsoBrowserError.cancelled {
+                busy = false
+                ssoFlow = nil
+            } catch {
+                busy = false
+                ssoFlow = nil
+                self.error = String(localized: "add_account.sso.failed \(userMessage(error))")
+            }
+        }
+    }
+
+    /// Finishes the sign-on with the URL the browser came back to (and the 2FA code when asked).
+    private func completeSso(_ callback: String, code: String?) {
+        guard let flow = ssoFlow else { return }
+        busy = true
+        error = nil
+        Task {
+            defer { busy = false }
+            do {
+                let info = try await account.ssoComplete(flow: flow, callback: callback, totp: code)
+                ssoFlow = nil
+                ssoCallback = nil
+                UserDefaults.standard.set(info.email, forKey: Self.lastEmailKey)
+                finishOrVerify(info)
+            } catch TermoakError.TotpRequired {
+                ssoCallback = callback
+            } catch TermoakError.TotpInvalid {
+                ssoCallback = callback
+                error = String(localized: "login.code_invalid")
+            } catch {
+                ssoFlow = nil
+                ssoCallback = nil
+                self.error = String(localized: "add_account.sso.failed \(userMessage(error))")
             }
         }
     }

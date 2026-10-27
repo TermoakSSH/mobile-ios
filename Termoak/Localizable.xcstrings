@@ -3337,6 +3337,102 @@
         }
       }
     },
+    "add_account.sso.available %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ can sign you in with single sign-on."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ puede iniciar tu sesión con inicio de sesión único."
+          }
+        }
+      }
+    },
+    "add_account.sso.continue %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue with %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuar con %1$@"
+          }
+        }
+      }
+    },
+    "add_account.sso.enforced %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ signs in only through single sign-on: your organization's identity provider opens in the browser."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ solo inicia sesión con inicio de sesión único: el proveedor de identidad de tu organización se abre en el navegador."
+          }
+        }
+      }
+    },
+    "add_account.sso.failed %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Single sign-on failed: %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Falló el inicio de sesión único: %1$@"
+          }
+        }
+      }
+    },
+    "add_account.sso.owner_password": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I own this team: use my password"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Soy el propietario del equipo: usar mi contraseña"
+          }
+        }
+      }
+    },
+    "add_account.sso.your_team": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "your organization"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tu organización"
+          }
+        }
+      }
+    },
     "ai.always": {
       "localizations": {
         "en": {
@@ -5373,6 +5469,2222 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pide a la IA que revise un servidor, busque un error o haga un cambio. Trabaja en segundo plano y te pregunta antes de tocar nada."
+          }
+        }
+      }
+    },
+    "audit.account_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your activity"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu actividad"
+          }
+        }
+      }
+    },
+    "audit.action.access_approve": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access approved"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceso aprobado"
+          }
+        }
+      }
+    },
+    "audit.action.access_cancel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access request cancelled"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solicitud de acceso cancelada"
+          }
+        }
+      }
+    },
+    "audit.action.access_deny": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access denied"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceso denegado"
+          }
+        }
+      }
+    },
+    "audit.action.access_policy_delete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access policy removed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política de acceso quitada"
+          }
+        }
+      }
+    },
+    "audit.action.access_policy_set": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access policy changed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política de acceso cambiada"
+          }
+        }
+      }
+    },
+    "audit.action.access_request": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access requested"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceso solicitado"
+          }
+        }
+      }
+    },
+    "audit.action.access_revoke": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access ended"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceso terminado"
+          }
+        }
+      }
+    },
+    "audit.action.admin_2fa_reset": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two-step verification removed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificación en dos pasos quitada"
+          }
+        }
+      }
+    },
+    "audit.action.admin_device_revoked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device revoked (admin)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispositivo revocado (admin.)"
+          }
+        }
+      }
+    },
+    "audit.action.admin_invite_created": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitation created"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitación creada"
+          }
+        }
+      }
+    },
+    "audit.action.admin_invite_revoked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitation revoked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitación revocada"
+          }
+        }
+      }
+    },
+    "audit.action.admin_password_reset": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password reset"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contraseña restablecida"
+          }
+        }
+      }
+    },
+    "audit.action.admin_user_created": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "User created"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usuario creado"
+          }
+        }
+      }
+    },
+    "audit.action.admin_user_updated": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "User modified"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usuario modificado"
+          }
+        }
+      }
+    },
+    "audit.action.ai_approval_approved": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI: action approved"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IA: acción aprobada"
+          }
+        }
+      }
+    },
+    "audit.action.ai_approval_denied": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI: action denied"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IA: acción denegada"
+          }
+        }
+      }
+    },
+    "audit.action.ai_task_mode": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI: mode changed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IA: modo cambiado"
+          }
+        }
+      }
+    },
+    "audit.action.audit_export": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Audit exported"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auditoría exportada"
+          }
+        }
+      }
+    },
+    "audit.action.audit_settings": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Audit retention changed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retención de la auditoría cambiada"
+          }
+        }
+      }
+    },
+    "audit.action.audit_sink_create": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Audit destination added"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Destino de auditoría añadido"
+          }
+        }
+      }
+    },
+    "audit.action.audit_sink_delete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Audit destination removed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Destino de auditoría quitado"
+          }
+        }
+      }
+    },
+    "audit.action.audit_sink_update": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Audit destination changed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Destino de auditoría cambiado"
+          }
+        }
+      }
+    },
+    "audit.action.audit_test": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Audit destination tested"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Destino de auditoría probado"
+          }
+        }
+      }
+    },
+    "audit.action.auth_2fa_disabled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two-step verification disabled"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificación en dos pasos desactivada"
+          }
+        }
+      }
+    },
+    "audit.action.auth_2fa_enabled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two-step verification enabled"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificación en dos pasos activada"
+          }
+        }
+      }
+    },
+    "audit.action.auth_device_revoked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device revoked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispositivo revocado"
+          }
+        }
+      }
+    },
+    "audit.action.auth_devices_revoked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every device signed out"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todos los dispositivos desconectados"
+          }
+        }
+      }
+    },
+    "audit.action.auth_email_changed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Email changed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correo cambiado"
+          }
+        }
+      }
+    },
+    "audit.action.auth_email_verified": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Email verified"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correo verificado"
+          }
+        }
+      }
+    },
+    "audit.action.auth_login": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-in"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicio de sesión"
+          }
+        }
+      }
+    },
+    "audit.action.auth_login_refused": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password sign-in refused (single sign-on required)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicio con contraseña rechazado (se exige inicio de sesión único)"
+          }
+        }
+      }
+    },
+    "audit.action.auth_password_changed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password changed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contraseña cambiada"
+          }
+        }
+      }
+    },
+    "audit.action.auth_password_reset": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password reset"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contraseña restablecida"
+          }
+        }
+      }
+    },
+    "audit.action.auth_register": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account created"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuenta creada"
+          }
+        }
+      }
+    },
+    "audit.action.ca_create": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH CA created"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CA SSH creada"
+          }
+        }
+      }
+    },
+    "audit.action.ca_disable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH CA disabled"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CA SSH desactivada"
+          }
+        }
+      }
+    },
+    "audit.action.ca_rotate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH CA rotated"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CA SSH rotada"
+          }
+        }
+      }
+    },
+    "audit.action.cert_issue": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificate issued"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificado emitido"
+          }
+        }
+      }
+    },
+    "audit.action.cert_revoke": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificate revoked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificado revocado"
+          }
+        }
+      }
+    },
+    "audit.action.e2ee_disable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End-to-end encryption turned off"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cifrado de extremo a extremo desactivado"
+          }
+        }
+      }
+    },
+    "audit.action.e2ee_enable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault turned end-to-end encrypted"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bóveda cifrada de extremo a extremo"
+          }
+        }
+      }
+    },
+    "audit.action.e2ee_key_rotate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E2EE key replaced"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave E2EE sustituida"
+          }
+        }
+      }
+    },
+    "audit.action.e2ee_pairing_approve": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device unlocked from another device"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispositivo desbloqueado desde otro"
+          }
+        }
+      }
+    },
+    "audit.action.e2ee_pairing_deny": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device unlock denied"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desbloqueo de dispositivo denegado"
+          }
+        }
+      }
+    },
+    "audit.action.e2ee_pairing_request": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A device asked to unlock E2EE"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un dispositivo pidió desbloquear E2EE"
+          }
+        }
+      }
+    },
+    "audit.action.e2ee_passphrase_removed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E2EE passphrase removed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frase de paso E2EE quitada"
+          }
+        }
+      }
+    },
+    "audit.action.e2ee_reset": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E2EE key reset"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave E2EE restablecida"
+          }
+        }
+      }
+    },
+    "audit.action.e2ee_rotate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault key rotated"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave de la bóveda rotada"
+          }
+        }
+      }
+    },
+    "audit.action.e2ee_seal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E2EE passphrase or recovery phrase changed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frase de paso o de recuperación E2EE cambiada"
+          }
+        }
+      }
+    },
+    "audit.action.e2ee_setup": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End-to-end encryption set up"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cifrado de extremo a extremo configurado"
+          }
+        }
+      }
+    },
+    "audit.action.e2ee_unlock": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Credentials sent for one session"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Credenciales enviadas para una sesión"
+          }
+        }
+      }
+    },
+    "audit.action.e2ee_wraps_add": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault key given to members"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave de la bóveda dada a miembros"
+          }
+        }
+      }
+    },
+    "audit.action.exec_batch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Command on several hosts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comando en varios hosts"
+          }
+        }
+      }
+    },
+    "audit.action.key_create": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key created"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave creada"
+          }
+        }
+      }
+    },
+    "audit.action.network_down": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Private network stopped"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Red privada parada"
+          }
+        }
+      }
+    },
+    "audit.action.network_key_generated": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Network key made by the server"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave de red creada por el servidor"
+          }
+        }
+      }
+    },
+    "audit.action.network_up": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Private network started"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Red privada iniciada"
+          }
+        }
+      }
+    },
+    "audit.action.secret_reveal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secret revealed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secreto revelado"
+          }
+        }
+      }
+    },
+    "audit.action.secret_use": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secret used by the server"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secreto usado por el servidor"
+          }
+        }
+      }
+    },
+    "audit.action.session_attach": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Joined a session"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entró en una sesión"
+          }
+        }
+      }
+    },
+    "audit.action.session_close": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session closed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesión cerrada"
+          }
+        }
+      }
+    },
+    "audit.action.session_open": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session opened"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesión abierta"
+          }
+        }
+      }
+    },
+    "audit.action.session_share": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session shared"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesión compartida"
+          }
+        }
+      }
+    },
+    "audit.action.session_share_revoked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session invitation revoked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitación a sesión revocada"
+          }
+        }
+      }
+    },
+    "audit.action.sftp_delete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SFTP: delete"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SFTP: borrado"
+          }
+        }
+      }
+    },
+    "audit.action.sftp_download": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SFTP: download"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SFTP: descarga"
+          }
+        }
+      }
+    },
+    "audit.action.sftp_rename": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SFTP: rename"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SFTP: renombrado"
+          }
+        }
+      }
+    },
+    "audit.action.sftp_upload": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SFTP: upload"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SFTP: subida"
+          }
+        }
+      }
+    },
+    "audit.action.sso_config": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Single sign-on settings changed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes del inicio de sesión único cambiados"
+          }
+        }
+      }
+    },
+    "audit.action.sso_domain_add": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domain added"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dominio añadido"
+          }
+        }
+      }
+    },
+    "audit.action.sso_domain_check_failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domain check failed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Falló la comprobación del dominio"
+          }
+        }
+      }
+    },
+    "audit.action.sso_domain_remove": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domain removed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dominio quitado"
+          }
+        }
+      }
+    },
+    "audit.action.sso_domain_verify": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domain verified"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dominio verificado"
+          }
+        }
+      }
+    },
+    "audit.action.sso_link": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identity linked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identidad vinculada"
+          }
+        }
+      }
+    },
+    "audit.action.sso_login": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed in with single sign-on"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicio de sesión único"
+          }
+        }
+      }
+    },
+    "audit.action.sso_login_failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Single sign-on failed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Falló el inicio de sesión único"
+          }
+        }
+      }
+    },
+    "audit.action.sso_unlink": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identity unlinked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identidad desvinculada"
+          }
+        }
+      }
+    },
+    "audit.action.sso_user_created": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account created by single sign-on"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuenta creada por inicio de sesión único"
+          }
+        }
+      }
+    },
+    "audit.action.team_created": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Team created"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Equipo creado"
+          }
+        }
+      }
+    },
+    "audit.action.team_deleted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Team deleted"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Equipo eliminado"
+          }
+        }
+      }
+    },
+    "audit.action.team_invite_created": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Team invitation created"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitación al equipo creada"
+          }
+        }
+      }
+    },
+    "audit.action.team_invite_revoked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Team invitation revoked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invitación al equipo revocada"
+          }
+        }
+      }
+    },
+    "audit.action.team_left": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left the team"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salió del equipo"
+          }
+        }
+      }
+    },
+    "audit.action.team_member_added": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Member added"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Miembro añadido"
+          }
+        }
+      }
+    },
+    "audit.action.team_member_removed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Member removed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Miembro quitado"
+          }
+        }
+      }
+    },
+    "audit.action.team_policy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Team policy changed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política del equipo cambiada"
+          }
+        }
+      }
+    },
+    "audit.action.team_principal_changed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Member's certificate principal changed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Principal del certificado de un miembro cambiado"
+          }
+        }
+      }
+    },
+    "audit.action.team_role_changed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Role changed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rol cambiado"
+          }
+        }
+      }
+    },
+    "audit.action.vault_create": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault created"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bóveda creada"
+          }
+        }
+      }
+    },
+    "audit.action.vault_delete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault deleted"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bóveda borrada"
+          }
+        }
+      }
+    },
+    "audit.action.vault_member_add": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Member added to a vault"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Miembro añadido a una bóveda"
+          }
+        }
+      }
+    },
+    "audit.action.vault_member_removed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Member removed from a vault"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Miembro quitado de una bóveda"
+          }
+        }
+      }
+    },
+    "audit.action.vault_role_changed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault role changed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rol en la bóveda cambiado"
+          }
+        }
+      }
+    },
+    "audit.action.vault_transfer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Items moved or copied between vaults"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elementos movidos o copiados entre bóvedas"
+          }
+        }
+      }
+    },
+    "audit.action.vault_update": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault changed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bóveda cambiada"
+          }
+        }
+      }
+    },
+    "audit.count %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld entry · no more"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld entries · no more"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld entrada · no hay más"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld entradas · no hay más"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "audit.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing matches."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay coincidencias."
+          }
+        }
+      }
+    },
+    "audit.export": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportar"
+          }
+        }
+      }
+    },
+    "audit.filter.actor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Who"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quién"
+          }
+        }
+      }
+    },
+    "audit.filter.apply": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar"
+          }
+        }
+      }
+    },
+    "audit.filter.range": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuándo"
+          }
+        }
+      }
+    },
+    "audit.filter.text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Text"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Texto"
+          }
+        }
+      }
+    },
+    "audit.load_more": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Load more"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cargar más"
+          }
+        }
+      }
+    },
+    "audit.preset.access": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceso"
+          }
+        }
+      }
+    },
+    "audit.preset.all": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todo"
+          }
+        }
+      }
+    },
+    "audit.preset.certificates": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificates"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certificados"
+          }
+        }
+      }
+    },
+    "audit.preset.e2ee": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E2EE"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E2EE"
+          }
+        }
+      }
+    },
+    "audit.preset.policy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Policy"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Políticas"
+          }
+        }
+      }
+    },
+    "audit.preset.sign_ins": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-ins"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicios de sesión"
+          }
+        }
+      }
+    },
+    "audit.preset.sso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSO"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSO"
+          }
+        }
+      }
+    },
+    "audit.range.any": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Any time"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siempre"
+          }
+        }
+      }
+    },
+    "audit.range.day": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last 24 hours"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Últimas 24 horas"
+          }
+        }
+      }
+    },
+    "audit.range.month": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last 30 days"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Últimos 30 días"
+          }
+        }
+      }
+    },
+    "audit.range.quarter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last 90 days"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Últimos 90 días"
+          }
+        }
+      }
+    },
+    "audit.range.week": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last 7 days"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Últimos 7 días"
+          }
+        }
+      }
+    },
+    "audit.retention.days": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "days"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "días"
+          }
+        }
+      }
+    },
+    "audit.retention.default %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server default (%1$@)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo del servidor (%1$@)"
+          }
+        }
+      }
+    },
+    "audit.retention.hint %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How long the team's entries are kept: empty uses the server's %1$@ days; at most %2$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuánto se guardan las entradas del equipo: vacío usa los %1$@ días del servidor; como máximo %2$@."
+          }
+        }
+      }
+    },
+    "audit.retention.invalid %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retention: a number of days from 1 to %1$@ (empty: the server's default)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retención: un número de días de 1 a %1$@ (vacío: lo que diga el servidor)"
+          }
+        }
+      }
+    },
+    "audit.retention.saved": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retention saved"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retención guardada"
+          }
+        }
+      }
+    },
+    "audit.retention.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retention"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retención"
+          }
+        }
+      }
+    },
+    "audit.sink.delete_message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entries stop going there. Nothing already delivered is touched."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las entradas dejan de ir allí. No se toca nada de lo ya entregado."
+          }
+        }
+      }
+    },
+    "audit.sink.delete_title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete %1$@?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Borrar %1$@?"
+          }
+        }
+      }
+    },
+    "audit.sink.enabled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delivering"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entregando"
+          }
+        }
+      }
+    },
+    "audit.sink.state.delivered %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delivered %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entregado %1$@"
+          }
+        }
+      }
+    },
+    "audit.sink.state.disabled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paused"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En pausa"
+          }
+        }
+      }
+    },
+    "audit.sink.state.failing %lld %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld failed attempts: %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld intentos fallidos: %2$@"
+          }
+        }
+      }
+    },
+    "audit.sink.state.waiting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing delivered yet"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada entregado todavía"
+          }
+        }
+      }
+    },
+    "audit.sink.test": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probar"
+          }
+        }
+      }
+    },
+    "audit.sink.test_failed %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The test event did not arrive: %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El evento de prueba no llegó: %1$@"
+          }
+        }
+      }
+    },
+    "audit.sink.test_ok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The test event arrived"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El evento de prueba llegó"
+          }
+        }
+      }
+    },
+    "audit.sinks.add_elsewhere": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New destinations are added from the desktop app or the web; here you can check, test, pause and delete them."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los destinos nuevos se añaden desde la app de escritorio o la web; aquí puedes revisarlos, probarlos, pausarlos y borrarlos."
+          }
+        }
+      }
+    },
+    "audit.sinks.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every new entry of the team goes, in order, to these destinations: webhooks (JSON batches signed with HMAC-SHA256) or syslog (RFC 5424 over TLS or TCP)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada entrada nueva del equipo va, en orden, a estos destinos: webhooks (lotes JSON firmados con HMAC-SHA256) o syslog (RFC 5424 por TLS o TCP)."
+          }
+        }
+      }
+    },
+    "audit.sinks.none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No destinations."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin destinos."
+          }
+        }
+      }
+    },
+    "audit.sinks.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send to your SIEM"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviar a tu SIEM"
+          }
+        }
+      }
+    },
+    "audit.team_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Team audit"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auditoría del equipo"
           }
         }
       }
@@ -8809,6 +11121,1918 @@
         }
       }
     },
+    "e2ee.auth_reason": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm it's you"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirma que eres tú"
+          }
+        }
+      }
+    },
+    "e2ee.banner.locked_detail": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock with your passphrase, your recovery phrase or another device."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desbloquéalas con tu frase de paso, tu frase de recuperación u otro dispositivo."
+          }
+        }
+      }
+    },
+    "e2ee.banner.locked_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End-to-end encrypted vaults are locked on this device"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las bóvedas cifradas de extremo a extremo están bloqueadas en este dispositivo"
+          }
+        }
+      }
+    },
+    "e2ee.banner.pairing_detail": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve it only if that device shows the same six-digit code."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apruébalo solo si ese dispositivo muestra el mismo código de seis cifras."
+          }
+        }
+      }
+    },
+    "e2ee.banner.pairing_title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” asks for your end-to-end encryption key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%1$@» pide tu clave de cifrado de extremo a extremo"
+          }
+        }
+      }
+    },
+    "e2ee.banner.pending_detail": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check their fingerprints with them and confirm them."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprueba sus huellas con esas personas y confírmalas."
+          }
+        }
+      }
+    },
+    "e2ee.banner.pending_title %lld %@": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld member waits for the key of %2$@"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld members wait for the key of %2$@"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld miembro espera la clave de %2$@"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld miembros esperan la clave de %2$@"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "e2ee.banner.setup_detail": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up your end-to-end encryption key to get its key from a member who holds it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configura tu clave de cifrado de extremo a extremo para recibir la de la bóveda de un miembro que la tenga."
+          }
+        }
+      }
+    },
+    "e2ee.banner.setup_title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ is end-to-end encrypted"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ está cifrada de extremo a extremo"
+          }
+        }
+      }
+    },
+    "e2ee.confirm.back": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show the phrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver la frase"
+          }
+        }
+      }
+    },
+    "e2ee.confirm.close_anyway": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerrar"
+          }
+        }
+      }
+    },
+    "e2ee.confirm.close_message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The phrase will not be shown again. If you did not write it down, make a new one from Settings → Security."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La frase no se volverá a mostrar. Si no la apuntaste, crea una nueva desde Ajustes → Seguridad."
+          }
+        }
+      }
+    },
+    "e2ee.confirm.close_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close without checking?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Cerrar sin comprobarla?"
+          }
+        }
+      }
+    },
+    "e2ee.confirm.done": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hecho"
+          }
+        }
+      }
+    },
+    "e2ee.confirm.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type these words of your phrase to check you wrote it down correctly (the first four letters are enough)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribe estas palabras de tu frase para comprobar que la apuntaste bien (bastan las cuatro primeras letras)."
+          }
+        }
+      }
+    },
+    "e2ee.confirm.word %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Word %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Palabra %1$@"
+          }
+        }
+      }
+    },
+    "e2ee.confirm.wrong": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Those are not the words of your phrase: look at it again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esas no son las palabras de tu frase: vuelve a mirarla"
+          }
+        }
+      }
+    },
+    "e2ee.fingerprint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key fingerprint"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Huella de la clave"
+          }
+        }
+      }
+    },
+    "e2ee.intro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End-to-end encrypted vaults keep their passwords and keys encrypted with keys that only your devices have: the server, its operator or a stolen backup cannot read them. Set up your key once; then turn it on per vault (vault settings → Encryption)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las bóvedas cifradas de extremo a extremo guardan sus contraseñas y claves cifradas con claves que solo tienen tus dispositivos: ni el servidor, ni quien lo administre, ni una copia robada pueden leerlas. Configura tu clave una vez y luego actívalo por bóveda (ajustes de la bóveda → Cifrado)."
+          }
+        }
+      }
+    },
+    "e2ee.intro_secrets_only": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only secrets are end-to-end encrypted: names, addresses, users and notes stay readable by the server so search and server features keep working."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo se cifran de extremo a extremo los secretos: nombres, direcciones, usuarios y notas siguen siendo legibles por el servidor para que la búsqueda y las funciones del servidor sigan funcionando."
+          }
+        }
+      }
+    },
+    "e2ee.lock": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock this device"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloquear este dispositivo"
+          }
+        }
+      }
+    },
+    "e2ee.locked_secrets %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld secret is locked on this device"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld secrets are locked on this device"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld secreto está bloqueado en este dispositivo"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld secretos están bloqueados en este dispositivo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "e2ee.locked_toast": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Locked: this device forgot your key and the opened secrets"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloqueado: este dispositivo ha olvidado tu clave y los secretos abiertos"
+          }
+        }
+      }
+    },
+    "e2ee.methods.both": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New devices unlock with your passphrase, your recovery phrase or another device."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los dispositivos nuevos se desbloquean con tu frase de paso, tu frase de recuperación u otro dispositivo."
+          }
+        }
+      }
+    },
+    "e2ee.methods.none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only another device of yours can unlock new ones."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo otro dispositivo tuyo puede desbloquear los nuevos."
+          }
+        }
+      }
+    },
+    "e2ee.methods.passphrase": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New devices unlock with your passphrase or another device (no recovery phrase)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los dispositivos nuevos se desbloquean con tu frase de paso u otro dispositivo (sin frase de recuperación)."
+          }
+        }
+      }
+    },
+    "e2ee.methods.recovery": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New devices unlock with your recovery phrase or another device."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los dispositivos nuevos se desbloquean con tu frase de recuperación u otro dispositivo."
+          }
+        }
+      }
+    },
+    "e2ee.notice.waiting %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld change waits until you unlock end-to-end encryption on this device"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld changes wait until you unlock end-to-end encryption on this device"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld cambio espera a que desbloquees el cifrado de extremo a extremo en este dispositivo"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld cambios esperan a que desbloquees el cifrado de extremo a extremo en este dispositivo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "e2ee.pairing.approve": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aprobar"
+          }
+        }
+      }
+    },
+    "e2ee.pairing.compare": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve only if that device shows exactly this code. If you did not ask, deny it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apruébalo solo si ese dispositivo muestra exactamente este código. Si no lo has pedido tú, deniégalo."
+          }
+        }
+      }
+    },
+    "e2ee.pairing.deny": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deny"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Denegar"
+          }
+        }
+      }
+    },
+    "e2ee.pairing.expires %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expires in %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caduca en %1$@"
+          }
+        }
+      }
+    },
+    "e2ee.pairing.message %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” asks for your end-to-end encryption key."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%1$@» pide tu clave de cifrado de extremo a extremo."
+          }
+        }
+      }
+    },
+    "e2ee.pairing.notice_body %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” wants to unlock your end-to-end encrypted vaults: compare the code in Termoak"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%1$@» quiere desbloquear tus bóvedas cifradas de extremo a extremo: compara el código en Termoak"
+          }
+        }
+      }
+    },
+    "e2ee.pairing.notice_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A device asks for your E2EE key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un dispositivo pide tu clave E2EE"
+          }
+        }
+      }
+    },
+    "e2ee.pairing.review": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisar"
+          }
+        }
+      }
+    },
+    "e2ee.pairing.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock another device?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Desbloquear otro dispositivo?"
+          }
+        }
+      }
+    },
+    "e2ee.pairing.waiting_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Devices asking for your key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispositivos que piden tu clave"
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.change": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change passphrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar la frase de paso"
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use several words you will remember (8 characters at least). It is not your login password and Termoak cannot reset it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa varias palabras que vayas a recordar (8 caracteres como mínimo). No es tu contraseña de inicio de sesión y Termoak no puede restablecerla."
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.mismatch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The passphrases do not match"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las frases de paso no coinciden"
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.optional": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E2EE passphrase (optional)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frase de paso E2EE (opcional)"
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passphrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frase de paso"
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.remove": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove passphrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar la frase de paso"
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.remove_message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New devices will unlock only with the recovery phrase or from another device of yours."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los dispositivos nuevos solo podrán desbloquearse con la frase de recuperación o desde otro dispositivo tuyo."
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.remove_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove the passphrase?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Quitar la frase de paso?"
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.removed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passphrase removed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frase de paso quitada"
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.repeat": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeat the passphrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repite la frase de paso"
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.set": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set a passphrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poner una frase de paso"
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.strength.fair": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fair: a few more words would help"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aceptable: unas palabras más ayudarían"
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.strength.good": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buena"
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.strength.strong": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strong"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muy buena"
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.strength.too_short": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too short (8 characters at least)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demasiado corta (8 caracteres como mínimo)"
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.strength.weak": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weak"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Débil"
+          }
+        }
+      }
+    },
+    "e2ee.passphrase.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E2EE passphrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frase de paso E2EE"
+          }
+        }
+      }
+    },
+    "e2ee.recovery.copied": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovery phrase copied: paste it somewhere safe and clear the clipboard"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frase de recuperación copiada: pégala en un sitio seguro y vacía el portapapeles"
+          }
+        }
+      }
+    },
+    "e2ee.recovery.doc.account %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account: %1$@ on %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuenta: %1$@ en %2$@"
+          }
+        }
+      }
+    },
+    "e2ee.recovery.doc.date %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Made on %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creada el %1$@"
+          }
+        }
+      }
+    },
+    "e2ee.recovery.doc.keep": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep it offline and private. Anyone with these 24 words and your password can read your end-to-end encrypted vaults; without them, a lost device can mean lost secrets. Termoak cannot recover it for you."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guárdala sin conexión y en privado. Quien tenga estas 24 palabras y tu contraseña puede leer tus bóvedas cifradas de extremo a extremo; sin ellas, perder un dispositivo puede significar perder secretos. Termoak no puede recuperarla por ti."
+          }
+        }
+      }
+    },
+    "e2ee.recovery.doc.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termoak recovery phrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frase de recuperación de Termoak"
+          }
+        }
+      }
+    },
+    "e2ee.recovery.hidden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hidden while Termoak is not in front or the screen is being recorded or mirrored"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oculta mientras Termoak no está delante o la pantalla se graba o se duplica"
+          }
+        }
+      }
+    },
+    "e2ee.recovery.keep_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A password manager, a printed copy in a drawer or a safe are good places. Anyone with these words and your password can read your end-to-end encrypted vaults."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un gestor de contraseñas, una copia impresa en un cajón o una caja fuerte son buenos sitios. Quien tenga estas palabras y tu contraseña puede leer tus bóvedas cifradas de extremo a extremo."
+          }
+        }
+      }
+    },
+    "e2ee.recovery.new": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New recovery phrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nueva frase de recuperación"
+          }
+        }
+      }
+    },
+    "e2ee.recovery.new_confirm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make a new phrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear una frase nueva"
+          }
+        }
+      }
+    },
+    "e2ee.recovery.new_done": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your new recovery phrase is in place"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu nueva frase de recuperación ya está activa"
+          }
+        }
+      }
+    },
+    "e2ee.recovery.new_message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A new 24-word phrase replaces the old one, which stops working at once."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una frase nueva de 24 palabras sustituye a la anterior, que deja de funcionar al momento."
+          }
+        }
+      }
+    },
+    "e2ee.recovery.new_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New recovery phrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nueva frase de recuperación"
+          }
+        }
+      }
+    },
+    "e2ee.recovery.print": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Print…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Imprimir…"
+          }
+        }
+      }
+    },
+    "e2ee.recovery.reason.checksum": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The words do not form a valid phrase: a word is mistyped or two are swapped"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las palabras no forman una frase válida: hay una palabra mal escrita o dos cambiadas de orden"
+          }
+        }
+      }
+    },
+    "e2ee.recovery.reason.old_format": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is a recovery key of the old format (56 characters): recovery keys are now 24 words. Use your passphrase or another device, or make a new recovery phrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es una clave de recuperación del formato antiguo (56 caracteres): ahora son 24 palabras. Usa tu frase de paso u otro dispositivo, o crea una frase de recuperación nueva"
+          }
+        }
+      }
+    },
+    "e2ee.recovery.reason.unknown_word %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Word %1$@ is not a recovery phrase word: check its spelling"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La palabra %1$@ no es una palabra de la frase de recuperación: revisa cómo se escribe"
+          }
+        }
+      }
+    },
+    "e2ee.recovery.reason.word_count %@ %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A recovery phrase has %1$@ words (%2$lld typed)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una frase de recuperación tiene %1$@ palabras (llevas %2$lld)"
+          }
+        }
+      }
+    },
+    "e2ee.recovery.save": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardar…"
+          }
+        }
+      }
+    },
+    "e2ee.recovery.show_message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write these 24 words down, in order, and keep them offline. They are shown only now: with them you get your key back if you lose every device."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apunta estas 24 palabras, en orden, y guárdalas sin conexión. Solo se muestran ahora: con ellas recuperas tu clave si pierdes todos tus dispositivos."
+          }
+        }
+      }
+    },
+    "e2ee.recovery.stored": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have stored my recovery phrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "He guardado mi frase de recuperación"
+          }
+        }
+      }
+    },
+    "e2ee.reset.button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restablecer…"
+          }
+        }
+      }
+    },
+    "e2ee.reset.confirm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restablecer"
+          }
+        }
+      }
+    },
+    "e2ee.reset.done": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End-to-end encryption was reset: set it up again when you are ready"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se ha restablecido el cifrado de extremo a extremo: vuelve a configurarlo cuando quieras"
+          }
+        }
+      }
+    },
+    "e2ee.reset.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only if you lost every device and your recovery phrase. Your key, its copies and pairings are deleted, and you lose the keys of every end-to-end encrypted vault: ask someone who holds them to give them to you again after you set up a new key."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo si perdiste todos tus dispositivos y tu frase de recuperación. Se borran tu clave, sus copias y emparejamientos, y pierdes las claves de todas las bóvedas cifradas de extremo a extremo: pide a quien las tenga que te las vuelva a dar cuando configures una clave nueva."
+          }
+        }
+      }
+    },
+    "e2ee.reset.no_vaults": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No vault depends only on your key."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ninguna bóveda depende solo de tu clave."
+          }
+        }
+      }
+    },
+    "e2ee.reset.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset end-to-end encryption"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restablecer el cifrado de extremo a extremo"
+          }
+        }
+      }
+    },
+    "e2ee.reset.type_email %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type %1$@ to confirm"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribe %1$@ para confirmar"
+          }
+        }
+      }
+    },
+    "e2ee.reset.vaults_lost %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld vault depends only on your key: its secrets will be lost for good"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld vaults depend only on your key: their secrets will be lost for good"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld bóveda depende solo de tu clave: sus secretos se perderán para siempre"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld bóvedas dependen solo de tu clave: sus secretos se perderán para siempre"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "e2ee.rotate.button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replace key…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sustituir la clave…"
+          }
+        }
+      }
+    },
+    "e2ee.rotate.confirm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replace the key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sustituir la clave"
+          }
+        }
+      }
+    },
+    "e2ee.rotate.done": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your key was replaced"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu clave se ha sustituido"
+          }
+        }
+      }
+    },
+    "e2ee.rotate.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Do this if you lost a device that was unlocked. This device makes a new key, gives it every vault key you hold and a new recovery phrase; your other devices lock and must be unlocked again. Remove the lost device in Settings → Accounts → Devices too."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hazlo si perdiste un dispositivo que estaba desbloqueado. Este dispositivo crea una clave nueva, le pasa todas las claves de bóveda que tienes y una frase de recuperación nueva; tus otros dispositivos se bloquean y hay que desbloquearlos otra vez. Quita también el dispositivo perdido en Ajustes → Cuentas → Dispositivos."
+          }
+        }
+      }
+    },
+    "e2ee.rotate.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replace your end-to-end encryption key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sustituir tu clave de cifrado de extremo a extremo"
+          }
+        }
+      }
+    },
+    "e2ee.setup.button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up end-to-end encryption"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurar el cifrado de extremo a extremo"
+          }
+        }
+      }
+    },
+    "e2ee.setup.create": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create my key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear mi clave"
+          }
+        }
+      }
+    },
+    "e2ee.setup.done": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End-to-end encryption is set up on this device"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El cifrado de extremo a extremo está configurado en este dispositivo"
+          }
+        }
+      }
+    },
+    "e2ee.setup.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termoak makes your key on this device and a 24-word recovery phrase you will write down next. A passphrase is optional: with it you can unlock new devices without the phrase. Never use your login password: the server sees that one."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termoak crea tu clave en este dispositivo y una frase de recuperación de 24 palabras que apuntarás a continuación. La frase de paso es opcional: con ella puedes desbloquear dispositivos nuevos sin la frase de recuperación. No uses nunca tu contraseña de inicio de sesión: esa la ve el servidor."
+          }
+        }
+      }
+    },
+    "e2ee.setup.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up end-to-end encryption"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurar el cifrado de extremo a extremo"
+          }
+        }
+      }
+    },
+    "e2ee.state.locked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Locked here"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloqueado aquí"
+          }
+        }
+      }
+    },
+    "e2ee.state.locked_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your account has a key, but this device does not hold it: unlock it to open your end-to-end encrypted vaults here."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu cuenta tiene una clave, pero este dispositivo no la tiene: desbloquéalo para abrir aquí tus bóvedas cifradas de extremo a extremo."
+          }
+        }
+      }
+    },
+    "e2ee.state.unlocked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlocked here"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desbloqueado aquí"
+          }
+        }
+      }
+    },
+    "e2ee.state.unlocked_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device holds your key: it opens the end-to-end encrypted vaults you belong to."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este dispositivo tiene tu clave: abre las bóvedas cifradas de extremo a extremo de las que formas parte."
+          }
+        }
+      }
+    },
+    "e2ee.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End-to-end encryption"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cifrado de extremo a extremo"
+          }
+        }
+      }
+    },
+    "e2ee.unlock.button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desbloquear"
+          }
+        }
+      }
+    },
+    "e2ee.unlock.device_code": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Code"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Código"
+          }
+        }
+      }
+    },
+    "e2ee.unlock.device_message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask a device where you are unlocked (another computer, your phone): it shows a request with a six-digit code. Approve it only if the code is the one shown here."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pídeselo a un dispositivo donde estés desbloqueado (otro ordenador, tu móvil): mostrará una solicitud con un código de seis cifras. Apruébala solo si el código es el que ves aquí."
+          }
+        }
+      }
+    },
+    "e2ee.unlock.device_start": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask my other devices"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pedírselo a mis otros dispositivos"
+          }
+        }
+      }
+    },
+    "e2ee.unlock.device_waiting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for the approval…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando la aprobación…"
+          }
+        }
+      }
+    },
+    "e2ee.unlock.done %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Unlocked: %1$lld secret opened"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Unlocked: %1$lld secrets opened"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Desbloqueado: %1$lld secreto abierto"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Desbloqueado: %1$lld secretos abiertos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "e2ee.unlock.passphrase_message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your E2EE passphrase (not your login password)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu frase de paso E2EE (no tu contraseña de inicio de sesión)."
+          }
+        }
+      }
+    },
+    "e2ee.unlock.recovery_message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type or paste your 24 words. Case, numbers and line breaks do not matter, and the first four letters of each word are enough."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribe o pega tus 24 palabras. Da igual mayúsculas, números o saltos de línea, y bastan las cuatro primeras letras de cada palabra."
+          }
+        }
+      }
+    },
+    "e2ee.unlock.recovery_typing %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld of 24 words"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld de 24 palabras"
+          }
+        }
+      }
+    },
+    "e2ee.unlock.recovery_valid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A valid recovery phrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frase de recuperación válida"
+          }
+        }
+      }
+    },
+    "e2ee.unlock.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock end-to-end encryption"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desbloquear el cifrado de extremo a extremo"
+          }
+        }
+      }
+    },
+    "e2ee.unlock.way_device": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another device"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otro dispositivo"
+          }
+        }
+      }
+    },
+    "e2ee.unlock.way_passphrase": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passphrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frase de paso"
+          }
+        }
+      }
+    },
+    "e2ee.unlock.way_recovery": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovery phrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frase de recuperación"
+          }
+        }
+      }
+    },
     "error.access_approval_required": {
       "localizations": {
         "en": {
@@ -8917,6 +13141,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "El equipo no permite la IA en este host"
+          }
+        }
+      }
+    },
+    "error.audit_sink_invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The destination is not valid or not allowed by the server"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El destino no es válido o el servidor no lo permite"
           }
         }
       }
@@ -9049,6 +13289,310 @@
         }
       }
     },
+    "error.e2ee_already_enabled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This vault is already end-to-end encrypted"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta bóveda ya está cifrada de extremo a extremo"
+          }
+        }
+      }
+    },
+    "error.e2ee_client_required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This vault is end-to-end encrypted and needs a newer Termoak app"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta bóveda está cifrada de extremo a extremo y necesita una app de Termoak más reciente"
+          }
+        }
+      }
+    },
+    "error.e2ee_decrypt_failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not decrypt (wrong key or damaged data)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo descifrar (clave incorrecta o datos dañados)"
+          }
+        }
+      }
+    },
+    "error.e2ee_incomplete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something changed in the vault meanwhile (an item or a member): sync and try again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algo ha cambiado en la bóveda mientras tanto (un elemento o un miembro): sincroniza y vuelve a intentarlo"
+          }
+        }
+      }
+    },
+    "error.e2ee_key_exists": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your account already has an end-to-end encryption key: unlock it instead"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu cuenta ya tiene una clave de cifrado de extremo a extremo: desbloquéala"
+          }
+        }
+      }
+    },
+    "error.e2ee_key_mismatch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key does not match the one your account published: do not continue and check your devices"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave no coincide con la que publicó tu cuenta: no sigas y revisa tus dispositivos"
+          }
+        }
+      }
+    },
+    "error.e2ee_key_outdated": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vault's key changed: syncing again with the new key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave de la bóveda ha cambiado: se sincroniza de nuevo con la clave nueva"
+          }
+        }
+      }
+    },
+    "error.e2ee_locked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These secrets are end-to-end encrypted and locked on this device: unlock end-to-end encryption first"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estos secretos están cifrados de extremo a extremo y bloqueados en este dispositivo: desbloquea primero el cifrado de extremo a extremo"
+          }
+        }
+      }
+    },
+    "error.e2ee_not_enabled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This vault is not end-to-end encrypted"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta bóveda no está cifrada de extremo a extremo"
+          }
+        }
+      }
+    },
+    "error.e2ee_not_set_up": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up end-to-end encryption for your account first"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configura primero el cifrado de extremo a extremo de tu cuenta"
+          }
+        }
+      }
+    },
+    "error.e2ee_pairing_closed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The request was denied, expired, or too many are waiting: start again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La solicitud se denegó, caducó o hay demasiadas esperando: empieza de nuevo"
+          }
+        }
+      }
+    },
+    "error.e2ee_passphrase_invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wrong passphrase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frase de paso incorrecta"
+          }
+        }
+      }
+    },
+    "error.e2ee_passphrase_too_short": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The passphrase needs at least 8 characters"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La frase de paso necesita al menos 8 caracteres"
+          }
+        }
+      }
+    },
+    "error.e2ee_plaintext_rejected": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This vault is end-to-end encrypted: the secret has to be encrypted on this device first"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta bóveda está cifrada de extremo a extremo: el secreto tiene que cifrarse antes en este dispositivo"
+          }
+        }
+      }
+    },
+    "error.e2ee_recovery_key_invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That recovery phrase does not open your key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esa frase de recuperación no abre tu clave"
+          }
+        }
+      }
+    },
+    "error.e2ee_stale": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Someone changed the vault's key meanwhile: sync and try again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alguien ha cambiado la clave de la bóveda mientras tanto: sincroniza y vuelve a intentarlo"
+          }
+        }
+      }
+    },
+    "error.e2ee_unlock_required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This host's credentials are end-to-end encrypted: the server can only use them if this device sends them for this connection"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las credenciales de este host están cifradas de extremo a extremo: el servidor solo puede usarlas si este dispositivo se las envía para esta conexión"
+          }
+        }
+      }
+    },
+    "error.e2ee_vault": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server cannot do this for an end-to-end encrypted vault (it cannot read its secrets)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servidor no puede hacer esto con una bóveda cifrada de extremo a extremo (no puede leer sus secretos)"
+          }
+        }
+      }
+    },
+    "error.e2ee_wrap_invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That person cannot hold this vault's key (their role or their key changed)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esa persona no puede tener la clave de esta bóveda (ha cambiado su rol o su clave)"
+          }
+        }
+      }
+    },
     "error.email_not_verified": {
       "localizations": {
         "en": {
@@ -9113,6 +13657,22 @@
         }
       }
     },
+    "error.invalid_format": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown export format"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Formato de exportación desconocido"
+          }
+        }
+      }
+    },
     "error.invalid_reason": {
       "localizations": {
         "en": {
@@ -9125,6 +13685,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Indica un motivo (de 1 a 500 caracteres)"
+          }
+        }
+      }
+    },
+    "error.invalid_retention": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retention out of range"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retención fuera de rango"
           }
         }
       }
@@ -9521,6 +14097,278 @@
           "stringUnit": {
             "state": "translated",
             "value": "No puedes aprobar tu propia solicitud"
+          }
+        }
+      }
+    },
+    "error.sso_account_not_found": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There is no account for that email and this team does not create them"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay ninguna cuenta con ese correo y este equipo no las crea"
+          }
+        }
+      }
+    },
+    "error.sso_account_not_linked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That identity is not linked to an account: sign in with your password and link it in Settings → Security"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esa identidad no está vinculada a ninguna cuenta: entra con tu contraseña y vincúlala en Ajustes → Seguridad"
+          }
+        }
+      }
+    },
+    "error.sso_code_invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The sign-in expired or was already used: start again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El inicio de sesión caducó o ya se usó: empieza de nuevo"
+          }
+        }
+      }
+    },
+    "error.sso_domain_taken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another team verified (or recently claimed) that domain"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otro equipo verificó (o reclamó hace poco) ese dominio"
+          }
+        }
+      }
+    },
+    "error.sso_domain_unverified": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verify a domain first"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verifica antes un dominio"
+          }
+        }
+      }
+    },
+    "error.sso_email_missing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The identity provider did not send an email address"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El proveedor de identidad no envió una dirección de correo"
+          }
+        }
+      }
+    },
+    "error.sso_email_unverified": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The identity provider says that email is not verified"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El proveedor de identidad dice que ese correo no está verificado"
+          }
+        }
+      }
+    },
+    "error.sso_failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The identity provider refused the sign-in"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El proveedor de identidad rechazó el inicio de sesión"
+          }
+        }
+      }
+    },
+    "error.sso_identity_taken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That identity is linked to another account"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esa identidad está vinculada a otra cuenta"
+          }
+        }
+      }
+    },
+    "error.sso_issuer_invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The identity provider could not be reached or its settings do not match the issuer"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo contactar con el proveedor de identidad o su configuración no coincide con el emisor"
+          }
+        }
+      }
+    },
+    "error.sso_not_configured": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Single sign-on is not set up (or is off) for this team"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El inicio de sesión único no está configurado (o está apagado) en este equipo"
+          }
+        }
+      }
+    },
+    "error.sso_only_account": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This account signs in only through single sign-on: set a password before unlinking"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta cuenta solo entra con inicio de sesión único: pon una contraseña antes de desvincular"
+          }
+        }
+      }
+    },
+    "error.sso_pkce_invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The sign-in could not be checked: start again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo comprobar el inicio de sesión: empieza de nuevo"
+          }
+        }
+      }
+    },
+    "error.sso_redirect_invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The sign-in cannot come back to this app (redirect not allowed)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El inicio de sesión no puede volver a esta app (redirección no permitida)"
+          }
+        }
+      }
+    },
+    "error.sso_required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your organization signs in through single sign-on: use “Continue with single sign-on”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu organización inicia sesión con inicio de sesión único: usa «Continuar con inicio de sesión único»"
+          }
+        }
+      }
+    },
+    "error.sso_required_team %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ signs in through single sign-on: use “Continue with %1$@”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ inicia sesión con inicio de sesión único: usa «Continuar con %1$@»"
+          }
+        }
+      }
+    },
+    "error.sso_state_invalid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The browser came back for another sign-in: start again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El navegador volvió de otro inicio de sesión: empieza de nuevo"
           }
         }
       }
@@ -28280,6 +33128,38 @@
         }
       }
     },
+    "settings.page.activity": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activity"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actividad"
+          }
+        }
+      }
+    },
+    "settings.page.security": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Security"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguridad"
+          }
+        }
+      }
+    },
     "settings.privacy": {
       "localizations": {
         "en": {
@@ -28292,6 +33172,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Privacidad"
+          }
+        }
+      }
+    },
+    "settings.security.no_e2ee": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This account's server has no end-to-end encrypted vaults."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servidor de esta cuenta no tiene bóvedas cifradas de extremo a extremo."
+          }
+        }
+      }
+    },
+    "settings.security.signed_out_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in to an account to manage its end-to-end encryption, linked identities and activity."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicia sesión en una cuenta para gestionar su cifrado de extremo a extremo, sus identidades vinculadas y su actividad."
           }
         }
       }
@@ -33216,6 +38128,1254 @@
         }
       }
     },
+    "sso.copied": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiado"
+          }
+        }
+      }
+    },
+    "sso.domain.add": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add domain"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir dominio"
+          }
+        }
+      }
+    },
+    "sso.domain.added": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domain added: publish its TXT record and verify it"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dominio añadido: publica su registro TXT y verifícalo"
+          }
+        }
+      }
+    },
+    "sso.domain.failed %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not verified yet: %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún sin verificar: %1$@"
+          }
+        }
+      }
+    },
+    "sso.domain.not_yet %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ is not verified yet (%2$@). DNS changes can take a while: try again later."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ aún no está verificado (%2$@). Los cambios de DNS pueden tardar: inténtalo más tarde."
+          }
+        }
+      }
+    },
+    "sso.domain.pending": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for the TXT record"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando al registro TXT"
+          }
+        }
+      }
+    },
+    "sso.domain.remove": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove domain"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar el dominio"
+          }
+        }
+      }
+    },
+    "sso.domain.remove_message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Its accounts are no longer linked or required to use single sign-on."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sus cuentas dejan de vincularse y de estar obligadas a usar el inicio de sesión único."
+          }
+        }
+      }
+    },
+    "sso.domain.remove_title %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove %1$@?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Quitar %1$@?"
+          }
+        }
+      }
+    },
+    "sso.domain.txt_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Publish this TXT record in the domain's DNS, then Verify:"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Publica este registro TXT en el DNS del dominio y luego pulsa Verificar:"
+          }
+        }
+      }
+    },
+    "sso.domain.txt_name": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre"
+          }
+        }
+      }
+    },
+    "sso.domain.txt_value": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Value"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valor"
+          }
+        }
+      }
+    },
+    "sso.domain.txt_zone": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zone file"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archivo de zona"
+          }
+        }
+      }
+    },
+    "sso.domain.verified": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verified"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificado"
+          }
+        }
+      }
+    },
+    "sso.domain.verified_toast %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ is verified"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ está verificado"
+          }
+        }
+      }
+    },
+    "sso.domain.verify": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verify"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificar"
+          }
+        }
+      }
+    },
+    "sso.domains.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prove each email domain with a DNS TXT record. Accounts of verified domains are linked to their identity, and only they can be required to use single sign-on."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demuestra cada dominio de correo con un registro DNS TXT. Las cuentas de los dominios verificados se vinculan a su identidad, y solo a ellas se les puede exigir el inicio de sesión único."
+          }
+        }
+      }
+    },
+    "sso.domains.none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No domains yet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no hay dominios."
+          }
+        }
+      }
+    },
+    "sso.domains.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domains"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dominios"
+          }
+        }
+      }
+    },
+    "sso.field.client_id": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Client ID"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ID de cliente"
+          }
+        }
+      }
+    },
+    "sso.field.client_secret": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Client secret"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secreto de cliente"
+          }
+        }
+      }
+    },
+    "sso.field.client_secret_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stored encrypted on the server and never shown again. Public clients with PKCE only may leave it empty."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se guarda cifrado en el servidor y no se vuelve a mostrar. Solo los clientes públicos con PKCE pueden dejarlo vacío."
+          }
+        }
+      }
+    },
+    "sso.field.client_secret_stored": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A secret is stored (never shown again): leave it empty to keep it, or paste a new one."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay un secreto guardado (no se vuelve a mostrar): déjalo vacío para conservarlo o pega uno nuevo."
+          }
+        }
+      }
+    },
+    "sso.field.email_claim": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Email claim"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claim del correo"
+          }
+        }
+      }
+    },
+    "sso.field.preset": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Provider"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Proveedor"
+          }
+        }
+      }
+    },
+    "sso.field.redirect_uri": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redirect URI to register at the provider"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "URI de redirección que registrar en el proveedor"
+          }
+        }
+      }
+    },
+    "sso.field.scopes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extra scopes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ámbitos adicionales"
+          }
+        }
+      }
+    },
+    "sso.field.tenant": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Directory (tenant) ID"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ID de directorio (inquilino)"
+          }
+        }
+      }
+    },
+    "sso.form.client_id_required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The client ID is required"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hace falta el ID de cliente"
+          }
+        }
+      }
+    },
+    "sso.form.issuer_required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The issuer URL is required"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hace falta la URL del emisor"
+          }
+        }
+      }
+    },
+    "sso.form.secret_required_google": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Google needs the client secret"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Google necesita el secreto de cliente"
+          }
+        }
+      }
+    },
+    "sso.form.tenant_required": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microsoft Entra needs the directory (tenant) ID"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microsoft Entra necesita el ID de directorio (inquilino)"
+          }
+        }
+      }
+    },
+    "sso.help.authentik": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authentik → Applications → Create with provider (OAuth2/OpenID, confidential). Redirect URI: the one below. Issuer: https://<host>/application/o/<slug>/ (with the final slash)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authentik → Applications → Create with provider (OAuth2/OpenID, confidencial). URI de redirección: la de abajo. Emisor: https://<host>/application/o/<slug>/ (con la barra final)."
+          }
+        }
+      }
+    },
+    "sso.help.generic": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Any provider with OpenID Connect discovery (/.well-known/openid-configuration) and the authorization code flow with PKCE. Register the redirect URI below."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cualquier proveedor con descubrimiento OpenID Connect (/.well-known/openid-configuration) y el flujo de código de autorización con PKCE. Registra la URI de redirección de abajo."
+          }
+        }
+      }
+    },
+    "sso.help.google": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Google Cloud console → APIs & Services → Credentials → Create OAuth client ID (Web application). Add the redirect URI below. Only accounts of your verified domains are accepted."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consola de Google Cloud → APIs y servicios → Credenciales → Crear ID de cliente OAuth (Aplicación web). Añade la URI de redirección de abajo. Solo se aceptan cuentas de tus dominios verificados."
+          }
+        }
+      }
+    },
+    "sso.help.keycloak": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keycloak → your realm → Clients → Create client (OpenID Connect, client authentication on, standard flow). Valid redirect URI: the one below. Issuer: https://<host>/realms/<realm>."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keycloak → tu realm → Clients → Create client (OpenID Connect, autenticación de cliente activada, flujo estándar). URI de redirección válida: la de abajo. Emisor: https://<host>/realms/<realm>."
+          }
+        }
+      }
+    },
+    "sso.help.microsoft": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entra admin center → App registrations → New registration (Web). Add the redirect URI below, create a client secret, and copy the Directory (tenant) ID and the Application (client) ID."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Centro de administración de Entra → Registros de aplicaciones → Nuevo registro (Web). Añade la URI de redirección de abajo, crea un secreto de cliente y copia el ID de directorio (inquilino) y el ID de aplicación (cliente)."
+          }
+        }
+      }
+    },
+    "sso.identities.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in to this account through a team's identity provider."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entra en esta cuenta con el proveedor de identidad de un equipo."
+          }
+        }
+      }
+    },
+    "sso.identities.last_login %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · last sign-in %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · último inicio %2$@"
+          }
+        }
+      }
+    },
+    "sso.identities.none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No identities linked."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay identidades vinculadas."
+          }
+        }
+      }
+    },
+    "sso.identities.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Linked identities"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identidades vinculadas"
+          }
+        }
+      }
+    },
+    "sso.intro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "People of your verified domains sign in with your identity provider (OpenID Connect). Their end-to-end encryption still needs their own recovery phrase or another device: an identity provider never gets their keys."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las personas de tus dominios verificados inician sesión con tu proveedor de identidad (OpenID Connect). Su cifrado de extremo a extremo sigue necesitando su propia frase de recuperación u otro dispositivo: el proveedor de identidad nunca recibe sus claves."
+          }
+        }
+      }
+    },
+    "sso.link_with %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Link with %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vincular con %1$@"
+          }
+        }
+      }
+    },
+    "sso.linked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identity linked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identidad vinculada"
+          }
+        }
+      }
+    },
+    "sso.member_enforced": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "password sign-in is not allowed for its domains."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no se permite entrar con contraseña en sus dominios."
+          }
+        }
+      }
+    },
+    "sso.member_none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This team has no single sign-on."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este equipo no tiene inicio de sesión único."
+          }
+        }
+      }
+    },
+    "sso.member_optional": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "passwords still work."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "las contraseñas siguen funcionando."
+          }
+        }
+      }
+    },
+    "sso.member_summary %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This team signs in with %1$@; %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este equipo inicia sesión con %1$@; %2$@"
+          }
+        }
+      }
+    },
+    "sso.no_public_url": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This server has no public URL: single sign-on cannot be used until its administrator sets one."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este servidor no tiene URL pública: no se puede usar el inicio de sesión único hasta que su administrador la configure."
+          }
+        }
+      }
+    },
+    "sso.preset.authentik": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authentik"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authentik"
+          }
+        }
+      }
+    },
+    "sso.preset.generic": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other OpenID Connect provider"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otro proveedor OpenID Connect"
+          }
+        }
+      }
+    },
+    "sso.preset.google": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Google Workspace"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Google Workspace"
+          }
+        }
+      }
+    },
+    "sso.preset.keycloak": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keycloak"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keycloak"
+          }
+        }
+      }
+    },
+    "sso.preset.microsoft": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microsoft Entra ID"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microsoft Entra ID"
+          }
+        }
+      }
+    },
+    "sso.provider.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identity provider"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Proveedor de identidad"
+          }
+        }
+      }
+    },
+    "sso.remove": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove single sign-on"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar el inicio de sesión único"
+          }
+        }
+      }
+    },
+    "sso.remove_message %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@'s provider settings and its stored secret are deleted; people sign in with passwords again (accounts created by single sign-on must set one)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se borran la configuración del proveedor de %1$@ y su secreto; se vuelve a entrar con contraseña (las cuentas creadas por el inicio de sesión único tendrán que poner una)."
+          }
+        }
+      }
+    },
+    "sso.remove_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove single sign-on?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Quitar el inicio de sesión único?"
+          }
+        }
+      }
+    },
+    "sso.removed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Single sign-on removed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicio de sesión único quitado"
+          }
+        }
+      }
+    },
+    "sso.rule.auto_create": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create accounts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear cuentas"
+          }
+        }
+      }
+    },
+    "sso.rule.auto_join": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add them to the team"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadirlas al equipo"
+          }
+        }
+      }
+    },
+    "sso.rule.email_verified": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Require a verified email"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exigir correo verificado"
+          }
+        }
+      }
+    },
+    "sso.rule.enabled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Single sign-on on"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicio de sesión único activado"
+          }
+        }
+      }
+    },
+    "sso.rule.enforce": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Require single sign-on"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exigir el inicio de sesión único"
+          }
+        }
+      }
+    },
+    "sso.rule.enforce_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accounts of the verified domains cannot sign in, sign up or reset their password with a password (server administrators keep it)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las cuentas de los dominios verificados no pueden entrar, registrarse ni restablecer la contraseña con contraseña (los administradores del servidor la conservan)."
+          }
+        }
+      }
+    },
+    "sso.rule.enforce_needs_domain": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verify a domain first."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verifica antes un dominio."
+          }
+        }
+      }
+    },
+    "sso.rule.owner_password": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The team owner keeps a password (break glass)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El propietario del equipo conserva la contraseña (emergencia)"
+          }
+        }
+      }
+    },
+    "sso.rule.satisfies_2fa": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Single sign-on counts as two-step verification"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El inicio de sesión único cuenta como verificación en dos pasos"
+          }
+        }
+      }
+    },
+    "sso.rule.satisfies_2fa_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn it on only if your provider enforces MFA: then the team's 2FA policy accepts linked identities and Termoak does not ask for its own code."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actívalo solo si tu proveedor exige MFA: así la política 2FA del equipo acepta las identidades vinculadas y Termoak no pide su propio código."
+          }
+        }
+      }
+    },
+    "sso.rules.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-in rules"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reglas de inicio de sesión"
+          }
+        }
+      }
+    },
+    "sso.save": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save and check"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardar y comprobar"
+          }
+        }
+      }
+    },
+    "sso.saved": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardado"
+          }
+        }
+      }
+    },
+    "sso.saved_on": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved: the provider answered and its settings match"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardado: el proveedor respondió y su configuración coincide"
+          }
+        }
+      }
+    },
+    "sso.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Single sign-on"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicio de sesión único"
+          }
+        }
+      }
+    },
+    "sso.unlink": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlink"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desvincular"
+          }
+        }
+      }
+    },
+    "sso.unlink_message %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You will no longer sign in through %1$@'s provider (your password keeps working)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya no entrarás con el proveedor de %1$@ (tu contraseña sigue funcionando)."
+          }
+        }
+      }
+    },
+    "sso.unlink_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlink this identity?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Desvincular esta identidad?"
+          }
+        }
+      }
+    },
+    "sso.unlinked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identity unlinked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identidad desvinculada"
+          }
+        }
+      }
+    },
     "suggestions.accessibility %@": {
       "localizations": {
         "en": {
@@ -33832,6 +39992,22 @@
         }
       }
     },
+    "teams.audit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Audit"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auditoría"
+          }
+        }
+      }
+    },
     "teams.create": {
       "localizations": {
         "en": {
@@ -34324,6 +40500,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Seguridad"
+          }
+        }
+      }
+    },
+    "teams.sso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Single sign-on"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicio de sesión único"
           }
         }
       }
@@ -37208,6 +43400,918 @@
         }
       }
     },
+    "vault_e2ee.auto_rotated %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Someone lost access to %1$@: its key was rotated (version %2$@)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alguien perdió el acceso a %1$@: se ha rotado su clave (versión %2$@)"
+          }
+        }
+      }
+    },
+    "vault_e2ee.badge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End-to-end encrypted"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cifrada de extremo a extremo"
+          }
+        }
+      }
+    },
+    "vault_e2ee.badge_locked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End-to-end encrypted · locked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cifrada de extremo a extremo · bloqueada"
+          }
+        }
+      }
+    },
+    "vault_e2ee.confirm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmar"
+          }
+        }
+      }
+    },
+    "vault_e2ee.confirmed %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld member got the key"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld members got the key"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld miembro ha recibido la clave"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld miembros han recibido la clave"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "vault_e2ee.consequence.ai": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server's AI, /exec and server SFTP leave out hosts whose credentials are locked (the AI on your device keeps working)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La IA del servidor, /exec y el SFTP del servidor dejan fuera los hosts con credenciales bloqueadas (la IA de tu dispositivo sigue funcionando)."
+          }
+        }
+      }
+    },
+    "vault_e2ee.consequence.certificates": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Team certificates, access policies and recordings keep working (recordings are not end-to-end encrypted)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los certificados del equipo, las políticas de acceso y las grabaciones siguen funcionando (las grabaciones no se cifran de extremo a extremo)."
+          }
+        }
+      }
+    },
+    "vault_e2ee.consequence.jit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use-only and Connect-only members get no just-in-time credentials: they connect with team certificates or a key holder's session."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los miembros Usar y Solo conectar no reciben credenciales justo a tiempo: se conectan con certificados del equipo o con la sesión de quien tiene la clave."
+          }
+        }
+      }
+    },
+    "vault_e2ee.consequence.metadata": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Names, addresses, users and notes stay readable by the server."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombres, direcciones, usuarios y notas siguen siendo legibles por el servidor."
+          }
+        }
+      }
+    },
+    "vault_e2ee.consequence.moves": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moves and copies to other vaults are done by your device (encrypted for the target)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los movimientos y copias a otras bóvedas los hace tu dispositivo (cifrados para el destino)."
+          }
+        }
+      }
+    },
+    "vault_e2ee.consequence.reveal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server and the web cannot reveal secrets; your devices open them once unlocked."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servidor y la web no pueden revelar secretos; tus dispositivos los abren una vez desbloqueados."
+          }
+        }
+      }
+    },
+    "vault_e2ee.consequence.server_sessions": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server sessions and host tests ask before sending a host's credentials, for that connection only."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las sesiones del servidor y los tests de host preguntan antes de enviar las credenciales de un host, solo para esa conexión."
+          }
+        }
+      }
+    },
+    "vault_e2ee.consequences_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What changes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qué cambia"
+          }
+        }
+      }
+    },
+    "vault_e2ee.disabled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End-to-end encryption is off for this vault"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El cifrado de extremo a extremo está desactivado en esta bóveda"
+          }
+        }
+      }
+    },
+    "vault_e2ee.enabled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vault is end-to-end encrypted"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La bóveda está cifrada de extremo a extremo"
+          }
+        }
+      }
+    },
+    "vault_e2ee.item_locked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Locked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloqueado"
+          }
+        }
+      }
+    },
+    "vault_e2ee.items %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld secret will be encrypted on this device."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld secrets will be encrypted on this device."
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Se cifrará %1$lld secreto en este dispositivo."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Se cifrarán %1$lld secretos en este dispositivo."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "vault_e2ee.key_changed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Their key changed since this device gave them the key: it may be a new device of theirs, or someone else. Check the fingerprint with them."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Su clave ha cambiado desde que este dispositivo le dio la clave: puede ser un dispositivo nuevo suyo o alguien más. Comprueba la huella con esa persona."
+          }
+        }
+      }
+    },
+    "vault_e2ee.key_version %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key version %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versión de la clave %1$@"
+          }
+        }
+      }
+    },
+    "vault_e2ee.locked_card.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End-to-end encrypted"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cifrado de extremo a extremo"
+          }
+        }
+      }
+    },
+    "vault_e2ee.managers_only": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only the vault's Admins can turn it on."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo los Admin de la bóveda pueden activarlo."
+          }
+        }
+      }
+    },
+    "vault_e2ee.network_form_warning": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This vault is end-to-end encrypted, but a private network's key stays readable by the server: it needs it to join the network."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta bóveda está cifrada de extremo a extremo, pero la clave de una red privada sigue siendo legible por el servidor: la necesita para unirse a la red."
+          }
+        }
+      }
+    },
+    "vault_e2ee.networks_warning %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "This vault has %1$lld private network: its key stays readable by the server, which needs it to join the network."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "This vault has %1$lld private networks: their keys stay readable by the server, which needs them to join the networks."
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Esta bóveda tiene %1$lld red privada: su clave sigue siendo legible por el servidor, que la necesita para unirse a la red."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Esta bóveda tiene %1$lld redes privadas: sus claves siguen siendo legibles por el servidor, que las necesita para unirse a las redes."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "vault_e2ee.no_key_role": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your role does not get this vault's key: you connect with team certificates or through a key holder's server session."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu rol no recibe la clave de esta bóveda: te conectas con certificados del equipo o mediante la sesión del servidor de quien tiene la clave."
+          }
+        }
+      }
+    },
+    "vault_e2ee.off_intro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on end-to-end encryption to keep this vault's passwords and keys encrypted with a key only its members' devices have. The server keeps blobs it cannot open, and its own copy of the vault key is deleted."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activa el cifrado de extremo a extremo para guardar las contraseñas y claves de esta bóveda cifradas con una clave que solo tienen los dispositivos de sus miembros. El servidor guarda datos que no puede abrir y se borra su propia copia de la clave de la bóveda."
+          }
+        }
+      }
+    },
+    "vault_e2ee.off_message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device sends every secret to the server (over TLS), which encrypts them with its own key again: the server can read them again and older apps see the vault."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este dispositivo envía todos los secretos al servidor (por TLS), que los vuelve a cifrar con su propia clave: el servidor puede volver a leerlos y las apps antiguas ven la bóveda."
+          }
+        }
+      }
+    },
+    "vault_e2ee.off_mismatch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That is not the vault's name"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ese no es el nombre de la bóveda"
+          }
+        }
+      }
+    },
+    "vault_e2ee.off_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn off end-to-end encryption"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desactivar el cifrado de extremo a extremo"
+          }
+        }
+      }
+    },
+    "vault_e2ee.on_consequences_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "While it is on"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mientras esté activado"
+          }
+        }
+      }
+    },
+    "vault_e2ee.pending_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm someone only after checking their fingerprint with them (in person or on a call)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirma a alguien solo después de comprobar su huella con esa persona (en persona o en una llamada)."
+          }
+        }
+      }
+    },
+    "vault_e2ee.pending_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for the key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando la clave"
+          }
+        }
+      }
+    },
+    "vault_e2ee.recipients_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compare each fingerprint with the one the person sees in their Settings → Security before giving them the key. Unchecked members wait and can be confirmed later."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compara cada huella con la que la persona ve en sus Ajustes → Seguridad antes de darle la clave. Los miembros sin marcar esperan y se pueden confirmar después."
+          }
+        }
+      }
+    },
+    "vault_e2ee.recipients_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Who gets the key now"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quién recibe la clave ahora"
+          }
+        }
+      }
+    },
+    "vault_e2ee.rekey_needed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Someone lost access to this vault: rotate its key so they cannot open new secrets."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alguien ha perdido el acceso a esta bóveda: rota su clave para que no pueda abrir secretos nuevos."
+          }
+        }
+      }
+    },
+    "vault_e2ee.rotate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rotate the key"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rotar la clave"
+          }
+        }
+      }
+    },
+    "vault_e2ee.rotated %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key rotated (version %1$@)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave rotada (versión %1$@)"
+          }
+        }
+      }
+    },
+    "vault_e2ee.session.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The audit records it (e2ee.unlock). Prefer a local connection to keep them on this device."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La auditoría lo registra (e2ee.unlock). Prefiere una conexión local para que no salgan de este dispositivo."
+          }
+        }
+      }
+    },
+    "vault_e2ee.session.send": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send and connect"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviar y conectar"
+          }
+        }
+      }
+    },
+    "vault_e2ee.session.text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Its vault is end-to-end encrypted, so the server cannot open them. This device can send them for this server session only: the server uses them to connect and then forgets them."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Su bóveda está cifrada de extremo a extremo, así que el servidor no puede abrirlas. Este dispositivo puede enviarlas solo para esta sesión del servidor: el servidor las usa para conectar y después las olvida."
+          }
+        }
+      }
+    },
+    "vault_e2ee.session.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send this host's credentials for this session?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Enviar las credenciales de este host para esta sesión?"
+          }
+        }
+      }
+    },
+    "vault_e2ee.setup_first": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up end-to-end encryption for your account first."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configura antes el cifrado de extremo a extremo de tu cuenta."
+          }
+        }
+      }
+    },
+    "vault_e2ee.setup_to_get_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up end-to-end encryption to get this vault's key."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configura el cifrado de extremo a extremo para recibir la clave de esta bóveda."
+          }
+        }
+      }
+    },
+    "vault_e2ee.test.message %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ is in an end-to-end encrypted vault: the server can only test it if this device sends its credentials, for this test only."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ está en una bóveda cifrada de extremo a extremo: el servidor solo puede probarlo si este dispositivo envía sus credenciales, solo para esta prueba."
+          }
+        }
+      }
+    },
+    "vault_e2ee.test.send": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send and test"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviar y probar"
+          }
+        }
+      }
+    },
+    "vault_e2ee.test.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send the credentials for this test?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Enviar las credenciales para esta prueba?"
+          }
+        }
+      }
+    },
+    "vault_e2ee.turn_off": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn off"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desactivar"
+          }
+        }
+      }
+    },
+    "vault_e2ee.turn_on": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on end-to-end encryption"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activar el cifrado de extremo a extremo"
+          }
+        }
+      }
+    },
+    "vault_e2ee.unlock_first": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock end-to-end encryption on this device first."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desbloquea antes el cifrado de extremo a extremo en este dispositivo."
+          }
+        }
+      }
+    },
+    "vault_e2ee.waiting_for_key %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for a key holder to confirm you. Your key's fingerprint, to compare with them: %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando a que alguien con la clave te confirme. La huella de tu clave, para compararla con esa persona: %1$@"
+          }
+        }
+      }
+    },
+    "vault_e2ee.without_key %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld member who may hold the key has not set up end-to-end encryption yet: they will wait for a key holder."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld members who may hold the key have not set up end-to-end encryption yet: they will wait for a key holder."
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld miembro que puede tener la clave aún no ha configurado el cifrado de extremo a extremo: esperará a que alguien con la clave le confirme."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld miembros que pueden tener la clave aún no han configurado el cifrado de extremo a extremo: esperarán a que alguien con la clave les confirme."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "vault_e2ee.you %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You (%1$@)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tú (%1$@)"
+          }
+        }
+      }
+    },
     "vaults.activity": {
       "localizations": {
         "en": {
@@ -38372,6 +45476,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Estricto: los miembros de Solo uso solo se conectan a través del servidor, así las contraseñas y claves nunca llegan a sus dispositivos (sin túneles locales)."
+          }
+        }
+      }
+    },
+    "vaults.tab.encryption": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encryption"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cifrado"
           }
         }
       }

@@ -661,8 +661,8 @@ private struct QuickLookPreview: UIViewControllerRepresentable {
     }
 }
 
-/// System share sheet (includes "Save to Files").
-private struct ShareSheet: UIViewControllerRepresentable {
+/// System share sheet (includes "Save to Files"); also the audit exports.
+struct ShareSheet: UIViewControllerRepresentable {
     let urls: [URL]
     func makeUIViewController(context: Context) -> UIActivityViewController {
         UIActivityViewController(activityItems: urls, applicationActivities: nil)

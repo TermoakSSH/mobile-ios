@@ -131,6 +131,14 @@ struct NetworksAPI {
         return Networks.hostTest(json) ?? HostTest(ok: false)
     }
 
+    /// The same test for a host of an end-to-end encrypted vault: the engine
+    /// resolves its credentials on this device and sends them for this test
+    /// only (after asking the person; audited `e2ee.unlock`; core v0.7.0-next.13).
+    func testHostUnlocked(_ hostId: String, trust: Bool) async throws -> HostTest {
+        let json = try await handle.testHostUnlocked(hostId: hostId, trust: trust)
+        return Networks.hostTest(json) ?? HostTest(ok: false)
+    }
+
     /// Adds a host at an address of a network (in the network's vault).
     func addHost(_ body: String) async throws -> String {
         let json = try await call(.post, "/hosts", body)
@@ -278,10 +286,10 @@ final class NetworkBook: ObservableObject {
     func isTesting(_ host: SshHost) -> Bool { testing.contains(host.key) }
 
     /// Tests `host` from the server; the result stays for the lists.
-    func testHost(_ api: NetworksAPI, _ host: SshHost, trust: Bool) async throws -> HostTest {
+    func testHost(_ api: NetworksAPI, _ host: SshHost, trust: Bool, unlock: Bool = false) async throws -> HostTest {
         testing.insert(host.key)
         defer { testing.remove(host.key) }
-        let t = try await api.testHost(host.id, trust: trust)
+        let t = unlock ? try await api.testHostUnlocked(host.id, trust: trust) : try await api.testHost(host.id, trust: trust)
         tests[host.key] = t
         return t
     }

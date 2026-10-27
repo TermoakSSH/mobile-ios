@@ -379,6 +379,17 @@ final class Accounts: ObservableObject {
         return info
     }
 
+    /// Finishes a single sign-on with the URL the browser came back to
+    /// (`termoak://sso?code=…&state=…`): the account is signed in and becomes
+    /// current. Throws `TotpRequired` when the account's two-step
+    /// verification is still asked: call again with the code.
+    func ssoComplete(flow: SsoFlow, callback: String, totp: String?) async throws -> AccountInfo {
+        let first = list.isEmpty
+        let info = try await core.ssoComplete(flow: flow, callbackUrl: callback, totpCode: totp)
+        added(info, first: first)
+        return info
+    }
+
     /// The six-digit code from the verification email.
     func verify(_ accountId: String, code: String, totp: String?) async throws -> AccountInfo {
         let info = try await core.verifyAccount(accountId: accountId, code: code, totpCode: totp)
@@ -453,6 +464,13 @@ final class Accounts: ObservableObject {
                 reload()
                 vaultChanged.send()
                 announce(report, of: info)
+                // E2EE: edits waiting for an unlock; a key this device rotates by itself (someone lost access), then sync again.
+                if await E2eeBook.shared.synced(accountId, report: report, vaults: vaults) {
+                    Task { @MainActor [weak self] in
+                        try? await Task.sleep(nanoseconds: 300_000_000)
+                        self?.sync(accountId)
+                    }
+                }
                 if offerUploadTo == accountId {
                     offerUploadTo = nil
                     if deviceItemCount() > 0 { uploadOffer = UploadOffer(accountId: accountId) }
@@ -576,6 +594,8 @@ final class Accounts: ObservableObject {
             Task { @MainActor in await NetworkBook.shared.refreshFeatures(id, core: core) }
             // Teams security (0.7 phase 4d): the server's feature, the requests and 2FA requirements.
             Task { @MainActor in await AccessBook.shared.start(id, core: core) }
+            // E2EE vaults, SSO and the audit (0.7 phase 5c): the server's features and the account's key.
+            Task { @MainActor in await E2eeBook.shared.start(id, core: core) }
         }
     }
 
@@ -618,6 +638,7 @@ final class Accounts: ObservableObject {
         Task { @MainActor in
             NetworkBook.shared.forget(accountId)
             AccessBook.shared.forget(accountId)
+            E2eeBook.shared.forget(accountId)
         }
         guard let e = events.removeValue(forKey: accountId) else { return }
         e.task.cancel()
@@ -637,6 +658,11 @@ final class Accounts: ObservableObject {
             }
             // Events may have been missed while the socket was closed.
             if AccessBook.shared.isSupported(accountId) { Task { await AccessBook.shared.onEvent(accountId) } }
+            // A pairing may have been asked while the socket was closed.
+            if E2eeBook.shared.supported(accountId) { Task { await E2eeBook.shared.refresh(accountId) } }
+        case "e2ee":
+            // Another device of yours asks for the key, or a request was decided.
+            Task { await E2eeBook.shared.refresh(accountId) }
         case "ai", "lagged":
             if type == "ai", let task = event["task_id"] as? String, let ev = event["event"] as? [String: Any] {
                 aiEvents.send(AiEvent(taskId: task, event: ev))

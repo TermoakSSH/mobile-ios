@@ -26,6 +26,23 @@ final class BackgroundNotices: NSObject {
     private var recent = NoticeDeduper(window: 15)
     private var asked = UserDefaults.standard.bool(forKey: "notifications_asked")
 
+    /// Another device of yours asks for your E2EE key (0.7 phase 5c): the
+    /// server sends no push for it, so the events socket brings it and, in the
+    /// background, it becomes this notification; a tap opens Settings →
+    /// Security on it (compare the six-digit code there, then decide).
+    var onPairing: ((_ accountId: String, _ pairingId: String) -> Void)?
+
+    func notifyPairing(accountId: String, pairingId: String, device: String) {
+        guard inBackground, recent.isNew("e2ee:\(pairingId)", at: Date()) else { return }
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "e2ee.pairing.notice_title")
+        content.body = String(localized: "e2ee.pairing.notice_body \(device)")
+        content.sound = .default
+        content.threadIdentifier = "e2ee"
+        content.userInfo = ["e2ee_pairing": pairingId, "account_id": accountId]
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "e2ee-" + pairingId, content: content, trigger: nil))
+    }
+
     /// Asks once for permission to notify (when you start sharing).
     func requestPermission() {
         guard !asked else { return }
@@ -75,6 +92,13 @@ extension BackgroundNotices: UNUserNotificationCenterDelegate {
             let route = PushRoute.of(push, action: response.actionIdentifier)
             Task { @MainActor in
                 BackgroundNotices.shared.onPush?(route)
+                completionHandler()
+            }
+            return
+        }
+        if let pairing = info["e2ee_pairing"] as? String, let account = info["account_id"] as? String {
+            Task { @MainActor in
+                BackgroundNotices.shared.onPairing?(account, pairing)
                 completionHandler()
             }
             return

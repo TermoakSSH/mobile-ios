@@ -63,6 +63,8 @@ targets:
         TermoakPush: true
         # Background pushes withdraw notifications answered elsewhere.
         UIBackgroundModes: [remote-notification]
+        # The same scheme brings single sign-on back (termoak://sso, 0.7):
+        # ASWebAuthenticationSession catches it with callbackURLScheme "termoak".
         CFBundleURLTypes:
           - CFBundleURLName: com.termoak.links
             CFBundleTypeRole: Viewer
@@ -146,6 +148,9 @@ targets:
       - path: Termoak/Model/Networks.swift
       - path: Termoak/Model/SecurityKeys.swift
       - path: Termoak/Model/SnippetVars.swift
+      - path: Termoak/Model/E2eeRules.swift
+      - path: Termoak/Model/SsoRules.swift
+      - path: Termoak/Model/AuditRules.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

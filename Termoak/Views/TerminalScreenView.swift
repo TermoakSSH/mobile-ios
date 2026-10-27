@@ -142,6 +142,11 @@ private struct TerminalContent: View {
                     sessions.close(session.id)
                 }
                 .environmentObject(model)
+            } else if let need = session.e2eeNeed, case .closed = session.state {
+                // An end-to-end encrypted host: Unlock here, or send its credentials for this server session.
+                Color.black.opacity(0.35).ignoresSafeArea()
+                TerminalE2eeCard(session: session, need: need) { sessions.close(session.id) }
+                    .environmentObject(model)
             }
         }
         .background(theme.backgroundColor.ignoresSafeArea())

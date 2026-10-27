@@ -11,6 +11,7 @@ struct SettingsView: View {
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var sessions: Sessions
     @ObservedObject private var accessBook = AccessBook.shared
+    @ObservedObject private var e2ee = E2eeBook.shared
     @Environment(\.openURL) private var openURL
     @Environment(\.dismiss) private var dismiss
     /// Terms and privacy of the current account's server (its /info).
@@ -71,6 +72,17 @@ struct SettingsView: View {
                             NavigationLink { CertificatesView() } label: {
                                 Label("settings.certificates", systemImage: "checkmark.shield")
                             }
+                        }
+                        // E2EE vaults, linked identities and your activity (0.7 phase 5c).
+                        if account.loggedIn == true && e2ee.anySupported {
+                            NavigationLink { SecurityView() } label: {
+                                HStack {
+                                    Label("settings.page.security", systemImage: "lock.shield")
+                                    Spacer()
+                                    if e2ee.pairingCount > 0 { Text(verbatim: "\(e2ee.pairingCount)").foregroundColor(Brand.amber) }
+                                }
+                            }
+                            .accessibilityIdentifier("settings-security")
                         }
                         if account.loggedIn == true, let url = URL(string: "\(current.serverUrl)/app/account") {
                             Button { openURL(url) } label: { Label("settings.web_account", systemImage: "arrow.up.right.square") }

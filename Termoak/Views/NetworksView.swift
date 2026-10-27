@@ -1226,6 +1226,10 @@ struct NetworkFormView: View {
                         }
                     }
                     TextField("networks.form.description", text: $description)
+                    // An end-to-end encrypted vault: the network's key stays readable by the server (E2EE-SSO-AUDIT §9.3).
+                    if vaults.first(where: { $0.id == (editing?.vaultId ?? vaultId) })?.e2ee != nil {
+                        Text("vault_e2ee.network_form_warning").font(.footnote).foregroundColor(Brand.amber)
+                    }
                 } footer: {
                     if editing == nil { Text("networks.form.vault_hint") }
                 }

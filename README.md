@@ -159,6 +159,34 @@ a player; the 2FA banner. Code: `Model/AccessRules.swift` (pure, unit
 tested), `Model/AccessBook.swift`, `Views/AccessViews.swift`,
 `Views/TeamSecurityViews.swift`, `Views/AccessPolicyViews.swift`.
 
+### End-to-end encrypted vaults, SSO and the audit (0.7)
+
+With servers that have `features.e2ee`, `sso` and `audit_v2`: Settings →
+Security sets up the account's E2EE key (optional passphrase; the 24-word
+recovery phrase shown once in a numbered grid, hidden while the app is not
+in front or the screen is recorded or mirrored, with copy for this device
+only, save to Files and print; then three words typed back), unlocks this
+device with the passphrase, the recovery phrase (live feedback and word
+suggestions) or another device (the same six-digit code on both), approves
+your other devices, locks, changes or removes the passphrase, makes a new
+phrase, replaces the key or resets it (Face ID / Touch ID first for the
+last three); the engine keeps the key in the account store sealed with the
+Keychain-protected device key. Vault → Encryption (turn on with each
+member's fingerprint, confirm members waiting, rotate, also by itself when
+someone lost access, turn off), badges and Home banners, the private
+networks warning; server sessions and host tests of an E2EE host ask
+before sending its credentials for that connection. Sign-in offers
+"Continue with <team>" in `ASWebAuthenticationSession` (callback scheme
+`termoak`, back to `termoak://sso`, PKCE, the 2FA step); `sso_required`
+switches to it; linked identities; Teams → Single sign-on (presets,
+redirect URI, domains with the TXT record to copy or share, enforcement).
+Audit of your account, teams and vaults with filters and export to the
+share sheet, team retention and sinks (state, test, pause, delete). Code:
+`Model/E2eeRules.swift`, `Model/SsoRules.swift`, `Model/AuditRules.swift`
+(pure, unit tested), `Model/E2eeBook.swift`, `Views/SecurityViews.swift`,
+`Views/VaultE2eeView.swift`, `Views/SsoViews.swift`, `Views/AuditViews.swift`,
+`Views/E2eeTerminalViews.swift`.
+
 ### Another server as the official one
 
 The "official server" button signs in to `https://termoak.com`. To test

@@ -104,6 +104,8 @@ struct ItemPlace: Hashable, Identifiable {
 func userMessage(_ error: Error) -> String {
     // Teams security (0.7 phase 4d): always the app's text for its codes.
     if let text = AccessTexts.of(error) { return text }
+    // E2EE vaults, SSO and the audit (0.7 phase 5c): always the app's text for their codes.
+    if let text = E2eeTexts.of(error) { return text }
     // Private networks (0.7): by the error's code and details (`apiError`).
     if let text = networkErrorText(error) { return text }
     // FIDO2 security keys (0.7): by the code (`apiError`) or the engine's text.

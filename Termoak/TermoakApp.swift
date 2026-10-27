@@ -91,6 +91,8 @@ final class AppModel: ObservableObject {
     @Published var showingTeams = false
     /// Teams security: the Access screen over everything (a tapped push about a request).
     @Published var showingAccess: AccessFocus?
+    /// E2EE (0.7 phase 5c): Settings → Security over everything (a tapped notification of a pairing request).
+    @Published var showingSecurity: SecurityFocus?
     private var subscriptions: Set<AnyCancellable> = []
 
     init(core: TermoakCore, settings: AppSettings) {
@@ -105,6 +107,20 @@ final class AppModel: ObservableObject {
         // Teams security (0.7 phase 4d): terminals waiting for an access window connect when it opens.
         sessions.accounts = account
         AccessBook.shared.core = core
+        // E2EE vaults, SSO and the audit (0.7 phase 5c): notices after a sync, pairing requests in the background.
+        E2eeBook.shared.core = core
+        E2eeBook.shared.$notice
+            .compactMap { $0 }
+            .sink { [weak accounts] text in
+                E2eeBook.shared.notice = nil
+                accounts?.post(String(localized: "e2ee.title"), text)
+            }
+            .store(in: &subscriptions)
+        E2eeBook.shared.$asking
+            .compactMap { $0 }
+            .sink { a in BackgroundNotices.shared.notifyPairing(accountId: a.accountId, pairingId: a.request.id, device: a.request.deviceName) }
+            .store(in: &subscriptions)
+        BackgroundNotices.shared.onPairing = { [weak self] account, pairing in self?.showingSecurity = SecurityFocus(accountId: account, pairingId: pairing) }
         account.accessEvents
             .sink { [weak sessions] event in Task { @MainActor in await sessions?.checkWaiting(event.0) } }
             .store(in: &subscriptions)
@@ -357,6 +373,14 @@ private struct Root: View {
 private struct RootContent: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var account: Accounts
+    @ObservedObject private var e2ee = E2eeBook.shared
+    @Environment(\.scenePhase) private var scenePhase
+
+    /// A pairing request to show now (in front only; in the background it is a notification).
+    private var pairingAsk: PairingAsk? {
+        guard scenePhase == .active, let a = e2ee.asking, model.showingSecurity == nil else { return nil }
+        return PairingAsk(accountId: a.accountId, request: a.request)
+    }
     @EnvironmentObject private var sessions: Sessions
     @EnvironmentObject private var settings: AppSettings
     /// Regular on an iPad with room (or an iPhone Plus/Pro Max in
@@ -426,6 +450,22 @@ private struct RootContent: View {
             .environmentObject(model)
             .environmentObject(account)
         }
+        // A tapped notification of a pairing request: Settings → Security on it.
+        .sheet(item: $model.showingSecurity) { focus in
+            NavigationView {
+                SecurityView(accountId: focus.accountId, pairingId: focus.pairingId).toolbar {
+                    ToolbarItem(placement: .cancellationAction) { Button("common.done") { model.showingSecurity = nil } }
+                }
+            }
+            .navigationViewStyle(.stack)
+            .environmentObject(model)
+            .environmentObject(account)
+        }
+        // Another device asks for your E2EE key while the app is in front: the same six-digit code, Approve or Deny.
+        .sheet(item: Binding(get: { pairingAsk }, set: { if $0 == nil { E2eeBook.shared.asking = nil } })) { a in
+            PairingSheet(accountId: a.accountId, request: a.request) { E2eeBook.shared.asking = nil }
+                .environmentObject(model)
+        }
         // A tapped push about the AI: its tasks and approvals.
         .sheet(isPresented: $model.showingAi) {
             NavigationView {
@@ -470,4 +510,18 @@ private struct RootContent: View {
                 .environmentObject(account)
         }
     }
+}
+
+/// Settings → Security opened on a pairing request.
+struct SecurityFocus: Identifiable, Equatable {
+    let accountId: String
+    let pairingId: String?
+    var id: String { accountId + (pairingId ?? "") }
+}
+
+/// A pairing request shown over everything.
+struct PairingAsk: Identifiable {
+    let accountId: String
+    let request: E2eePairingRequest
+    var id: String { request.id }
 }

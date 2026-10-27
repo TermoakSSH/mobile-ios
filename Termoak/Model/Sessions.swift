@@ -113,6 +113,10 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     /// phase 4d): the terminal shows "Approval needed" / "Waiting for
     /// approval" and connects by itself when the window opens.
     @Published var accessNeed: AccessNeed?
+    /// What an end-to-end encrypted host needs before it connects (0.7 phase
+    /// 5c): `.unlock` (this device can't open its credentials yet) or `.send`
+    /// (a server session: send them for this session only, after asking).
+    @Published var e2eeNeed: E2eeNeed?
     /// Short message over the terminal ("You have control"...).
     @Published private(set) var flash: String?
     private var flashCount = 0
@@ -253,6 +257,14 @@ class TerminalSession: NSObject, ObservableObject, Identifiable, TerminalViewDel
     /// A connection error: remembers the approval it asks for (or forgets it).
     func noteAccessError(_ error: Error) {
         accessNeed = AccessTexts.need(error, hostId: hostId)
+        e2eeNeed = E2eeTexts.needsUnlock(error) ? .send : (E2eeTexts.isLocked(error) ? .unlock : nil)
+    }
+
+    /// This device was unlocked: connect again.
+    func e2eeUnlocked() {
+        guard e2eeNeed != nil else { return }
+        e2eeNeed = nil
+        reconnect()
     }
 
     /// The window opened: connect again.
@@ -950,6 +962,7 @@ final class LocalTerminal: TerminalSession {
         view.feed(text: "\u{1b}c")
         forgetLine()
         accessNeed = nil
+        e2eeNeed = nil
         start()
     }
 
@@ -1269,11 +1282,16 @@ final class ServerTerminal: TerminalSession {
                         id = sessionId
                     } else if let hostId {
                         // On the host's account (the current one for This-device hosts).
+                        // An end-to-end encrypted host: with its credentials for this session, after asking (0.7 phase 5c).
+                        let unlock = sendCredentials
+                        sendCredentials = false
                         if let accountId {
-                            id = try await core.account(accountId: accountId)
-                                .openServerSession(hostId: hostId, cols: cols, rows: rows, title: label, record: record).id
+                            let acc = try core.account(accountId: accountId)
+                            id = unlock ? try await acc.openServerSessionUnlocked(hostId: hostId, cols: cols, rows: rows, title: label, record: record).id
+                                : try await acc.openServerSession(hostId: hostId, cols: cols, rows: rows, title: label, record: record).id
                         } else {
-                            id = try await core.openServerSession(hostId: hostId, cols: cols, rows: rows, title: label, record: record).id
+                            id = unlock ? try await core.openServerSessionUnlocked(hostId: hostId, cols: cols, rows: rows, title: label, record: record).id
+                                : try await core.openServerSession(hostId: hostId, cols: cols, rows: rows, title: label, record: record).id
                         }
                         sessionId = id
                     } else {
@@ -1301,7 +1319,17 @@ final class ServerTerminal: TerminalSession {
         waiting = nil
         closeReason = nil
         accessNeed = nil
+        e2eeNeed = nil
         start()
+    }
+
+    /// "Send and connect": the session opens with this host's credentials (resolved on this device).
+    private var sendCredentials = false
+
+    func sendCredentialsAndConnect() {
+        sendCredentials = true
+        e2eeNeed = nil
+        reconnect()
     }
 
     /// Detaches: the session stays on the server.
@@ -2202,4 +2230,10 @@ extension ServerSession {
     /// Yours, running on the server (not a relay: shared terminals, also the
     /// copilot ones, are not restored).
     var restorable: Bool { kind == "server" && isRunning }
+}
+
+/// What an end-to-end encrypted host needs before a terminal connects.
+enum E2eeNeed: Equatable {
+    case unlock
+    case send
 }

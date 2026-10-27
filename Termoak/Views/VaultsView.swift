@@ -105,6 +105,8 @@ struct VaultRow: View {
                     }
                 }
                 Text(verbatim: subtitleText).font(.caption).foregroundColor(.secondary).lineLimit(1)
+                // End-to-end encrypted (0.7 phase 5c), "locked" until this device can open it.
+                E2eeBadge(badge: E2eeRules.badge(vault.e2eeFlags, unlocked: E2eeBook.shared.unlocked(vault.accountId)))
             }
             Spacer(minLength: 0)
             Text(verbatim: vault.role.title)
@@ -169,6 +171,7 @@ struct VaultDetailView: View {
                         Text(verbatim: vault.displayName).font(.title3.weight(.semibold))
                         Text(verbatim: VaultRow(vault: vault).subtitleText)
                             .font(.caption).foregroundColor(.secondary)
+                        E2eeBadge(badge: E2eeRules.badge(vault.e2eeFlags, unlocked: E2eeBook.shared.unlocked(vault.accountId)))
                     }
                 }
                 .padding(.vertical, 4)
@@ -244,10 +247,31 @@ struct VaultDetailView: View {
                 }
             }
 
+            // End-to-end encryption (0.7 phase 5c): its state and, for Admins, turning it on or off.
+            if E2eeBook.shared.supported(vault.accountId) {
+                Section {
+                    NavigationLink { VaultE2eeView(accountId: vault.accountId, vaultId: vault.id) } label: {
+                        HStack {
+                            Label("vaults.tab.encryption", systemImage: "lock.shield")
+                            Spacer()
+                            E2eeBadge(badge: E2eeRules.badge(vault.e2eeFlags, unlocked: E2eeBook.shared.unlocked(vault.accountId)))
+                        }
+                    }
+                    .accessibilityIdentifier("vault-encryption")
+                }
+            }
+
             if vault.canManage {
                 Section {
-                    NavigationLink { VaultAuditView(vault: vault, members: members) } label: {
-                        Label("vaults.activity", systemImage: "clock.arrow.circlepath")
+                    // The extended audit (filters, export) where the server has it (0.7 phase 5c).
+                    if E2eeBook.shared.audit(vault.accountId) != nil {
+                        NavigationLink { AuditView(accountId: vault.accountId, scope: .vault, scopeId: vault.id, name: vault.displayName) } label: {
+                            Label("vaults.activity", systemImage: "clock.arrow.circlepath")
+                        }
+                    } else {
+                        NavigationLink { VaultAuditView(vault: vault, members: members) } label: {
+                            Label("vaults.activity", systemImage: "clock.arrow.circlepath")
+                        }
                     }
                     // Teams security (0.7 phase 4d): access policies and recorded sessions.
                     if teamsSecurity && !personal {

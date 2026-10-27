@@ -89,6 +89,11 @@ struct HostAccessChips: View {
             if let w = book.window(host.accountId, host.id) { AccessWindowChip(window: w) }
             if recorded { RecordedChip() }
             if host.access == .connectOnly { ConnectOnlyBadge() }
+            // End-to-end encrypted and still sealed on this device (0.7 phase 5c).
+            if host.e2eeLocked {
+                Text("vault_e2ee.item_locked").font(.caption2.weight(.semibold)).foregroundColor(Brand.amber)
+                    .padding(.horizontal, 6).padding(.vertical, 2).background(Brand.amber.opacity(0.15), in: Capsule())
+            }
         }
         .task(id: host.key) {
             if let a = host.accountId, gates.accessRules { await book.ask(a, host.id) }
